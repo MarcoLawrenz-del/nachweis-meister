@@ -10,8 +10,9 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { 
   AlertTriangle, 
   CheckCircle, 
@@ -352,17 +353,23 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
-            <Button className="justify-start">
-              <Users className="mr-2 h-4 w-4" />
-              Nachunternehmer einladen
+            <Button className="justify-start" asChild>
+              <Link to="/subcontractors">
+                <Users className="mr-2 h-4 w-4" />
+                Nachunternehmer verwalten
+              </Link>
             </Button>
-            <Button variant="outline" className="justify-start">
-              <FolderOpen className="mr-2 h-4 w-4" />
-              Neues Projekt
+            <Button variant="outline" className="justify-start" asChild>
+              <Link to="/projects">
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Neues Projekt
+              </Link>
             </Button>
-            <Button variant="outline" className="justify-start">
-              <FileText className="mr-2 h-4 w-4" />
-              Bulk-Erinnerungen
+            <Button variant="outline" className="justify-start" asChild>
+              <Link to="/review">
+                <FileText className="mr-2 h-4 w-4" />
+                Prüfungsqueue
+              </Link>
             </Button>
           </div>
         </CardContent>
