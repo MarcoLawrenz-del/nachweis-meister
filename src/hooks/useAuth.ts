@@ -15,22 +15,15 @@ export function useAuth() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('useAuth hook - loading:', loading, 'user:', user, 'profile:', profile);
-
   useEffect(() => {
     // Get initial session
-    console.log('useAuth useEffect - Getting initial session');
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
       } else {
         setLoading(false);
       }
-    }).catch(error => {
-      console.error('Error getting session:', error);
-      setLoading(false);
     });
 
     // Listen for auth changes
