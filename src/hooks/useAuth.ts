@@ -86,12 +86,14 @@ export function useAuth() {
     }
 
     try {
-      // Create user profile directly without tenant for now
+      console.log('Starting setup for user:', user.id);
+      
+      // Create user profile first (without tenant_id for now)
       const { data: newProfile, error: profileError } = await supabase
         .from('users')
         .insert({
           id: user.id,
-          tenant_id: user.id, // Use user ID as tenant ID temporarily
+          tenant_id: null, // Set to null initially
           name: userData.name,
           email: user.email,
           role: 'owner'
@@ -104,33 +106,9 @@ export function useAuth() {
         return { error: profileError };
       }
 
+      console.log('Profile created successfully:', newProfile);
       setProfile(newProfile as UserProfile);
       
-      // Create tenant after profile is created
-      try {
-        const { data: tenant, error: tenantError } = await supabase
-          .from('tenants')
-          .insert({ 
-            id: user.id, // Use same ID as user
-            name: userData.companyName 
-          })
-          .select()
-          .single();
-
-        if (!tenantError && tenant) {
-          // Update profile with correct tenant_id
-          await supabase
-            .from('users')
-            .update({ tenant_id: tenant.id })
-            .eq('id', user.id);
-          
-          // Update local state
-          setProfile({ ...newProfile, tenant_id: tenant.id } as UserProfile);
-        }
-      } catch (tenantError) {
-        console.log('Tenant creation failed, continuing with user profile only');
-      }
-
       return { data: newProfile };
     } catch (error) {
       console.error('Error completing setup:', error);
