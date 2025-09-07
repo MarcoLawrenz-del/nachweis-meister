@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,8 @@ import {
   XCircle,
   Mail,
   Send,
-  Eye
+  Eye,
+  FileText
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -565,9 +566,11 @@ export default function ProjectDetail() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Details
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/app/requirements/${ps.id}`}>
+                            <FileText className="h-4 w-4 mr-2" />
+                            Dokumente
+                          </Link>
                         </Button>
                         <Button 
                           variant="outline" 
