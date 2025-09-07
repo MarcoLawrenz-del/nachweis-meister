@@ -62,16 +62,70 @@ export function useAuth() {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        setLoading(false);
         return;
       }
       
       if (data) {
         setProfile(data as UserProfile);
+      } else {
+        // User profile doesn't exist, create it
+        await createMissingProfile(userId);
       }
     } catch (error) {
       console.error('Unexpected error fetching profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createMissingProfile = async (userId: string) => {
+    try {
+      // Get user email from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) return;
+
+      // Create tenant first
+      const { data: tenant, error: tenantError } = await supabase
+        .from('tenants')
+        .insert({ name: 'Meine Firma' })
+        .select()
+        .single();
+
+      if (tenantError) {
+        console.error('Error creating tenant:', tenantError);
+        return;
+      }
+
+      // Create user profile
+      const { data: newProfile, error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          tenant_id: tenant.id,
+          name: user.email.split('@')[0], // Use email prefix as name
+          email: user.email,
+          role: 'owner'
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        return;
+      }
+
+      setProfile(newProfile as UserProfile);
+      
+      auditLogger.log({
+        action: 'PROFILE_AUTO_CREATED',
+        userId: userId,
+        userEmail: user.email,
+        details: { tenantId: tenant.id }
+      });
+      
+    } catch (error) {
+      console.error('Error creating missing profile:', error);
     }
   };
 
