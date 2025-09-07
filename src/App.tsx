@@ -20,6 +20,32 @@ import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
+// Root component to handle initial routing
+function RootRoute() {
+  const { user, profile, loading } = useAuthContext();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // Not authenticated - go to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Authenticated but no profile - show setup  
+  if (user && !profile) {
+    return <Setup />;
+  }
+  
+  // Authenticated with profile - go to app
+  return <Navigate to="/app/dashboard" replace />;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuthContext();
   
@@ -55,7 +81,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (user && profile) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -69,6 +95,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Root route - redirect to appropriate page */}
+            <Route path="/" element={<RootRoute />} />
+            
             {/* Public routes */}
             <Route path="/login" element={
               <PublicRoute>
@@ -85,12 +114,12 @@ const App = () => (
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
             
             {/* Protected routes */}
-            <Route path="/" element={
+            <Route path="/app" element={
               <ProtectedRoute>
                 <AppLayout />
               </ProtectedRoute>
             }>
-              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
