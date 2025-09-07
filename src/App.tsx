@@ -14,13 +14,14 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MagicLinkWizard from "./pages/MagicLinkWizard";
+import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuthContext();
+  const { user, profile, loading } = useAuthContext();
   
   if (loading) {
     return (
@@ -34,11 +35,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
   
+  // User is authenticated but no profile exists - show setup
+  if (user && !profile) {
+    return <Setup />;
+  }
+  
   return <>{children}</>;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuthContext();
+  const { user, profile, loading } = useAuthContext();
   
   if (loading) {
     return (
@@ -48,7 +54,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (user) {
+  if (user && profile) {
     return <Navigate to="/dashboard" replace />;
   }
   

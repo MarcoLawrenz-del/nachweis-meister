@@ -69,8 +69,9 @@ export function useAuth() {
       if (data) {
         setProfile(data as UserProfile);
       } else {
-        // User profile doesn't exist, create it
-        await createMissingProfile(userId);
+        // No profile found - user needs to complete setup
+        console.log('No profile found for user:', userId);
+        setProfile(null);
       }
     } catch (error) {
       console.error('Unexpected error fetching profile:', error);
@@ -79,39 +80,32 @@ export function useAuth() {
     }
   };
 
-  const createMissingProfile = async (userId: string) => {
+  const completeSetup = async (userData: { name: string; companyName: string }) => {
+    if (!user?.id || !user?.email) {
+      return { error: new Error('User not authenticated') };
+    }
+
     try {
-      // Ensure we have a valid session first
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.email) {
-        console.log('No valid session for profile creation');
-        return;
-      }
-
-      console.log('Creating missing profile for user:', userId);
-
       // Create tenant first
       const { data: tenant, error: tenantError } = await supabase
         .from('tenants')
-        .insert({ name: 'Meine Firma' })
+        .insert({ name: userData.companyName })
         .select()
         .single();
 
       if (tenantError) {
         console.error('Error creating tenant:', tenantError);
-        return;
+        return { error: tenantError };
       }
-
-      console.log('Tenant created:', tenant);
 
       // Create user profile
       const { data: newProfile, error: profileError } = await supabase
         .from('users')
         .insert({
-          id: userId,
+          id: user.id,
           tenant_id: tenant.id,
-          name: session.user.email.split('@')[0], // Use email prefix as name
-          email: session.user.email,
+          name: userData.name,
+          email: user.email,
           role: 'owner'
         })
         .select()
@@ -119,21 +113,14 @@ export function useAuth() {
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
-        return;
+        return { error: profileError };
       }
 
-      console.log('Profile created:', newProfile);
       setProfile(newProfile as UserProfile);
-      
-      auditLogger.log({
-        action: 'PROFILE_AUTO_CREATED',
-        userId: userId,
-        userEmail: session.user.email,
-        details: { tenantId: tenant.id }
-      });
-      
+      return { data: newProfile };
     } catch (error) {
-      console.error('Error creating missing profile:', error);
+      console.error('Error completing setup:', error);
+      return { error: error as Error };
     }
   };
 
@@ -320,5 +307,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    completeSetup,
   };
 }
