@@ -193,14 +193,152 @@ export default function Dashboard() {
     );
   }
 
+  // Check if user has no data yet (onboarding needed)
+  const hasNoData = stats.totalSubcontractors === 0 && stats.totalProjects === 0;
+
+  if (hasNoData) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        {/* Welcome Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl mb-4">
+            <Users className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold mb-2">Willkommen bei Nachweis-Meister!</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Verwalten Sie Ihre Nachunternehmer-Nachweise professionell und behalten Sie alle wichtigen Dokumente im Blick.
+          </p>
+        </div>
+
+        {/* Onboarding Steps */}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card className="relative overflow-hidden border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 1
+              </div>
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Nachunternehmer hinzufügen</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Fügen Sie Ihre ersten Nachunternehmer hinzu und verwalten Sie deren Kontaktdaten.
+              </p>
+              <Button className="w-full" asChild>
+                <Link to="/subcontractors">
+                  <Users className="w-4 h-4 mr-2" />
+                  Nachunternehmer hinzufügen
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-2 border-dashed border-muted-foreground/20">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-muted text-muted-foreground text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 2
+              </div>
+              <div className="w-12 h-12 bg-muted/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <FolderOpen className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 text-muted-foreground">Projekt erstellen</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Erstellen Sie Ihr erstes Bauprojekt und weisen Sie Nachunternehmer zu.
+              </p>
+              <Button variant="outline" className="w-full" disabled>
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Projekt erstellen
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-2 border-dashed border-muted-foreground/20">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-muted text-muted-foreground text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 3
+              </div>
+              <div className="w-12 h-12 bg-muted/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 text-muted-foreground">Nachweise verwalten</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Überwachen Sie alle wichtigen Dokumente und Fristen automatisch.
+              </p>
+              <Button variant="outline" className="w-full" disabled>
+                <FileText className="w-4 h-4 mr-2" />
+                Nachweise prüfen
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Feature Highlights */}
+        <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+          <CardContent className="p-8">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold mb-2">Was Sie mit Nachweis-Meister erreichen:</h2>
+              <p className="text-muted-foreground">Professionelle Compliance-Verwaltung für das Baugewerbe</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="text-center">
+                <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                </div>
+                <h4 className="font-medium text-sm mb-1">Automatische Überwachung</h4>
+                <p className="text-xs text-muted-foreground">Nie wieder abgelaufene Nachweise</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-5 h-5 text-primary" />
+                </div>
+                <h4 className="font-medium text-sm mb-1">Rechtzeitige Erinnerungen</h4>
+                <p className="text-xs text-muted-foreground">Frühzeitige Benachrichtigungen</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-5 h-5 text-accent" />
+                </div>
+                <h4 className="font-medium text-sm mb-1">Vollständige Übersicht</h4>
+                <p className="text-xs text-muted-foreground">Dashboard mit allen Kennzahlen</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="w-5 h-5 text-warning" />
+                </div>
+                <h4 className="font-medium text-sm mb-1">Kritische Warnungen</h4>
+                <p className="text-xs text-muted-foreground">Sofortige Handlungshinweise</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-professional">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Übersicht über alle Nachweise und kritische Fälle
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-professional">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Übersicht über alle Nachweise und kritische Fälle
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/subcontractors">
+              <Users className="w-4 h-4 mr-2" />
+              Nachunternehmer
+            </Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link to="/projects">
+              <FolderOpen className="w-4 h-4 mr-2" />
+              Neues Projekt
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -341,39 +479,97 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <TrendingUp className="mr-2 h-5 w-5" />
-            Schnellaktionen
-          </CardTitle>
-          <CardDescription>
-            Häufig verwendete Funktionen für die tägliche Arbeit
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-3">
-            <Button className="justify-start" asChild>
-              <Link to="/subcontractors">
-                <Users className="mr-2 h-4 w-4" />
-                Nachunternehmer verwalten
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start" asChild>
-              <Link to="/projects">
-                <FolderOpen className="mr-2 h-4 w-4" />
-                Neues Projekt
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start" asChild>
-              <Link to="/review">
-                <FileText className="mr-2 h-4 w-4" />
-                Prüfungsqueue
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <TrendingUp className="mr-2 h-5 w-5" />
+              Schnellaktionen
+            </CardTitle>
+            <CardDescription>
+              Häufig verwendete Funktionen für die tägliche Arbeit
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              <Button className="justify-start h-12" asChild>
+                <Link to="/subcontractors">
+                  <Users className="mr-2 h-4 w-4" />
+                  Nachunternehmer verwalten
+                </Link>
+              </Button>
+              <Button variant="outline" className="justify-start h-12" asChild>
+                <Link to="/projects">
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  Neues Projekt erstellen
+                </Link>
+              </Button>
+              <Button variant="outline" className="justify-start h-12" asChild>
+                <Link to="/review">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Prüfungsqueue öffnen
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Nächste Schritte</CardTitle>
+            <CardDescription>
+              Empfohlene Aktionen für bessere Organisation
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats.totalSubcontractors < 3 && (
+                <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 text-primary mr-2" />
+                    <span className="text-sm font-medium">Weitere Nachunternehmer hinzufügen</span>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/subcontractors">Hinzufügen</Link>
+                  </Button>
+                </div>
+              )}
+              
+              {stats.totalProjects < 2 && (
+                <div className="flex items-center justify-between p-3 bg-accent/5 rounded-lg border border-accent/20">
+                  <div className="flex items-center">
+                    <FolderOpen className="w-4 h-4 text-accent mr-2" />
+                    <span className="text-sm font-medium">Zweites Projekt anlegen</span>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/projects">Erstellen</Link>
+                  </Button>
+                </div>
+              )}
+
+              {stats.inReview > 0 && (
+                <div className="flex items-center justify-between p-3 bg-warning/5 rounded-lg border border-warning/20">
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 text-warning mr-2" />
+                    <span className="text-sm font-medium">{stats.inReview} Nachweise prüfen</span>
+                  </div>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/review">Prüfen</Link>
+                  </Button>
+                </div>
+              )}
+
+              {stats.totalSubcontractors >= 3 && stats.totalProjects >= 2 && stats.inReview === 0 && (
+                <div className="text-center py-4">
+                  <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
+                  <p className="text-sm text-success font-medium">Alles unter Kontrolle!</p>
+                  <p className="text-xs text-muted-foreground">Ihr System läuft optimal.</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

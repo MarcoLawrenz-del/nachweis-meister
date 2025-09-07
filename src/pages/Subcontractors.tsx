@@ -42,7 +42,8 @@ import {
   Users,
   Edit,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -439,20 +440,63 @@ export default function Subcontractors() {
         </CardHeader>
         <CardContent>
           {filteredSubcontractors.length === 0 ? (
-            <div className="text-center py-12">
-              <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Keine Nachunternehmer gefunden</h3>
-              <p className="text-muted-foreground mb-4">
-                {subcontractors.length === 0 
-                  ? "Fügen Sie Ihren ersten Nachunternehmer hinzu, um mit der Compliance-Verwaltung zu beginnen."
-                  : "Ihre Suche ergab keine Treffer. Versuchen Sie andere Suchbegriffe."
-                }
-              </p>
-              {subcontractors.length === 0 && (
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Ersten Nachunternehmer hinzufügen
-                </Button>
+            <div className="text-center py-16">
+              {subcontractors.length === 0 ? (
+                // Empty state - no subcontractors at all
+                <div className="max-w-md mx-auto">
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-10 h-10 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-3">Ihr erster Nachunternehmer</h3>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                    Fügen Sie Nachunternehmer hinzu, um deren Nachweise und Compliance-Status zu verwalten. 
+                    Behalten Sie alle wichtigen Dokumente im Blick und verpassen Sie keine Fristen.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    <Button 
+                      size="lg" 
+                      className="w-full" 
+                      onClick={() => setIsDialogOpen(true)}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Ersten Nachunternehmer hinzufügen
+                    </Button>
+                    
+                    <div className="grid gap-3 text-sm">
+                      <div className="flex items-center text-muted-foreground">
+                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                        Automatische Fristüberwachung
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                        Dokumenten-Management
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                        Compliance-Tracking
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // No search results
+                <div className="max-w-md mx-auto">
+                  <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Keine Suchergebnisse</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Ihre Suche nach "{searchTerm}" ergab keine Treffer. Versuchen Sie andere Suchbegriffe.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSearchTerm('')}
+                    className="w-full"
+                  >
+                    Suche zurücksetzen
+                  </Button>
+                </div>
               )}
             </div>
           ) : (
