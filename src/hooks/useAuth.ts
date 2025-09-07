@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { authRateLimiter, auditLogger } from '@/lib/validation';
+import { sanitizeEmail } from '@/lib/validation';
 
 interface UserProfile {
   id: string;
@@ -12,12 +14,33 @@ interface UserProfile {
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Only synchronous state updates here to avoid deadlocks
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Defer profile fetching with setTimeout to avoid deadlocks
+        if (session?.user) {
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -26,100 +49,210 @@ export function useAuth() {
       }
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
-      }
-    );
-
     return () => subscription.unsubscribe();
   }, []);
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      setProfile(data as UserProfile);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      if (data) {
+        setProfile(data as UserProfile);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Unexpected error fetching profile:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    const sanitizedEmail = sanitizeEmail(email);
+    
+    // Rate limiting check
+    if (!authRateLimiter.isAllowed(sanitizedEmail)) {
+      const remainingTime = Math.ceil(authRateLimiter.getRemainingTime(sanitizedEmail) / 60000);
+      const error = new Error(`Zu viele Anmeldeversuche. Versuchen Sie es in ${remainingTime} Minuten erneut.`);
+      
+      auditLogger.log({
+        action: 'SIGN_IN_RATE_LIMITED',
+        userEmail: sanitizedEmail,
+        details: { remainingTimeMinutes: remainingTime }
+      });
+      
+      return { error };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password,
+      });
+      
+      if (error) {
+        auditLogger.log({
+          action: 'SIGN_IN_FAILED',
+          userEmail: sanitizedEmail,
+          details: { error: error.message }
+        });
+      } else {
+        auditLogger.log({
+          action: 'SIGN_IN_SUCCESS',
+          userEmail: sanitizedEmail
+        });
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('Unexpected sign in error:', error);
+      auditLogger.log({
+        action: 'SIGN_IN_ERROR',
+        userEmail: sanitizedEmail,
+        details: { error: (error as Error).message }
+      });
+      return { error: error as Error };
+    }
   };
 
   const signUp = async (email: string, password: string, userData: { name: string; tenant_name?: string }) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const sanitizedEmail = sanitizeEmail(email);
     
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
-
-    if (error) return { error };
-
-    // Create tenant and user profile
-    if (data.user) {
-      try {
-        // Create tenant first
-        const { data: tenant, error: tenantError } = await (supabase as any)
-          .from('tenants')
-          .insert({ name: userData.tenant_name || 'Meine Firma' })
-          .select()
-          .single();
-
-        if (tenantError) throw tenantError;
-
-        // Create user profile
-        const { error: profileError } = await (supabase as any)
-          .from('users')
-          .insert({
-            id: data.user.id,
-            tenant_id: tenant.id,
-            name: userData.name,
-            email: email,
-            role: 'owner'
-          });
-
-        if (profileError) throw profileError;
-      } catch (error) {
-        console.error('Error creating profile:', error);
-        return { error };
-      }
+    // Rate limiting check
+    if (!authRateLimiter.isAllowed(sanitizedEmail)) {
+      const remainingTime = Math.ceil(authRateLimiter.getRemainingTime(sanitizedEmail) / 60000);
+      const error = new Error(`Zu viele Registrierungsversuche. Versuchen Sie es in ${remainingTime} Minuten erneut.`);
+      
+      auditLogger.log({
+        action: 'SIGN_UP_RATE_LIMITED',
+        userEmail: sanitizedEmail,
+        details: { remainingTimeMinutes: remainingTime }
+      });
+      
+      return { error };
     }
 
-    return { data, error };
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: sanitizedEmail,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      if (error) {
+        auditLogger.log({
+          action: 'SIGN_UP_FAILED',
+          userEmail: sanitizedEmail,
+          details: { error: error.message }
+        });
+        return { error };
+      }
+
+      // Create tenant and user profile only if user was created
+      if (data.user && !data.user.email_confirmed_at) {
+        try {
+          // Create tenant first
+          const { data: tenant, error: tenantError } = await supabase
+            .from('tenants')
+            .insert({ name: userData.tenant_name || 'Meine Firma' })
+            .select()
+            .single();
+
+          if (tenantError) throw tenantError;
+
+          // Create user profile
+          const { error: profileError } = await supabase
+            .from('users')
+            .insert({
+              id: data.user.id,
+              tenant_id: tenant.id,
+              name: userData.name,
+              email: sanitizedEmail,
+              role: 'owner'
+            });
+
+          if (profileError) throw profileError;
+          
+          auditLogger.log({
+            action: 'SIGN_UP_SUCCESS',
+            userId: data.user.id,
+            userEmail: sanitizedEmail,
+            details: { tenantName: userData.tenant_name || 'Meine Firma' }
+          });
+          
+        } catch (profileCreationError) {
+          console.error('Error creating profile:', profileCreationError);
+          auditLogger.log({
+            action: 'PROFILE_CREATION_FAILED',
+            userId: data.user.id,
+            userEmail: sanitizedEmail,
+            details: { error: (profileCreationError as Error).message }
+          });
+          return { error: profileCreationError as Error };
+        }
+      }
+
+      return { data, error };
+    } catch (error) {
+      console.error('Unexpected sign up error:', error);
+      auditLogger.log({
+        action: 'SIGN_UP_ERROR',
+        userEmail: sanitizedEmail,
+        details: { error: (error as Error).message }
+      });
+      return { error: error as Error };
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      const userEmail = user?.email;
+      const { error } = await supabase.auth.signOut();
+      
+      if (!error) {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        
+        auditLogger.log({
+          action: 'SIGN_OUT_SUCCESS',
+          userEmail: userEmail
+        });
+      } else {
+        auditLogger.log({
+          action: 'SIGN_OUT_FAILED',
+          userEmail: userEmail,
+          details: { error: error.message }
+        });
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('Unexpected sign out error:', error);
+      auditLogger.log({
+        action: 'SIGN_OUT_ERROR',
+        userEmail: user?.email,
+        details: { error: (error as Error).message }
+      });
+      return { error: error as Error };
+    }
   };
 
   return {
     user,
+    session,
     profile,
     loading,
     signIn,

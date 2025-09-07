@@ -65,24 +65,29 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Create CSS custom properties safely without dangerouslySetInnerHTML
+  const styleProps = React.useMemo(() => {
+    const styles: Record<string, string> = {};
+    
+    Object.entries(THEMES).forEach(([theme]) => {
+      colorConfig.forEach(([key, itemConfig]) => {
+        const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+        if (color && typeof color === 'string') {
+          // Sanitize color value to prevent CSS injection
+          const sanitizedColor = color.replace(/[^a-zA-Z0-9#(),.\s%-]/g, '');
+          styles[`--color-${key}` as any] = sanitizedColor;
+        }
+      });
+    });
+    
+    return styles;
+  }, [colorConfig]);
+
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
-      }}
+    <div
+      data-chart={id}
+      style={styleProps}
+      className="[&]:contents"
     />
   );
 };
