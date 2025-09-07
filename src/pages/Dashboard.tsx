@@ -60,16 +60,31 @@ export default function Dashboard() {
   const { profile } = useAuthContext();
 
   useEffect(() => {
-    if (profile?.tenant_id) {
+    if (profile) {
       fetchDashboardData();
     }
-  }, [profile?.tenant_id]);
+  }, [profile]);
 
   const fetchDashboardData = async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       setLoading(true);
+
+      // If no tenant_id, set stats to zero to show onboarding
+      if (!profile.tenant_id) {
+        setStats({
+          totalSubcontractors: 0,
+          totalProjects: 0,
+          expiringSoon: 0,
+          expired: 0,
+          inReview: 0,
+          approved: 0
+        });
+        setCriticalItems([]);
+        setLoading(false);
+        return;
+      }
 
       // Fetch basic stats
       const [subcontractorsResult, projectsResult] = await Promise.all([
@@ -194,7 +209,7 @@ export default function Dashboard() {
   }
 
   // Check if user has no data yet (onboarding needed)
-  const hasNoData = stats.totalSubcontractors === 0 && stats.totalProjects === 0;
+  const hasNoData = !profile?.tenant_id || (stats.totalSubcontractors === 0 && stats.totalProjects === 0);
 
   if (hasNoData) {
     return (
