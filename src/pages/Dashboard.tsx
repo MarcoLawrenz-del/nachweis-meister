@@ -225,7 +225,7 @@ export default function Dashboard() {
                 Fügen Sie Ihre ersten Nachunternehmer hinzu und verwalten Sie deren Kontaktdaten.
               </p>
               <Button className="w-full" asChild>
-                <Link to="/subcontractors">
+                <Link to="/app/subcontractors">
                   <Users className="w-4 h-4 mr-2" />
                   Nachunternehmer hinzufügen
                 </Link>
@@ -327,13 +327,13 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/subcontractors">
+            <Link to="/app/subcontractors">
               <Users className="w-4 h-4 mr-2" />
               Nachunternehmer
             </Link>
           </Button>
           <Button size="sm" asChild>
-            <Link to="/projects">
+            <Link to="/app/projects">
               <FolderOpen className="w-4 h-4 mr-2" />
               Neues Projekt
             </Link>
@@ -493,19 +493,19 @@ export default function Dashboard() {
           <CardContent>
             <div className="grid gap-3">
               <Button className="justify-start h-12" asChild>
-                <Link to="/subcontractors">
+                <Link to="/app/subcontractors">
                   <Users className="mr-2 h-4 w-4" />
                   Nachunternehmer verwalten
                 </Link>
               </Button>
               <Button variant="outline" className="justify-start h-12" asChild>
-                <Link to="/projects">
+                <Link to="/app/projects">
                   <FolderOpen className="mr-2 h-4 w-4" />
                   Neues Projekt erstellen
                 </Link>
               </Button>
               <Button variant="outline" className="justify-start h-12" asChild>
-                <Link to="/review">
+                <Link to="/app/review">
                   <FileText className="mr-2 h-4 w-4" />
                   Prüfungsqueue öffnen
                 </Link>
@@ -530,7 +530,7 @@ export default function Dashboard() {
                     <span className="text-sm font-medium">Weitere Nachunternehmer hinzufügen</span>
                   </div>
                   <Button size="sm" variant="outline" asChild>
-                    <Link to="/subcontractors">Hinzufügen</Link>
+                    <Link to="/app/subcontractors">Hinzufügen</Link>
                   </Button>
                 </div>
               )}
@@ -542,7 +542,7 @@ export default function Dashboard() {
                     <span className="text-sm font-medium">Zweites Projekt anlegen</span>
                   </div>
                   <Button size="sm" variant="outline" asChild>
-                    <Link to="/projects">Erstellen</Link>
+                    <Link to="/app/projects">Erstellen</Link>
                   </Button>
                 </div>
               )}
@@ -554,7 +554,7 @@ export default function Dashboard() {
                     <span className="text-sm font-medium">{stats.inReview} Nachweise prüfen</span>
                   </div>
                   <Button size="sm" variant="outline" asChild>
-                    <Link to="/review">Prüfen</Link>
+                    <Link to="/app/review">Prüfen</Link>
                   </Button>
                 </div>
               )}

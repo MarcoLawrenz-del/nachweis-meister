@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
-  { title: "Projekte", url: "/projects", icon: FolderOpen },
-  { title: "Nachunternehmer", url: "/subcontractors", icon: Users },
-  { title: "Prüfungen", url: "/review", icon: FileCheck },
+  { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
+  { title: "Projekte", url: "/app/projects", icon: FolderOpen },
+  { title: "Nachunternehmer", url: "/app/subcontractors", icon: Users },
+  { title: "Prüfungen", url: "/app/review", icon: FileCheck },
 ];
 
 const settingsItems = [
-  { title: "Einstellungen", url: "/settings", icon: Settings },
+  { title: "Einstellungen", url: "/app/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
