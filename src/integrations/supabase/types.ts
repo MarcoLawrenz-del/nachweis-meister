@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      document_types: {
+        Row: {
+          code: string
+          description_de: string | null
+          id: string
+          name_de: string
+          required_by_default: boolean
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          description_de?: string | null
+          id?: string
+          name_de: string
+          required_by_default?: boolean
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          description_de?: string | null
+          id?: string
+          name_de?: string
+          required_by_default?: boolean
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          document_number: string | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          issuer: string | null
+          mime_type: string | null
+          requirement_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          uploaded_at: string
+          uploaded_by: string | null
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          document_number?: string | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          issuer?: string | null
+          mime_type?: string | null
+          requirement_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          document_number?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          issuer?: string | null
+          mime_type?: string | null
+          requirement_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Marco1: {
         Row: {
           company: string | null
@@ -37,6 +123,190 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      project_subs: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          id: string
+          overall_status: string
+          project_id: string
+          subcontractor_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          overall_status?: string
+          project_id: string
+          subcontractor_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          overall_status?: string
+          project_id?: string
+          subcontractor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_subs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_subs_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string
+          id: string
+          name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requirements: {
+        Row: {
+          created_at: string
+          document_type_id: string
+          due_date: string | null
+          escalated: boolean
+          id: string
+          last_reminded_at: string | null
+          project_sub_id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type_id: string
+          due_date?: string | null
+          escalated?: boolean
+          id?: string
+          last_reminded_at?: string | null
+          project_sub_id: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type_id?: string
+          due_date?: string | null
+          escalated?: boolean
+          id?: string
+          last_reminded_at?: string | null
+          project_sub_id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requirements_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requirements_project_sub_id_fkey"
+            columns: ["project_sub_id"]
+            isOneToOne: false
+            referencedRelation: "project_subs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontractors: {
+        Row: {
+          address: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string | null
+          country_code: string
+          created_at: string
+          id: string
+          notes: string | null
+          phone: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          company_name: string
+          contact_email: string
+          contact_name?: string | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontractors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenants: {
         Row: {
