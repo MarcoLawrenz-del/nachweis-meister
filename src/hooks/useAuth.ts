@@ -81,9 +81,14 @@ export function useAuth() {
 
   const createMissingProfile = async (userId: string) => {
     try {
-      // Get user email from auth
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) return;
+      // Ensure we have a valid session first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        console.log('No valid session for profile creation');
+        return;
+      }
+
+      console.log('Creating missing profile for user:', userId);
 
       // Create tenant first
       const { data: tenant, error: tenantError } = await supabase
@@ -97,14 +102,16 @@ export function useAuth() {
         return;
       }
 
+      console.log('Tenant created:', tenant);
+
       // Create user profile
       const { data: newProfile, error: profileError } = await supabase
         .from('users')
         .insert({
           id: userId,
           tenant_id: tenant.id,
-          name: user.email.split('@')[0], // Use email prefix as name
-          email: user.email,
+          name: session.user.email.split('@')[0], // Use email prefix as name
+          email: session.user.email,
           role: 'owner'
         })
         .select()
@@ -115,12 +122,13 @@ export function useAuth() {
         return;
       }
 
+      console.log('Profile created:', newProfile);
       setProfile(newProfile as UserProfile);
       
       auditLogger.log({
         action: 'PROFILE_AUTO_CREATED',
         userId: userId,
-        userEmail: user.email,
+        userEmail: session.user.email,
         details: { tenantId: tenant.id }
       });
       
