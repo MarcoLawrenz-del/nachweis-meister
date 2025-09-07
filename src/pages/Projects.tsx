@@ -65,10 +65,10 @@ export default function Projects() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (profile?.tenant_id) {
+    if (profile) {
       fetchProjects();
     }
-  }, [profile?.tenant_id]);
+  }, [profile]);
 
   useEffect(() => {
     const filtered = projects.filter(project =>
@@ -80,10 +80,17 @@ export default function Projects() {
   }, [projects, searchTerm]);
 
   const fetchProjects = async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       setLoading(true);
+      
+      // If no tenant_id, show empty state to allow user to add first project
+      if (!profile.tenant_id) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
 
       // Fetch projects with subcontractor and requirement stats
       const { data: projectsData, error } = await supabase
@@ -139,13 +146,13 @@ export default function Projects() {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       const { error } = await supabase
         .from('projects')
         .insert({
-          tenant_id: profile.tenant_id,
+          tenant_id: profile.tenant_id || null, // Allow null tenant_id
           name: newProject.name,
           code: newProject.code,
           address: newProject.address || null

@@ -66,10 +66,10 @@ export default function ReviewQueue() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (profile?.tenant_id) {
+    if (profile) {
       fetchReviewItems();
     }
-  }, [profile?.tenant_id]);
+  }, [profile]);
 
   useEffect(() => {
     const filtered = reviewItems.filter(item =>
@@ -82,10 +82,17 @@ export default function ReviewQueue() {
   }, [reviewItems, searchTerm]);
 
   const fetchReviewItems = async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       setLoading(true);
+      
+      // If no tenant_id, show empty state
+      if (!profile.tenant_id) {
+        setReviewItems([]);
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('documents')
