@@ -225,39 +225,119 @@ export default function Dashboard() {
   if (hasNoData) {
     console.log('Showing onboarding UI');
     return (
-      <div className="max-w-4xl mx-auto p-8">
-        <div className="bg-red-100 border-2 border-red-500 p-8 rounded-lg">
-          <h1 className="text-4xl font-bold text-red-800 mb-4">🎉 NEUES ONBOARDING UI! 🎉</h1>
-          <p className="text-xl text-red-700 mb-6">
-            Willkommen bei Nachweis-Meister! Dies ist das neue MeisterTask-Design.
+      <div className="max-w-4xl mx-auto p-6">
+        {/* Welcome Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
+            <Users className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold mb-2 text-gray-900">Willkommen bei Nachweis-Meister!</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Verwalten Sie Ihre Nachunternehmer-Nachweise professionell und behalten Sie alle wichtigen Dokumente im Blick.
           </p>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="bg-white p-6 rounded-lg border-2 border-blue-500">
-              <h3 className="text-lg font-bold text-blue-800 mb-2">Schritt 1</h3>
-              <p className="text-blue-700 mb-4">Nachunternehmer hinzufügen</p>
+        </div>
+
+        {/* Onboarding Steps */}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card className="relative overflow-hidden border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors bg-white">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 1
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 text-gray-900">Nachunternehmer hinzufügen</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Fügen Sie Ihre ersten Nachunternehmer hinzu und verwalten Sie deren Kontaktdaten.
+              </p>
               <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
                 <Link to="/app/subcontractors">
                   <Users className="w-4 h-4 mr-2" />
                   Nachunternehmer hinzufügen
                 </Link>
               </Button>
-            </div>
-            <div className="bg-gray-100 p-6 rounded-lg border-2 border-gray-400">
-              <h3 className="text-lg font-bold text-gray-600 mb-2">Schritt 2</h3>
-              <p className="text-gray-600 mb-4">Projekt erstellen (später)</p>
-              <Button variant="outline" className="w-full" disabled>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-2 border-dashed border-gray-200 bg-white">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 2
+              </div>
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <FolderOpen className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 text-gray-500">Projekt erstellen</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Erstellen Sie Ihr erstes Bauprojekt und weisen Sie Nachunternehmer zu.
+              </p>
+              <Button variant="outline" className="w-full border-gray-300" disabled>
+                <FolderOpen className="w-4 h-4 mr-2" />
                 Projekt erstellen
               </Button>
-            </div>
-            <div className="bg-gray-100 p-6 rounded-lg border-2 border-gray-400">
-              <h3 className="text-lg font-bold text-gray-600 mb-2">Schritt 3</h3>
-              <p className="text-gray-600 mb-4">Nachweise verwalten (später)</p>
-              <Button variant="outline" className="w-full" disabled>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-2 border-dashed border-gray-200 bg-white">
+            <CardContent className="p-6 text-center">
+              <div className="absolute top-4 right-4 bg-gray-400 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                Schritt 3
+              </div>
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 text-gray-500">Nachweise verwalten</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Überwachen Sie alle wichtigen Dokumente und Fristen automatisch.
+              </p>
+              <Button variant="outline" className="w-full border-gray-300" disabled>
+                <FileText className="w-4 h-4 mr-2" />
                 Nachweise prüfen
               </Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Feature Highlights */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-8">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold mb-2 text-gray-900">Was Sie mit Nachweis-Meister erreichen:</h2>
+              <p className="text-gray-600">Professionelle Compliance-Verwaltung für das Baugewerbe</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="text-center">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <h4 className="font-medium text-sm mb-1 text-gray-900">Automatische Überwachung</h4>
+                <p className="text-xs text-gray-600">Nie wieder abgelaufene Nachweise</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                </div>
+                <h4 className="font-medium text-sm mb-1 text-gray-900">Rechtzeitige Erinnerungen</h4>
+                <p className="text-xs text-gray-600">Frühzeitige Benachrichtigungen</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                </div>
+                <h4 className="font-medium text-sm mb-1 text-gray-900">Vollständige Übersicht</h4>
+                <p className="text-xs text-gray-600">Dashboard mit allen Kennzahlen</p>
+              </div>
+              <div className="text-center">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                </div>
+                <h4 className="font-medium text-sm mb-1 text-gray-900">Kritische Warnungen</h4>
+                <p className="text-xs text-gray-600">Sofortige Handlungshinweise</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
