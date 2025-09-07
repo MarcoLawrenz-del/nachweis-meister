@@ -22,15 +22,19 @@ const queryClient = new QueryClient();
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthContext();
   
+  console.log('ProtectedRoute - loading:', loading, 'user:', !!user);
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Laden...</p>
       </div>
     );
   }
   
   if (!user) {
+    console.log('ProtectedRoute - No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
