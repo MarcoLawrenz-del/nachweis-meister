@@ -59,6 +59,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { profile } = useAuthContext();
 
+  console.log('Dashboard rendering, profile:', profile);
+  console.log('Dashboard stats:', stats);
+  console.log('Dashboard loading:', loading);
+
   useEffect(() => {
     if (profile) {
       fetchDashboardData();
@@ -192,6 +196,10 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard lädt...</h1>
+          <p className="text-muted-foreground">Einen Moment bitte</p>
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -210,8 +218,12 @@ export default function Dashboard() {
 
   // Check if user has no data yet (onboarding needed)
   const hasNoData = !profile?.tenant_id || (stats.totalSubcontractors === 0 && stats.totalProjects === 0);
+  
+  console.log('hasNoData check:', hasNoData);
+  console.log('profile?.tenant_id:', profile?.tenant_id);
 
   if (hasNoData) {
+    console.log('Showing onboarding UI');
     return (
       <div className="max-w-4xl mx-auto">
         {/* Welcome Header */}
