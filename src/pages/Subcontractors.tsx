@@ -82,10 +82,10 @@ export default function Subcontractors() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (profile?.tenant_id) {
+    if (profile) {
       fetchSubcontractors();
     }
-  }, [profile?.tenant_id]);
+  }, [profile]);
 
   useEffect(() => {
     const filtered = subcontractors.filter(sub =>
@@ -97,10 +97,17 @@ export default function Subcontractors() {
   }, [subcontractors, searchTerm]);
 
   const fetchSubcontractors = async () => {
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       setLoading(true);
+      
+      // If no tenant_id, show empty state to allow user to add first subcontractor  
+      if (!profile.tenant_id) {
+        setSubcontractors([]);
+        setLoading(false);
+        return;
+      }
       
       const { data: subcontractorsData, error } = await supabase
         .from('subcontractors')
@@ -160,11 +167,11 @@ export default function Subcontractors() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.tenant_id) return;
+    if (!profile) return;
 
     try {
       const subData = {
-        tenant_id: profile.tenant_id,
+        tenant_id: profile.tenant_id || null, // Allow null tenant_id
         company_name: newSubcontractor.company_name,
         contact_name: newSubcontractor.contact_name || null,
         contact_email: newSubcontractor.contact_email,
