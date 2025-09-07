@@ -44,14 +44,14 @@ export function useAuth() {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      setProfile(data as UserProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -84,7 +84,7 @@ export function useAuth() {
     if (data.user) {
       try {
         // Create tenant first
-        const { data: tenant, error: tenantError } = await supabase
+        const { data: tenant, error: tenantError } = await (supabase as any)
           .from('tenants')
           .insert({ name: userData.tenant_name || 'Meine Firma' })
           .select()
@@ -93,7 +93,7 @@ export function useAuth() {
         if (tenantError) throw tenantError;
 
         // Create user profile
-        const { error: profileError } = await supabase
+        const { error: profileError } = await (supabase as any)
           .from('users')
           .insert({
             id: data.user.id,
