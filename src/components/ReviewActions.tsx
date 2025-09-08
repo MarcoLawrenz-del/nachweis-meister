@@ -1,0 +1,117 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { useReviews } from '@/hooks/useReviews';
+
+interface ReviewActionsProps {
+  requirementId: string;
+  onActionComplete?: () => void;
+  disabled?: boolean;
+}
+
+export const ReviewActions = ({ requirementId, onActionComplete, disabled }: ReviewActionsProps) => {
+  const [action, setAction] = useState<'approve' | 'reject' | 'escalate' | null>(null);
+  const [reason, setReason] = useState('');
+  const { submitReview, isLoading } = useReviews();
+
+  const handleSubmit = async () => {
+    if (!action) return;
+    
+    await submitReview({
+      requirementId,
+      action,
+      reason: action === 'reject' ? reason : undefined,
+      escalationReason: action === 'escalate' ? reason : undefined,
+    });
+    
+    setAction(null);
+    setReason('');
+    onActionComplete?.();
+  };
+
+  const handleCancel = () => {
+    setAction(null);
+    setReason('');
+  };
+
+  if (action) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {action === 'approve' && <CheckCircle className="h-5 w-5 text-green-600" />}
+            {action === 'reject' && <XCircle className="h-5 w-5 text-red-600" />}
+            {action === 'escalate' && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
+            {action === 'approve' && 'Dokument genehmigen'}
+            {action === 'reject' && 'Dokument ablehnen'}
+            {action === 'escalate' && 'Dokument eskalieren'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {(action === 'reject' || action === 'escalate') && (
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                {action === 'reject' ? 'Ablehnungsgrund' : 'Eskalationsgrund'}
+              </label>
+              <Textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={
+                  action === 'reject' 
+                    ? 'Bitte geben Sie den Grund für die Ablehnung an...'
+                    : 'Bitte geben Sie den Grund für die Eskalation an...'
+                }
+                rows={3}
+              />
+            </div>
+          )}
+          
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSubmit} 
+              disabled={isLoading || (action !== 'approve' && !reason.trim())}
+              variant={action === 'approve' ? 'default' : action === 'reject' ? 'destructive' : 'secondary'}
+            >
+              {isLoading ? 'Wird verarbeitet...' : 'Bestätigen'}
+            </Button>
+            <Button onClick={handleCancel} variant="outline" disabled={isLoading}>
+              Abbrechen
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        onClick={() => setAction('approve')}
+        disabled={disabled || isLoading}
+        variant="default"
+        className="bg-green-600 hover:bg-green-700 text-white"
+      >
+        <CheckCircle className="h-4 w-4 mr-2" />
+        Genehmigen
+      </Button>
+      <Button
+        onClick={() => setAction('reject')}
+        disabled={disabled || isLoading}
+        variant="destructive"
+      >
+        <XCircle className="h-4 w-4 mr-2" />
+        Ablehnen
+      </Button>
+      <Button
+        onClick={() => setAction('escalate')}
+        disabled={disabled || isLoading}
+        variant="secondary"
+      >
+        <AlertTriangle className="h-4 w-4 mr-2" />
+        Eskalieren
+      </Button>
+    </div>
+  );
+};

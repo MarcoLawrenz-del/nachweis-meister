@@ -1,619 +1,401 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { supabase } from '@/integrations/supabase/client';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  ArrowLeft,
-  FileText,
-  Download,
-  Eye,
-  CheckCircle,
-  XCircle,
-  Building2,
-  User,
-  Calendar,
-  Clock,
-  AlertTriangle,
-  FileCheck,
-  FileX
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, FileText, Calendar, User, Building2, Download, Eye, Clock, AlertTriangle } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { ReviewActions } from '@/components/ReviewActions';
+import { ReviewerAssignment } from '@/components/ReviewerAssignment';
 
-interface DocumentDetail {
-  id: string;
-  file_name: string;
-  file_url: string;
-  file_size: number;
-  mime_type: string | null;
-  valid_from: string | null;
-  valid_to: string | null;
-  uploaded_at: string;
-  uploaded_by: string | null;
-  reviewed_at: string | null;
-  reviewed_by: string | null;
-  document_number: string | null;
-  issuer: string | null;
-  requirement: {
-    id: string;
-    status: string;
-    rejection_reason: string | null;
-    due_date: string | null;
-    escalated: boolean;
-    project_sub: {
-      id: string;
-      project: {
-        id: string;
-        name: string;
-        code: string;
-      };
-      subcontractor: {
-        id: string;
-        company_name: string;
-        contact_name: string | null;
-        contact_email: string;
-      };
-    };
-    document_type: {
-      id: string;
-      name_de: string;
-      description_de: string | null;
-      code: string;
-    };
-  };
-}
-
-export default function DocumentDetail() {
-  const { documentId } = useParams();
+export function DocumentDetail() {
+  const { id } = useParams();
+  const [requirement, setRequirement] = useState<any>(null);
+  const [reviewHistory, setReviewHistory] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [document, setDocument] = useState<DocumentDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const { profile } = useAuthContext();
-  const { toast } = useToast();
 
   useEffect(() => {
-    if (documentId && profile) {
-      fetchDocument();
+    fetchRequirement();
+    getCurrentUser();
+  }, [id]);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      setCurrentUser(data);
     }
-  }, [documentId, profile]);
+  };
 
-  const fetchDocument = async () => {
-    if (!documentId || !profile) return;
-
+  const fetchRequirement = async () => {
+    if (!id) return;
+    
+    setIsLoading(true);
     try {
-      setLoading(true);
-
       const { data, error } = await supabase
-        .from('documents')
+        .from('requirements')
         .select(`
-          id,
-          file_name,
-          file_url,
-          file_size,
-          mime_type,
-          valid_from,
-          valid_to,
-          uploaded_at,
-          uploaded_by,
-          reviewed_at,
-          reviewed_by,
-          document_number,
-          issuer,
-          requirement:requirements!inner (
-            id,
-            status,
-            rejection_reason,
-            due_date,
-            escalated,
-            project_sub:project_subs!inner (
-              id,
-              project:projects!inner (
-                id,
-                name,
-                code
-              ),
-              subcontractor:subcontractors!inner (
-                id,
-                company_name,
-                contact_name,
-                contact_email
-              )
-            ),
-            document_type:document_types!inner (
-              id,
-              name_de,
-              description_de,
-              code
+          *,
+          project_sub:project_subs!inner(
+            project:projects!inner(name, code, address, tenant_id),
+            subcontractor:subcontractors!inner(
+              company_name, 
+              contact_name, 
+              contact_email, 
+              phone, 
+              address
             )
-          )
+          ),
+          document_type:document_types!inner(name_de, description_de, code),
+          documents(*),
+          assigned_reviewer:users(name, email, role),
+          reviewed_by_user:users!requirements_reviewed_by_fkey(name, email)
         `)
-        .eq('id', documentId)
+        .eq('id', id)
         .single();
 
       if (error) throw error;
-
-      setDocument(data);
+      setRequirement(data);
+      
+      // Fetch review history
+      const { data: history } = await supabase
+        .from('review_history')
+        .select(`
+          *,
+          reviewer:users!review_history_reviewer_id_fkey(name, email)
+        `)
+        .eq('requirement_id', id)
+        .order('created_at', { ascending: false });
+        
+      setReviewHistory(history || []);
     } catch (error) {
-      console.error('Error fetching document:', error);
-      toast({
-        title: "Fehler",
-        description: "Dokument konnte nicht geladen werden.",
-        variant: "destructive"
-      });
-      navigate('/app/review-queue');
+      console.error('Error fetching requirement:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleApprove = async () => {
-    if (!document) return;
-
-    try {
-      setActionLoading(true);
-
-      const { error } = await supabase
-        .from('requirements')
-        .update({ 
-          status: 'valid',
-          reviewed_by: profile?.id,
-          reviewed_at: new Date().toISOString(),
-          rejection_reason: null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', document.requirement.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Dokument genehmigt",
-        description: `${document.requirement.document_type.name_de} wurde genehmigt.`
-      });
-
-      fetchDocument();
-    } catch (error: any) {
-      console.error('Error approving document:', error);
-      toast({
-        title: "Fehler",
-        description: "Dokument konnte nicht genehmigt werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setActionLoading(false);
-    }
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Nicht gesetzt';
+    return new Date(dateString).toLocaleDateString('de-DE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
-  const handleReject = async () => {
-    if (!document || !rejectionReason.trim()) return;
-
-    try {
-      setActionLoading(true);
-
-      const { error } = await supabase
-        .from('requirements')
-        .update({ 
-          status: 'missing',
-          reviewed_by: profile?.id,
-          reviewed_at: new Date().toISOString(),
-          rejection_reason: rejectionReason.trim(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', document.requirement.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Dokument abgelehnt",
-        description: `${document.requirement.document_type.name_de} wurde abgelehnt.`
-      });
-
-      setRejectionReason('');
-      fetchDocument();
-    } catch (error: any) {
-      console.error('Error rejecting document:', error);
-      toast({
-        title: "Fehler",
-        description: "Dokument konnte nicht abgelehnt werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setActionLoading(false);
-    }
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return 'Nicht gesetzt';
+    return new Date(dateString).toLocaleString('de-DE');
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getDaysUntilExpiry = (validTo: string | null) => {
-    if (!validTo) return null;
-    const days = Math.ceil((new Date(validTo).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-    return days;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'valid': return 'success';
-      case 'in_review': return 'warning';
-      case 'missing': return 'destructive';
-      case 'expired': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'valid': return <FileCheck className="h-4 w-4" />;
-      case 'in_review': return <Clock className="h-4 w-4" />;
-      case 'missing': return <FileX className="h-4 w-4" />;
-      case 'expired': return <AlertTriangle className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
-    }
-  };
-
-  if (loading) {
+  const canReview = () => {
+    if (!currentUser || !requirement) return false;
+    
+    // Can review if assigned as reviewer or has admin/owner role
     return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <div className="h-10 w-10 bg-muted rounded animate-pulse"></div>
-          <div className="space-y-2">
-            <div className="h-8 bg-muted rounded w-64 animate-pulse"></div>
-            <div className="h-4 bg-muted rounded w-48 animate-pulse"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-4 bg-muted rounded"></div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="space-y-6">
-            <Card className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-4 bg-muted rounded"></div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      requirement.assigned_reviewer_id === currentUser.id ||
+      ['owner', 'admin'].includes(currentUser.role)
+    );
+  };
+
+  const canAssignReviewer = () => {
+    if (!currentUser) return false;
+    return ['owner', 'admin', 'staff'].includes(currentUser.role);
+  };
+
+  const getActionLabel = (action: string) => {
+    const labels = {
+      'assigned': 'Zugewiesen',
+      'approved': 'Genehmigt',
+      'rejected': 'Abgelehnt',
+      'escalated': 'Eskaliert',
+      'updated': 'Aktualisiert',
+    };
+    return labels[action as keyof typeof labels] || action;
+  };
+
+  const isOverdue = (dueDate: string | null) => {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date();
+  };
+
+  if (isLoading) {
+    return <div className="p-6">Lade Dokument...</div>;
+  }
+
+  if (!requirement) {
+    return (
+      <div className="p-6 text-center">
+        <h2 className="text-xl font-semibold mb-2">Dokument nicht gefunden</h2>
+        <p className="text-muted-foreground mb-4">Das angeforderte Dokument existiert nicht oder Sie haben keine Berechtigung.</p>
+        <Button onClick={() => navigate('/app/review')}>Zurück zur Prüfungsqueue</Button>
       </div>
     );
   }
-
-  if (!document) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <FileText className="h-12 w-12 text-muted-foreground" />
-        <h3 className="text-lg font-semibold">Dokument nicht gefunden</h3>
-        <p className="text-muted-foreground text-center">
-          Das angeforderte Dokument existiert nicht oder Sie haben keine Berechtigung darauf zuzugreifen.
-        </p>
-        <Button onClick={() => navigate('/app/review-queue')}>
-          Zurück zur Prüfungsqueue
-        </Button>
-      </div>
-    );
-  }
-
-  const daysUntilExpiry = getDaysUntilExpiry(document.valid_to);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Zurück
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-professional">{document.requirement.document_type.name_de}</h1>
-            <p className="text-muted-foreground">
-              {document.requirement.project_sub.subcontractor.company_name} • {document.requirement.project_sub.project.name}
-            </p>
-          </div>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => navigate('/app/review')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Zurück
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold">{requirement.document_type.name_de}</h1>
+          <p className="text-muted-foreground">
+            {requirement.project_sub.subcontractor.company_name} • {requirement.project_sub.project.name}
+          </p>
         </div>
-        <StatusBadge 
-          status={document.requirement.status as any} 
-          className="text-sm"
-        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Document Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="mr-2 h-5 w-5" />
-                Dokumentinformationen
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Dateiname</Label>
-                  <p className="font-medium">{document.file_name}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Dateigröße</Label>
-                  <p className="font-medium">{formatFileSize(document.file_size)}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">MIME-Type</Label>
-                  <p className="font-medium">{document.mime_type || 'Nicht angegeben'}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Dokumentennummer</Label>
-                  <p className="font-medium">{document.document_number || 'Nicht angegeben'}</p>
-                </div>
-                {document.issuer && (
-                  <div className="col-span-2">
-                    <Label className="text-muted-foreground">Aussteller</Label>
-                    <p className="font-medium">{document.issuer}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex space-x-4 pt-4">
-                <Button variant="outline" asChild>
-                  <a href={document.file_url} target="_blank" rel="noopener noreferrer">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Dokument ansehen
-                  </a>
-                </Button>
-                <Button variant="outline" asChild>
-                  <a href={document.file_url} download={document.file_name}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Herunterladen
-                  </a>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Validity Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                Gültigkeit
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {document.valid_from || document.valid_to ? (
-                <div className="space-y-3">
-                  {document.valid_from && (
-                    <div>
-                      <Label className="text-muted-foreground">Gültig ab</Label>
-                      <p className="font-medium">
-                        {format(new Date(document.valid_from), 'dd.MM.yyyy', { locale: de })}
-                      </p>
-                    </div>
+      <div className="grid gap-6">
+        {/* Grundinformationen */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Grundinformationen</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Status</label>
+                <div className="mt-1 flex items-center gap-2">
+                  <StatusBadge status={requirement.status} />
+                  {requirement.escalated && (
+                    <Badge variant="destructive" className="flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Eskaliert
+                    </Badge>
                   )}
-                  {document.valid_to && (
-                    <div>
-                      <Label className="text-muted-foreground">Gültig bis</Label>
-                      <p className={`font-medium ${daysUntilExpiry && daysUntilExpiry < 30 ? 'text-warning' : ''}`}>
-                        {format(new Date(document.valid_to), 'dd.MM.yyyy', { locale: de })}
-                        {daysUntilExpiry !== null && (
-                          <span className="ml-2 text-sm">
-                            ({daysUntilExpiry > 0 ? `${daysUntilExpiry} Tage verbleibend` : 'Abgelaufen'})
-                          </span>
-                        )}
-                      </p>
-                    </div>
+                  {requirement.review_priority === 'high' && (
+                    <Badge variant="secondary">Hohe Priorität</Badge>
                   )}
                 </div>
-              ) : (
-                <p className="text-muted-foreground">Keine Gültigkeitsdaten angegeben</p>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Dokumenttyp</label>
+                <p className="mt-1">{requirement.document_type.name_de}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
+                <p className={`mt-1 ${isOverdue(requirement.due_date) ? 'text-red-600 font-medium' : ''}`}>
+                  {formatDate(requirement.due_date)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Erstellt am</label>
+                <p className="mt-1">{formatDate(requirement.created_at)}</p>
+              </div>
+            </div>
+            
+            {requirement.assigned_reviewer && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Zugewiesener Prüfer</label>
+                <p className="mt-1">{requirement.assigned_reviewer.name} ({requirement.assigned_reviewer.email})</p>
+              </div>
+            )}
 
-          {/* Rejection Reason */}
-          {document.requirement.rejection_reason && (
-            <Card className="border-destructive">
-              <CardHeader>
-                <CardTitle className="flex items-center text-destructive">
-                  <XCircle className="mr-2 h-5 w-5" />
-                  Ablehnungsgrund
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{document.requirement.rejection_reason}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            {requirement.reviewed_by_user && requirement.reviewed_at && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Geprüft von</label>
+                <p className="mt-1">{requirement.reviewed_by_user.name} am {formatDateTime(requirement.reviewed_at)}</p>
+              </div>
+            )}
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Status & Actions */}
+            {requirement.rejection_reason && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <label className="text-sm font-medium text-red-800">Ablehnungsgrund</label>
+                <p className="mt-1 text-sm text-red-700">{requirement.rejection_reason}</p>
+              </div>
+            )}
+
+            {requirement.escalation_reason && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <label className="text-sm font-medium text-yellow-800">Eskalationsgrund</label>
+                <p className="mt-1 text-sm text-yellow-700">{requirement.escalation_reason}</p>
+              </div>
+            )}
+            
+            {requirement.document_type.description_de && (
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Beschreibung</label>
+                <p className="mt-1 text-sm">{requirement.document_type.description_de}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Projekt- und Subunternehmer-Informationen */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                {getStatusIcon(document.requirement.status)}
-                <span className="ml-2">Status</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <StatusBadge status={document.requirement.status as any} />
-              
-              {document.requirement.status === 'in_review' && (
-                <div className="space-y-2">
-                  <Button 
-                    className="w-full bg-success text-success-foreground hover:bg-success/90"
-                    onClick={handleApprove}
-                    disabled={actionLoading}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Genehmigen
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive" className="w-full">
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Ablehnen
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Dokument ablehnen</DialogTitle>
-                        <DialogDescription>
-                          Geben Sie einen Grund für die Ablehnung an.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="rejection_reason">Grund für die Ablehnung *</Label>
-                          <Textarea
-                            id="rejection_reason"
-                            placeholder="z.B. Dokument ist nicht lesbar, falscher Dokumenttyp, abgelaufen..."
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            rows={4}
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setRejectionReason('')}
-                        >
-                          Abbrechen
-                        </Button>
-                        <Button 
-                          variant="destructive"
-                          onClick={handleReject}
-                          disabled={!rejectionReason.trim() || actionLoading}
-                        >
-                          Ablehnen
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Project Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Building2 className="mr-2 h-5 w-5" />
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
                 Projekt
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <Label className="text-muted-foreground">Name</Label>
-                <p className="font-medium">{document.requirement.project_sub.project.name}</p>
+                <label className="text-sm font-medium text-muted-foreground">Projektname</label>
+                <p className="mt-1">{requirement.project_sub.project.name}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Code</Label>
-                <p className="font-medium">{document.requirement.project_sub.project.code}</p>
+                <label className="text-sm font-medium text-muted-foreground">Projektcode</label>
+                <p className="mt-1">{requirement.project_sub.project.code}</p>
               </div>
+              {requirement.project_sub.project.address && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Adresse</label>
+                  <p className="mt-1">{requirement.project_sub.project.address}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Subcontractor Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="mr-2 h-5 w-5" />
-                Nachunternehmer
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Subunternehmer
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <Label className="text-muted-foreground">Unternehmen</Label>
-                <p className="font-medium">{document.requirement.project_sub.subcontractor.company_name}</p>
+                <label className="text-sm font-medium text-muted-foreground">Unternehmen</label>
+                <p className="mt-1">{requirement.project_sub.subcontractor.company_name}</p>
               </div>
-              {document.requirement.project_sub.subcontractor.contact_name && (
-                <div>
-                  <Label className="text-muted-foreground">Ansprechpartner</Label>
-                  <p className="font-medium">{document.requirement.project_sub.subcontractor.contact_name}</p>
-                </div>
-              )}
               <div>
-                <Label className="text-muted-foreground">E-Mail</Label>
-                <p className="font-medium">{document.requirement.project_sub.subcontractor.contact_email}</p>
+                <label className="text-sm font-medium text-muted-foreground">Kontaktperson</label>
+                <p className="mt-1">{requirement.project_sub.subcontractor.contact_name}</p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Clock className="mr-2 h-5 w-5" />
-                Zeitlinie
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
               <div>
-                <Label className="text-muted-foreground">Hochgeladen</Label>
-                <p className="font-medium">
-                  {format(new Date(document.uploaded_at), 'dd.MM.yyyy HH:mm', { locale: de })}
-                </p>
+                <label className="text-sm font-medium text-muted-foreground">E-Mail</label>
+                <p className="mt-1">{requirement.project_sub.subcontractor.contact_email}</p>
               </div>
-              {document.reviewed_at && (
+              {requirement.project_sub.subcontractor.phone && (
                 <div>
-                  <Label className="text-muted-foreground">Geprüft</Label>
-                  <p className="font-medium">
-                    {format(new Date(document.reviewed_at), 'dd.MM.yyyy HH:mm', { locale: de })}
-                  </p>
-                </div>
-              )}
-              {document.requirement.due_date && (
-                <div>
-                  <Label className="text-muted-foreground">Fälligkeitsdatum</Label>
-                  <p className="font-medium">
-                    {format(new Date(document.requirement.due_date), 'dd.MM.yyyy', { locale: de })}
-                  </p>
+                  <label className="text-sm font-medium text-muted-foreground">Telefon</label>
+                  <p className="mt-1">{requirement.project_sub.subcontractor.phone}</p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Dokumente */}
+        {requirement.documents && requirement.documents.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Hochgeladene Dokumente</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {requirement.documents.map((doc: any) => (
+                  <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{doc.file_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Hochgeladen am {formatDate(doc.uploaded_at)}
+                          {doc.file_size && ` • ${Math.round(doc.file_size / 1024)} KB`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => window.open(doc.file_url, '_blank')}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Anzeigen
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = doc.file_url;
+                          a.download = doc.file_name;
+                          a.click();
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Review Actions */}
+        {canReview() && requirement.status === 'uploaded' && (
+          <ReviewActions 
+            requirementId={requirement.id}
+            onActionComplete={fetchRequirement}
+          />
+        )}
+
+        {/* Reviewer Assignment */}
+        {canAssignReviewer() && (
+          <ReviewerAssignment 
+            requirementId={requirement.id}
+            currentReviewerId={requirement.assigned_reviewer_id}
+            tenantId={requirement.project_sub.project.tenant_id}
+            onAssignmentComplete={fetchRequirement}
+          />
+        )}
+
+        {/* Review History */}
+        {reviewHistory.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Prüfungsverlauf
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {reviewHistory.map((entry) => (
+                  <div key={entry.id} className="flex items-start gap-3 p-3 border-l-2 border-muted">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{getActionLabel(entry.action)}</span>
+                        <Badge variant="outline">{entry.action}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        von {entry.reviewer?.name} • {formatDateTime(entry.created_at)}
+                      </p>
+                      {entry.old_status && entry.new_status && (
+                        <p className="text-sm">
+                          Status: {entry.old_status} → {entry.new_status}
+                        </p>
+                      )}
+                      {entry.comment && (
+                        <p className="text-sm mt-2 p-2 bg-muted rounded">
+                          {entry.comment}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
