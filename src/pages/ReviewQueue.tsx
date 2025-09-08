@@ -387,11 +387,9 @@ export default function ReviewQueue() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={item.file_url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ansehen
-                            </a>
+                          <Button variant="outline" size="sm" onClick={() => window.location.href = `/app/documents/${item.id}`}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Details
                           </Button>
                           <Button 
                             size="sm" 
