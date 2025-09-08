@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { authRateLimiter, auditLogger } from '@/lib/validation';
-import { sanitizeEmail } from '@/lib/validation';
+import { sanitizeEmail, authRateLimiter, auditLogger } from '@/lib/validation';
 
+// User Profile Interface
 interface UserProfile {
   id: string;
-  tenant_id: string;
+  tenant_id: string | null;
   name: string;
   email: string;
-  role: 'admin' | 'owner' | 'staff';
+  role: 'owner' | 'admin' | 'staff';
 }
 
 export function useAuth() {
@@ -19,18 +19,18 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        // Only synchronous state updates here to avoid deadlocks
+      async (event, session) => {
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer profile fetching with setTimeout to avoid deadlocks
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
+          await fetchProfile(session.user.id);
         } else {
           setProfile(null);
           setLoading(false);
@@ -38,18 +38,27 @@ export function useAuth() {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session only once
+    const initSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
+      
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
       } else {
         setLoading(false);
       }
-    });
+    };
+    
+    initSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchProfile = async (userId: string) => {
@@ -205,7 +214,7 @@ export function useAuth() {
           userEmail: sanitizedEmail
         });
       }
-      
+
       return { error };
     } catch (error) {
       console.error('Unexpected sign in error:', error);
@@ -252,41 +261,63 @@ export function useAuth() {
           userEmail: sanitizedEmail,
           details: { error: error.message }
         });
-        return { error };
+        return { data, error };
       }
 
-      // Create tenant and user profile only if user was created
+      auditLogger.log({
+        action: 'SIGN_UP_SUCCESS',
+        userId: data.user?.id,
+        userEmail: sanitizedEmail
+      });
+
+      // If signup is successful and user is confirmed, create their profile
       if (data.user && !data.user.email_confirmed_at) {
+        // User needs to confirm email first
+        console.log('User registered but needs email confirmation');
+      } else if (data.user) {
+        // User is immediately confirmed, create profile
         try {
-          // Create tenant first
-          const { data: tenant, error: tenantError } = await supabase
-            .from('tenants')
-            .insert({ name: userData.tenant_name || 'Meine Firma' })
-            .select()
-            .single();
+          // Create tenant first if tenant_name is provided
+          let tenantId = null;
+          if (userData.tenant_name) {
+            const { data: tenant, error: tenantError } = await supabase
+              .from('tenants')
+              .insert({ name: userData.tenant_name })
+              .select()
+              .single();
+            
+            if (tenantError) {
+              console.error('Error creating tenant during signup:', tenantError);
+            } else {
+              tenantId = tenant.id;
+            }
+          }
 
-          if (tenantError) throw tenantError;
-
-          // Create user profile
           const { error: profileError } = await supabase
             .from('users')
             .insert({
               id: data.user.id,
-              tenant_id: tenant.id,
+              tenant_id: tenantId,
               name: userData.name,
               email: sanitizedEmail,
               role: 'owner'
             });
 
-          if (profileError) throw profileError;
-          
-          auditLogger.log({
-            action: 'SIGN_UP_SUCCESS',
-            userId: data.user.id,
-            userEmail: sanitizedEmail,
-            details: { tenantName: userData.tenant_name || 'Meine Firma' }
-          });
-          
+          if (profileError) {
+            console.error('Error creating profile during signup:', profileError);
+            auditLogger.log({
+              action: 'PROFILE_CREATION_FAILED',
+              userId: data.user.id,
+              userEmail: sanitizedEmail,
+              details: { error: profileError.message }
+            });
+          } else {
+            auditLogger.log({
+              action: 'PROFILE_CREATED',
+              userId: data.user.id,
+              userEmail: sanitizedEmail
+            });
+          }
         } catch (profileCreationError) {
           console.error('Error creating profile:', profileCreationError);
           auditLogger.log({
