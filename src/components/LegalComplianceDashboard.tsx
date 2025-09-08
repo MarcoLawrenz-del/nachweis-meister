@@ -174,13 +174,13 @@ export function LegalComplianceDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Legal Warning Alert */}
+      {/* Legal Warning Alert - Bausicht Style */}
       <Alert className="border-destructive/50 bg-destructive/5">
-        <Scale className="h-4 w-4" />
-        <AlertDescription className="text-sm">
-          <strong>Rechtlicher Hinweis:</strong> Diese Dokumente sind gesetzlich erforderlich, um Haftungsrisiken zu minimieren. 
-          Fehlen diese, kann der Hauptunternehmer den Werklohn zurückhalten (§ Zurückbehaltungsrecht). 
-          Der Generalunternehmer haftet für Sozialabgaben, Mindestlohn etc., wenn Dokumente fehlen.
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Rechtliche Sicherheit & Compliance:</strong> Diese Dokumente sind gesetzlich erforderlich, um Rechts- und Haftungssicherheit zu gewährleisten. 
+          Ohne Freistellungsbescheinigung (§ 48b EStG) droht Bauabzugssteuer oder Haftung. Bei fehlender Dokumentation 
+          (Sozialversicherungsnachweise, Mindestlohn) haftet der Generalunternehmer.
         </AlertDescription>
       </Alert>
 
@@ -247,52 +247,58 @@ export function LegalComplianceDashboard() {
 
       {/* Legal Documents Overview */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Mandatory Documents */}
+        {/* Chargenpflichtige Dokumente (Pflicht) - Bausicht */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Shield className="mr-2 h-5 w-5 text-destructive" />
-              Pflichtdokumente (Rechtlich erforderlich)
+              <Scale className="mr-2 h-5 w-5 text-destructive" />
+              Chargenpflichtige Dokumente (Pflicht)
             </CardTitle>
             <CardDescription>
-              Diese Dokumente sind gesetzlich vorgeschrieben und müssen für alle Nachunternehmer vorliegen.
+              Diese 8 Dokumente sind zwingend erforderlich nach Bausicht-Standards für rechtskonforme Nachunternehmer-Aufnahme.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {mandatoryDocuments.map((doc, index) => (
-              <div key={doc.code} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+              <div key={doc.code} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-destructive/20">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold">
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm">{doc.name_de}</h4>
                   <p className="text-xs text-muted-foreground mt-1">{doc.description_de}</p>
+                  <Badge className="bg-destructive text-destructive-foreground text-xs mt-2">
+                    Chargenpflichtig
+                  </Badge>
                 </div>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Optional Documents */}
+        {/* Optionale, empfohlene Unterlagen - Bausicht */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5 text-muted-foreground" />
-              Empfohlene Dokumente (Optional)
+              <FileText className="mr-2 h-5 w-5 text-success" />
+              Optionale, empfohlene Unterlagen
             </CardTitle>
             <CardDescription>
-              Rechtlich nicht zwingend erforderlich, aber empfohlen für zusätzliche Sicherheit.
+              Nicht Bausicht-spezifisch erforderlich, aber nützlich für erweiterte Compliance und Transparenz.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {optionalDocuments.map((doc, index) => (
-              <div key={doc.code} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs flex items-center justify-center font-semibold">
+              <div key={doc.code} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-success/20">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-success text-success-foreground text-xs flex items-center justify-center font-semibold">
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm">{doc.name_de}</h4>
                   <p className="text-xs text-muted-foreground mt-1">{doc.description_de}</p>
+                  <Badge variant="outline" className="text-success border-success text-xs mt-2">
+                    Empfohlen
+                  </Badge>
                 </div>
               </div>
             ))}

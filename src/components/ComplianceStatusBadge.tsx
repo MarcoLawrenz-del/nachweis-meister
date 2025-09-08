@@ -15,25 +15,25 @@ interface ComplianceStatusBadgeProps {
 
 const complianceConfig = {
   compliant: {
-    label: 'Rechtlich Compliant',
-    shortLabel: 'Compliant', 
+    label: 'Aktuell Aktiv & Compliant',
+    shortLabel: 'Aktiv', 
     className: 'bg-success text-success-foreground hover:bg-success/80',
     icon: CheckCircle,
-    description: 'Alle Pflichtdokumente sind gültig'
+    description: 'Alle Chargenpflichtigen Dokumente sind vollständig & gültig - automatisch aktiviert'
   },
   expiring_soon: {
     label: 'Dokumente laufen ab',
     shortLabel: 'Läuft ab',
     className: 'bg-warning text-warning-foreground hover:bg-warning/80',
     icon: Clock,
-    description: 'Dokumente laufen in den nächsten 30 Tagen ab'
+    description: 'Chargenpflichtige Dokumente laufen in den nächsten 30 Tagen ab - Reminder versandt'
   },
   non_compliant: {
-    label: 'Nicht Compliant',
-    shortLabel: 'Nicht Compliant',
+    label: 'Nicht Aktiv - Dokumente fehlen',
+    shortLabel: 'Inaktiv',
     className: 'bg-destructive text-destructive-foreground hover:bg-destructive/80',
     icon: XCircle,
-    description: 'Pflichtdokumente fehlen oder sind abgelaufen'
+    description: 'Chargenpflichtige Dokumente fehlen oder sind abgelaufen - Projektassignment blockiert'
   }
 };
 

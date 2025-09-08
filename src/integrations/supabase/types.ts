@@ -541,6 +541,10 @@ export type Database = {
         Args: { subcontractor_id_param: string }
         Returns: string
       }
+      calculate_subcontractor_compliance_bausicht: {
+        Args: { subcontractor_id_param: string }
+        Returns: string
+      }
       calculate_subcontractor_compliance_by_type: {
         Args: { subcontractor_id_param: string }
         Returns: string
