@@ -46,57 +46,65 @@ function RootRoute() {
   
   // Not authenticated - show NEW landing page directly here
   if (!user) {
+    console.log('🚀 SHOWING NEW LANDING PAGE - TIMESTAMP:', Date.now());
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        {/* Header */}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        {/* NEUE LANDING PAGE - CACHE BREAK */}
+        <div className="absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded text-xs">
+          NEUE SEITE GELADEN: {new Date().toLocaleTimeString()}
+        </div>
+        
         <header className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Building2 className="h-6 w-6 text-primary-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
+                <Building2 className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">Nachweis-Meister</h1>
-                <p className="text-xs text-muted-foreground">Baugewerbe Management</p>
+                <h1 className="text-xl font-bold text-gray-900">Nachweis-Meister</h1>
+                <p className="text-xs text-gray-600">Baugewerbe Management</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/login">
-                <Button variant="ghost">Anmelden</Button>
+                <Button variant="ghost" className="text-gray-700">Anmelden</Button>
               </Link>
               <Link to="/register">
-                <Button>Registrieren</Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">Registrieren</Button>
               </Link>
             </div>
           </div>
         </header>
 
-        {/* Hero Section */}
         <section className="container mx-auto px-4 py-12 text-center">
           <div className="mx-auto max-w-3xl">
-            <h2 className="text-4xl font-bold tracking-tight mb-6">
-              Professionelle Nachweisführung
-              <span className="text-primary block mt-2">für das Baugewerbe</span>
+            <h2 className="text-4xl font-bold tracking-tight mb-6 text-gray-900">
+              ✅ NEUE Professionelle Nachweisführung
+              <span className="text-blue-600 block mt-2">für das Baugewerbe</span>
             </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Verwalten Sie alle pflichtrelevanten Nachweise Ihrer Subunternehmer sicher und rechtskonform. 
+            <p className="text-xl text-gray-600 mb-8">
+              🆕 Verwalten Sie alle pflichtrelevanten Nachweise Ihrer Subunternehmer sicher und rechtskonform. 
               Automatische Fristüberwachung inklusive.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/register">
-                <Button size="lg" className="min-w-48">
+                <Button size="lg" className="min-w-48 bg-blue-600 hover:bg-blue-700">
                   <Users className="mr-2 h-5 w-5" />
-                  Kostenlos registrieren
+                  🚀 KOSTENLOS REGISTRIEREN
                 </Button>
               </Link>
               <Link to="/login">
-                <Button variant="outline" size="lg" className="min-w-48">
-                  Bereits registriert? Anmelden
+                <Button variant="outline" size="lg" className="min-w-48 border-blue-600 text-blue-600 hover:bg-blue-50">
+                  ✨ Bereits registriert? Anmelden
                 </Button>
               </Link>
             </div>
           </div>
         </section>
+
+        <div className="text-center text-gray-500 text-sm mt-8">
+          Cache-Break ID: {Math.random().toString(36).substring(7)}
+        </div>
       </div>
     );
   }
