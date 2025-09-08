@@ -29,16 +29,14 @@ const queryClient = new QueryClient();
 function RootRoute() {
   const { user, profile, loading } = useAuthContext();
   
-  // Force loading to false after 3 seconds max
-  const [forceLoaded, setForceLoaded] = useState(false);
+  // If loading takes more than 2 seconds, show content anyway
+  const [showContent, setShowContent] = useState(false);
   useEffect(() => {
-    const timer = setTimeout(() => setForceLoaded(true), 3000);
+    const timer = setTimeout(() => setShowContent(true), 2000);
     return () => clearTimeout(timer);
   }, []);
   
-  const isLoading = loading && !forceLoaded;
-  
-  if (isLoading) {
+  if (loading && !showContent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
