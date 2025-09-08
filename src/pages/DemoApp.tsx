@@ -25,7 +25,7 @@ export default function DemoApp() {
       </div>
       
       <Routes>
-        <Route path="/" element={<AppLayout />}>
+        <Route path="/*" element={<AppLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="compliance" element={<ComplianceDashboard />} />
