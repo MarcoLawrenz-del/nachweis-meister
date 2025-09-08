@@ -524,14 +524,19 @@ export default function Subcontractors() {
               <TableBody>
                 {filteredSubcontractors.map((subcontractor) => (
                   <TableRow key={subcontractor.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{subcontractor.company_name}</p>
-                        {subcontractor.contact_name && (
-                          <p className="text-sm text-muted-foreground">{subcontractor.contact_name}</p>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div>
+                         <Link 
+                           to={`/app/subcontractors/${subcontractor.id}`}
+                           className="font-medium text-primary hover:underline cursor-pointer"
+                         >
+                           {subcontractor.company_name}
+                         </Link>
+                         {subcontractor.contact_name && (
+                           <p className="text-sm text-muted-foreground">{subcontractor.contact_name}</p>
+                         )}
+                       </div>
+                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center text-sm">

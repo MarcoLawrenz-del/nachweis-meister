@@ -331,11 +331,16 @@ export default function Projects() {
               <TableBody>
                 {filteredProjects.map((project) => (
                   <TableRow key={project.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div>
+                         <Link 
+                           to={`/app/projects/${project.id}`}
+                           className="font-medium text-primary hover:underline cursor-pointer"
+                         >
+                           {project.name}
+                         </Link>
+                       </div>
+                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-mono">
                         {project.code}
@@ -390,12 +395,12 @@ export default function Projects() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/projects/${project.id}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Details
-                          </Link>
-                        </Button>
+                         <Button variant="outline" size="sm" asChild>
+                           <Link to={`/app/projects/${project.id}`}>
+                             <Eye className="h-4 w-4 mr-2" />
+                             Details
+                           </Link>
+                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
