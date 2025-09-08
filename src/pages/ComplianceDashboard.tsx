@@ -6,7 +6,7 @@ export default function ComplianceDashboard() {
       <div>
         <h1 className="text-3xl font-bold text-professional">Rechtliche Compliance</h1>
         <p className="text-muted-foreground">
-          Überblick über die rechtliche Compliance aller Nachunternehmer nach deutschem Baurecht
+          Vollständiger Überblick über die rechtliche Compliance aller Nachunternehmer nach deutschem Baurecht entsprechend Bausicht-Standards
         </p>
       </div>
       

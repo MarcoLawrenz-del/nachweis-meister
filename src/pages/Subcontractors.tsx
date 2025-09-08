@@ -59,6 +59,7 @@ interface Subcontractor {
   phone: string | null;
   address: string | null;
   country_code: string;
+  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
   notes: string | null;
   created_at: string;
   status: 'active' | 'inactive';
@@ -81,6 +82,7 @@ export default function Subcontractors() {
     phone: '',
     address: '',
     country_code: 'DE',
+    company_type: 'baubetrieb' as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
     notes: ''
   });
   const { profile } = useAuthContext();
@@ -124,6 +126,7 @@ export default function Subcontractors() {
           phone,
           address,
           country_code,
+          company_type,
           notes,
           created_at,
           status,
@@ -152,6 +155,7 @@ export default function Subcontractors() {
           phone: sub.phone,
           address: sub.address,  
           country_code: sub.country_code,
+          company_type: sub.company_type as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
           notes: sub.notes,
           created_at: sub.created_at,
           status: sub.status as 'active' | 'inactive',
@@ -187,6 +191,7 @@ export default function Subcontractors() {
         phone: newSubcontractor.phone || null,
         address: newSubcontractor.address || null,
         country_code: newSubcontractor.country_code,
+        company_type: newSubcontractor.company_type,
         notes: newSubcontractor.notes || null
       };
 
@@ -238,6 +243,7 @@ export default function Subcontractors() {
       phone: subcontractor.phone || '',
       address: subcontractor.address || '',
       country_code: subcontractor.country_code,
+      company_type: subcontractor.company_type,
       notes: subcontractor.notes || ''
     });
     setIsDialogOpen(true);
@@ -278,6 +284,7 @@ export default function Subcontractors() {
       phone: '',
       address: '',
       country_code: 'DE',
+      company_type: 'baubetrieb',
       notes: ''
     });
     setEditingSubcontractor(null);
@@ -393,9 +400,29 @@ export default function Subcontractors() {
                       <SelectItem value="CZ">Tschechien</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="company_type">Unternehmensform</Label>
+                   <Select
+                     value={newSubcontractor.company_type}
+                     onValueChange={(value: 'gbr' | 'baubetrieb' | 'einzelunternehmen') => 
+                       setNewSubcontractor(prev => ({ ...prev, company_type: value }))}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Unternehmensform wählen" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="gbr">Gesellschaft bürgerlichen Rechts (GbR)</SelectItem>
+                       <SelectItem value="baubetrieb">Baubetrieb / Dienstleister</SelectItem>
+                       <SelectItem value="einzelunternehmen">Einzelunternehmen (Solo)</SelectItem>
+                     </SelectContent>
+                   </Select>
+                   <p className="text-xs text-muted-foreground">
+                     Die Unternehmensform bestimmt welche Dokumente rechtlich erforderlich sind
+                   </p>
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="address">Adresse</Label>
                   <Textarea
                     id="address"
                     placeholder="Straße, PLZ Ort"

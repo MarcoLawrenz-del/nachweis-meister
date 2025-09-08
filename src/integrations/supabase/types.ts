@@ -410,6 +410,7 @@ export type Database = {
           activation_date: string | null
           address: string | null
           company_name: string
+          company_type: string | null
           compliance_status: string | null
           contact_email: string
           contact_name: string | null
@@ -428,6 +429,7 @@ export type Database = {
           activation_date?: string | null
           address?: string | null
           company_name: string
+          company_type?: string | null
           compliance_status?: string | null
           contact_email: string
           contact_name?: string | null
@@ -446,6 +448,7 @@ export type Database = {
           activation_date?: string | null
           address?: string | null
           company_name?: string
+          company_type?: string | null
           compliance_status?: string | null
           contact_email?: string
           contact_name?: string | null
@@ -537,6 +540,18 @@ export type Database = {
       calculate_subcontractor_compliance: {
         Args: { subcontractor_id_param: string }
         Returns: string
+      }
+      calculate_subcontractor_compliance_by_type: {
+        Args: { subcontractor_id_param: string }
+        Returns: string
+      }
+      send_compliance_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      validate_subcontractor_for_project: {
+        Args: { subcontractor_id_param: string }
+        Returns: Json
       }
     }
     Enums: {
