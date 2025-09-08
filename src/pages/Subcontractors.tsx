@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
+import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -87,12 +88,20 @@ export default function Subcontractors() {
   });
   const { profile } = useAppAuth();
   const { toast } = useToast();
+  const { isDemo, demoSubcontractors } = useDemoData();
 
   useEffect(() => {
+    if (isDemo) {
+      console.log('🎯 Subcontractors: Using demo data');
+      setSubcontractors(demoSubcontractors);
+      setLoading(false);
+      return;
+    }
+    
     if (profile) {
       fetchSubcontractors();
     }
-  }, [profile]);
+  }, [profile, isDemo]);
 
   useEffect(() => {
     const filtered = subcontractors.filter(sub =>

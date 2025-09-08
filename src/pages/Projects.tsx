@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
+import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -63,12 +64,20 @@ export default function Projects() {
   });
   const { profile } = useAppAuth();
   const { toast } = useToast();
+  const { isDemo, demoProjects } = useDemoData();
 
   useEffect(() => {
+    if (isDemo) {
+      console.log('🎯 Projects: Using demo data');
+      setProjects(demoProjects);
+      setLoading(false);
+      return;
+    }
+    
     if (profile) {
       fetchProjects();
     }
-  }, [profile]);
+  }, [profile, isDemo]);
 
   useEffect(() => {
     const filtered = projects.filter(project =>

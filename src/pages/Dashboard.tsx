@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
+import { useDemoData } from '@/hooks/useDemoData';
 import { Link } from 'react-router-dom';
 import { 
   AlertTriangle, 
@@ -50,21 +51,40 @@ export default function Dashboard() {
   const [criticalItems, setCriticalItems] = useState<CriticalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { profile } = useAppAuth();
+  const { isDemo, demoStats, demoCriticalItems } = useDemoData();
 
   useEffect(() => {
+    console.log('🔍 Dashboard useEffect - profile:', profile, 'isDemo:', isDemo);
+    
+    if (isDemo) {
+      // Use demo data
+      console.log('🎯 Using demo data');
+      setStats(demoStats);
+      setCriticalItems(demoCriticalItems);
+      setLoading(false);
+      return;
+    }
+    
     if (profile) {
+      console.log('📊 Fetching dashboard data for tenant:', profile.tenant_id);
       fetchDashboardData();
     }
-  }, [profile]);
+  }, [profile, isDemo]);
 
   const fetchDashboardData = async () => {
-    if (!profile) return;
+    console.log('🚀 fetchDashboardData started, profile:', profile);
+    if (!profile) {
+      console.log('❌ No profile found');
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('📈 Loading dashboard data...');
 
       // If no tenant_id, set stats to zero to show onboarding
       if (!profile.tenant_id) {
+        console.log('⚠️ No tenant_id found, showing empty stats');
         setStats({
           totalSubcontractors: 0,
           totalProjects: 0,
@@ -78,7 +98,10 @@ export default function Dashboard() {
         return;
       }
 
+      console.log('🏢 Fetching data for tenant:', profile.tenant_id);
+
       // Fetch basic stats
+      console.log('📊 Fetching subcontractors and projects...');
       const [subcontractorsResult, projectsResult] = await Promise.all([
         supabase
           .from('subcontractors')
@@ -90,8 +113,19 @@ export default function Dashboard() {
           .eq('tenant_id', profile.tenant_id)
       ]);
 
+      console.log('📊 Subcontractors result:', subcontractorsResult);
+      console.log('📊 Projects result:', projectsResult);
+
+      if (subcontractorsResult.error) {
+        console.error('❌ Subcontractors error:', subcontractorsResult.error);
+      }
+      if (projectsResult.error) {
+        console.error('❌ Projects error:', projectsResult.error);
+      }
+
       // Fetch requirements with status counts
-      const { data: requirements } = await supabase
+      console.log('📋 Fetching requirements...');
+      const { data: requirements, error: requirementsError } = await supabase
         .from('requirements')
         .select(`
           *,
@@ -102,6 +136,8 @@ export default function Dashboard() {
           document_types (name_de)
         `)
         .eq('project_subs.projects.tenant_id', profile.tenant_id);
+
+      console.log('📋 Requirements result:', { data: requirements, error: requirementsError });
 
       if (requirements) {
         const expiringSoon = requirements.filter(req => req.status === 'expiring').length;
@@ -118,8 +154,18 @@ export default function Dashboard() {
           approved
         });
 
+        console.log('✅ Stats calculated:', {
+          totalSubcontractors: subcontractorsResult.data?.length || 0,
+          totalProjects: projectsResult.data?.length || 0,
+          expiringSoon,
+          expired,
+          inReview,
+          approved
+        });
+
         // Fetch critical items (expiring or expired)
-        const { data: criticalRequirements } = await supabase
+        console.log('⚠️ Fetching critical requirements...');
+        const { data: criticalRequirements, error: criticalError } = await supabase
           .from('requirements')
           .select(`
             id,
@@ -136,6 +182,8 @@ export default function Dashboard() {
           .order('due_date', { ascending: true })
           .limit(10);
 
+        console.log('⚠️ Critical requirements result:', { data: criticalRequirements, error: criticalError });
+
         if (criticalRequirements) {
           const critical = criticalRequirements.map((req: any) => ({
             id: req.id,
@@ -149,11 +197,13 @@ export default function Dashboard() {
               : 0
           }));
           setCriticalItems(critical);
+          console.log('⚠️ Critical items set:', critical);
         }
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('❌ Error fetching dashboard data:', error);
     } finally {
+      console.log('🏁 Dashboard data fetch completed');
       setLoading(false);
     }
   };
