@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Subcontractors from "./pages/Subcontractors";
+import SubcontractorDetail from "./pages/SubcontractorDetail";
 import ReviewQueue from "./pages/ReviewQueue";
 import RequirementsDetail from "./pages/RequirementsDetail";
 import Settings from "./pages/Settings";
@@ -125,6 +126,7 @@ const App = () => (
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="subcontractors" element={<Subcontractors />} />
+              <Route path="subcontractors/:id" element={<SubcontractorDetail />} />
               <Route path="requirements/:projectSubId" element={<RequirementsDetail />} />
               <Route path="review" element={<ReviewQueue />} />
               <Route path="settings" element={<Settings />} />

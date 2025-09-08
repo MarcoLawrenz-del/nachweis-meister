@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,8 @@ import {
   Edit,
   Trash2,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -573,15 +575,25 @@ export default function Subcontractors() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEdit(subcontractor)}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Bearbeiten
-                        </Button>
+                       <div className="flex space-x-2">
+                         <Button 
+                           variant="outline" 
+                           size="sm"
+                           asChild
+                         >
+                           <Link to={`/app/subcontractors/${subcontractor.id}`}>
+                             <Eye className="h-4 w-4 mr-2" />
+                             Details
+                           </Link>
+                         </Button>
+                         <Button 
+                           variant="outline" 
+                           size="sm"
+                           onClick={() => handleEdit(subcontractor)}
+                         >
+                           <Edit className="h-4 w-4 mr-2" />
+                           Bearbeiten
+                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
