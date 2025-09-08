@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
+// AuthContext for managing authentication state
 const AuthContext = createContext<ReturnType<typeof useAuth> | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

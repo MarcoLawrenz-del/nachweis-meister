@@ -5,7 +5,8 @@ import {
   Users,
   FileCheck,
   Settings,
-  FolderOpen
+  FolderOpen,
+  LogOut
 } from "lucide-react";
 import {
   Sidebar,
@@ -18,6 +19,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
@@ -33,11 +36,16 @@ const settingsItems = [
 export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { signOut } = useAuthContext();
 
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
 
   const getNavCls = (active: boolean) =>
     active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent hover:text-accent-foreground";
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -95,6 +103,18 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="justify-start w-full h-auto p-2 font-normal"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Abmelden</span>
+                  </Button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
