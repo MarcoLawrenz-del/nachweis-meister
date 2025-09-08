@@ -88,78 +88,27 @@ export function useAuth() {
     try {
       console.log('Starting setup for user:', user.id);
       
-      // Check if user already has a profile (existing user without tenant)
-      const { data: existingProfile } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+      // Call the Edge Function to complete setup (bypasses RLS)
+      const { data, error: setupError } = await supabase.functions.invoke('complete-setup', {
+        body: {
+          name: userData.name,
+          companyName: userData.companyName
+        }
+      });
 
-      // First create the tenant
-      const { data: newTenant, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({
-          name: userData.companyName
-        })
-        .select()
-        .single();
-
-      if (tenantError) {
-        console.error('Error creating tenant:', tenantError);
-        return { error: tenantError };
+      if (setupError) {
+        console.error('Error in setup function:', setupError);
+        return { error: setupError };
       }
 
-      console.log('Tenant created successfully:', newTenant);
+      console.log('Setup completed successfully via Edge Function');
 
-      let newProfile;
+      // Refresh the profile
+      await fetchProfile(user.id);
       
-      if (existingProfile) {
-        // Update existing profile with tenant_id
-        const { data: updatedProfile, error: updateError } = await supabase
-          .from('users')
-          .update({
-            tenant_id: newTenant.id,
-            name: userData.name
-          })
-          .eq('id', user.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Error updating profile:', updateError);
-          return { error: updateError };
-        }
-        
-        newProfile = updatedProfile;
-        console.log('Profile updated successfully:', newProfile);
-      } else {
-        // Create new profile with tenant_id
-        const { data: createdProfile, error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: user.id,
-            tenant_id: newTenant.id,
-            name: userData.name,
-            email: user.email,
-            role: 'owner'
-          })
-          .select()
-          .single();
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          return { error: profileError };
-        }
-        
-        newProfile = createdProfile;
-        console.log('Profile created successfully:', newProfile);
-      }
-
-      setProfile(newProfile as UserProfile);
-      
-      return { data: newProfile };
+      return { data };
     } catch (error) {
-      console.error('Error completing setup:', error);
+      console.error('Error in completeSetup:', error);
       return { error: error as Error };
     }
   };
