@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAppAuth } from '@/hooks/useAppAuth';
 import { Link } from 'react-router-dom';
 import { 
   AlertTriangle, 
@@ -49,7 +49,7 @@ export default function Dashboard() {
   });
   const [criticalItems, setCriticalItems] = useState<CriticalItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { profile } = useAuthContext();
+  const { profile } = useAppAuth();
 
   useEffect(() => {
     if (profile) {

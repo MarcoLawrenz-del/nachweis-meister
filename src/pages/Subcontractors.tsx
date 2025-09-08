@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
@@ -85,7 +85,7 @@ export default function Subcontractors() {
     company_type: 'baubetrieb' as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
     notes: ''
   });
-  const { profile } = useAuthContext();
+  const { profile } = useAppAuth();
   const { toast } = useToast();
 
   useEffect(() => {

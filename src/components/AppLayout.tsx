@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAppAuth } from '@/hooks/useAppAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AppLayout() {
-  const { profile, signOut } = useAuthContext();
+  const { profile, signOut } = useAppAuth();
 
   const handleSignOut = async () => {
     await signOut();

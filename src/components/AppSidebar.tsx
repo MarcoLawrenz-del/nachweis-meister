@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAppAuth } from "@/hooks/useAppAuth";
 import { Button } from "@/components/ui/button";
 
 const mainItems = [
@@ -38,7 +38,7 @@ const settingsItems = [
 export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { signOut } = useAuthContext();
+  const { signOut } = useAppAuth();
 
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
 

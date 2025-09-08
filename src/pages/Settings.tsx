@@ -1,9 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAppAuth } from '@/hooks/useAppAuth';
 import { Settings as SettingsIcon, User, Building } from 'lucide-react';
 
 export default function Settings() {
-  const { profile } = useAuthContext();
+  const { profile } = useAppAuth();
 
   return (
     <div className="space-y-6">
