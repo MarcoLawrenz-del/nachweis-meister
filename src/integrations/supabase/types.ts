@@ -124,6 +124,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_on_approval: boolean | null
+          email_on_assignment: boolean | null
+          email_on_escalation: boolean | null
+          email_on_rejection: boolean | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_on_approval?: boolean | null
+          email_on_assignment?: boolean | null
+          email_on_escalation?: boolean | null
+          email_on_rejection?: boolean | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_on_approval?: boolean | null
+          email_on_assignment?: boolean | null
+          email_on_escalation?: boolean | null
+          email_on_rejection?: boolean | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_subs: {
         Row: {
           approved_at: string | null
@@ -206,42 +247,61 @@ export type Database = {
       }
       requirements: {
         Row: {
+          assigned_reviewer_id: string | null
           created_at: string
           document_type_id: string
           due_date: string | null
           escalated: boolean
+          escalated_at: string | null
+          escalation_reason: string | null
           id: string
           last_reminded_at: string | null
           project_sub_id: string
           rejection_reason: string | null
+          review_priority: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          assigned_reviewer_id?: string | null
           created_at?: string
           document_type_id: string
           due_date?: string | null
           escalated?: boolean
+          escalated_at?: string | null
+          escalation_reason?: string | null
           id?: string
           last_reminded_at?: string | null
           project_sub_id: string
           rejection_reason?: string | null
+          review_priority?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          assigned_reviewer_id?: string | null
           created_at?: string
           document_type_id?: string
           due_date?: string | null
           escalated?: boolean
+          escalated_at?: string | null
+          escalation_reason?: string | null
           id?: string
           last_reminded_at?: string | null
           project_sub_id?: string
           rejection_reason?: string | null
+          review_priority?: string | null
           status?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "requirements_assigned_reviewer_id_fkey"
+            columns: ["assigned_reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requirements_document_type_id_fkey"
             columns: ["document_type_id"]
@@ -254,6 +314,54 @@ export type Database = {
             columns: ["project_sub_id"]
             isOneToOne: false
             referencedRelation: "project_subs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_history: {
+        Row: {
+          action: string
+          comment: string | null
+          created_at: string
+          id: string
+          new_status: string | null
+          old_status: string | null
+          requirement_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          action: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          requirement_id: string
+          reviewer_id: string
+        }
+        Update: {
+          action?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          requirement_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_history_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_history_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -364,7 +472,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      auto_assign_reviewer: {
+        Args: { tenant_id_param: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
