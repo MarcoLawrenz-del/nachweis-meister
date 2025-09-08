@@ -29,6 +29,8 @@ const queryClient = new QueryClient();
 function RootRoute() {
   const { user, profile, loading } = useAuthContext();
   
+  console.log('🔍 RootRoute Debug:', { user: !!user, profile: !!profile, loading, timestamp: Date.now() });
+  
   // If loading takes more than 1 second, show content anyway
   const [showContent, setShowContent] = useState(false);
   useEffect(() => {
@@ -37,9 +39,13 @@ function RootRoute() {
   }, []);
   
   if (loading && !showContent) {
+    console.log('🕒 SHOWING LOADING...');
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-red-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-red-600 mx-auto mb-4" />
+          <p className="text-red-800">LADE... {Date.now()}</p>
+        </div>
       </div>
     );
   }
@@ -111,7 +117,17 @@ function RootRoute() {
   
   // Authenticated but no profile - show setup  
   if (user && !profile) {
-    return <Setup />;
+    console.log('🔧 SHOWING SETUP PAGE - User exists but no profile');
+    return (
+      <div className="min-h-screen bg-yellow-100 p-8">
+        <div className="max-w-md mx-auto bg-yellow-200 p-6 rounded-lg">
+          <h1 className="text-2xl font-bold text-yellow-800 mb-4">🔧 SETUP SEITE</h1>
+          <p className="text-yellow-700 mb-4">Sie sind eingeloggt aber haben keinen Tenant.</p>
+          <p className="text-sm text-yellow-600">Timestamp: {Date.now()}</p>
+          <Setup />
+        </div>
+      </div>
+    );
   }
   
   // Authenticated with profile - go to app
