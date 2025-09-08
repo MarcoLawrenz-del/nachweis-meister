@@ -58,17 +58,17 @@ Mit freundlichen Grüßen`
       // Generate unique token for this project-sub combination
       const token = crypto.randomUUID();
       
-      // Store invitation in database
-      const { error: inviteError } = await supabase
-        .from('invitations')
-        .insert({
+      // Store invitation via Edge Function (bypasses TypeScript type issues)
+      const { error: inviteError } = await supabase.functions.invoke('create-invitation', {
+        body: {
           project_sub_id: projectSubId,
           email: subcontractorEmail,
           token: token,
           subject: inviteData.subject,
           message: inviteData.message,
           invited_by: profile.id
-        });
+        }
+      });
 
       if (inviteError) throw inviteError;
 

@@ -14,6 +14,7 @@ import SubcontractorDetail from "./pages/SubcontractorDetail";
 import { ReviewQueue } from "./pages/ReviewQueue";
 import RequirementsDetail from "./pages/RequirementsDetail";
 import { DocumentDetail } from "./pages/DocumentDetail";
+import PublicUpload from "./pages/PublicUpload";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -200,6 +201,9 @@ const App = () => (
             
             {/* Magic link wizard (no auth required) */}
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
+            
+            {/* Public document upload (no auth required) */}
+            <Route path="/upload/:token" element={<PublicUpload />} />
             
             {/* Protected routes */}
             <Route path="/app" element={

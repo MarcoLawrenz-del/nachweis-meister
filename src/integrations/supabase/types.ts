@@ -100,6 +100,45 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          message: string
+          project_sub_id: string
+          status: string
+          subject: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          message: string
+          project_sub_id: string
+          status?: string
+          subject: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          message?: string
+          project_sub_id?: string
+          status?: string
+          subject?: string
+          token?: string
+        }
+        Relationships: []
+      }
       Marco1: {
         Row: {
           company: string | null

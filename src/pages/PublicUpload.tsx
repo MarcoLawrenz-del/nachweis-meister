@@ -102,60 +102,22 @@ export default function PublicUpload() {
     if (!token) return;
 
     try {
-      // Fetch invitation details
-      const { data: inviteData, error: inviteError } = await supabase
-        .from('invitations')
-        .select(`
-          id,
-          email,
-          project_sub:project_subs (
-            id,
-            project:projects (
-              name,
-              code,
-              tenant:tenants (
-                name,
-                logo_url
-              )
-            ),
-            subcontractor:subcontractors (
-              company_name
-            )
-          )
-        `)
-        .eq('token', token)
-        .eq('status', 'sent')
-        .single();
+      // Fetch invitation details via Edge Function (bypasses RLS and type issues)
+      const { data: inviteResponse, error: inviteError } = await supabase.functions.invoke('get-invitation-data', {
+        body: { token }
+      });
+
+      if (inviteError || !inviteResponse?.data) throw new Error('Invitation not found');
+      const inviteData = inviteResponse.data;
 
       if (inviteError) throw inviteError;
       setInvitation(inviteData);
 
-      // Fetch requirements for this project-sub
-      const { data: reqData, error: reqError } = await supabase
-        .from('requirements')
-        .select(`
-          id,
-          status,
-          due_date,
-          document_type:document_types (
-            name_de,
-            code,
-            description_de
-          ),
-          documents (
-            id,
-            file_name,
-            file_size,
-            valid_from,
-            valid_to,
-            uploaded_at
-          )
-        `)
-        .eq('project_sub_id', inviteData.project_sub.id)
-        .order('created_at', { ascending: true });
-
-      if (reqError) throw reqError;
-      setRequirements(reqData || []);
+      // Requirements are included in the invitation response
+      setRequirements((inviteResponse.requirements || []).map((req: any) => ({
+        ...req,
+        status: req.status as 'missing' | 'in_review' | 'valid' | 'expiring' | 'expired'
+      })));
     } catch (error: any) {
       console.error('Error fetching invitation data:', error);
       toast({

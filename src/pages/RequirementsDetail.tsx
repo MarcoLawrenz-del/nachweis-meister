@@ -39,6 +39,7 @@ import {
   Clock,
   Plus
 } from 'lucide-react';
+import { InviteSubcontractor } from '@/components/InviteSubcontractor';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -354,13 +355,23 @@ export default function RequirementsDetail() {
       {/* Requirements Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="mr-2 h-5 w-5" />
-            Dokumentenanforderungen ({requirements.length})
-          </CardTitle>
-          <CardDescription>
-            Alle erforderlichen Dokumente für {projectSub.subcontractor.company_name}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <FileText className="mr-2 h-5 w-5" />
+                Dokumentenanforderungen ({requirements.length})
+              </CardTitle>
+              <CardDescription>
+                Alle erforderlichen Dokumente für {projectSub.subcontractor.company_name}
+              </CardDescription>
+            </div>
+            <InviteSubcontractor 
+              projectSubId={projectSubId || ''}
+              subcontractorEmail={projectSub.subcontractor.contact_email}
+              subcontractorName={projectSub.subcontractor.company_name}
+              projectName={projectSub.project.name}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
