@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MagicLinkWizard from "./pages/MagicLinkWizard";
 import Setup from "./pages/Setup";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -35,9 +36,9 @@ function RootRoute() {
     );
   }
   
-  // Not authenticated - go to login
+  // Not authenticated - show landing page
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Landing />;
   }
   
   // Authenticated but no profile - show setup  
