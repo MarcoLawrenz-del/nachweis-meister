@@ -2,14 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -58,10 +50,6 @@ export default function Dashboard() {
   const [criticalItems, setCriticalItems] = useState<CriticalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { profile } = useAuthContext();
-
-  console.log('Dashboard rendering, profile:', profile);
-  console.log('Dashboard stats:', stats);
-  console.log('Dashboard loading:', loading);
 
   useEffect(() => {
     if (profile) {
@@ -170,29 +158,6 @@ export default function Dashboard() {
     }
   };
 
-  const StatCard = ({ title, value, icon: Icon, trend, className = "" }: {
-    title: string;
-    value: number;
-    icon: any;
-    trend?: string;
-    className?: string;
-  }) => (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {trend && (
-          <p className="text-xs text-muted-foreground">
-            {trend}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -218,12 +183,8 @@ export default function Dashboard() {
 
   // Check if user has no data yet (onboarding needed)
   const hasNoData = !profile?.tenant_id || (stats.totalSubcontractors === 0 && stats.totalProjects === 0);
-  
-  console.log('hasNoData check:', hasNoData);
-  console.log('profile?.tenant_id:', profile?.tenant_id);
 
   if (hasNoData) {
-    console.log('Showing onboarding UI');
     return (
       <div className="max-w-4xl mx-auto p-6">
         {/* Welcome Header */}
@@ -343,260 +304,270 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-professional">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Übersicht über alle Nachweise und kritische Fälle
+            Sofortiger Überblick über kritische Nachweise
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/app/subcontractors">
-              <Users className="w-4 h-4 mr-2" />
-              Nachunternehmer
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/app/projects">
-              <FolderOpen className="w-4 h-4 mr-2" />
-              Neues Projekt
-            </Link>
-          </Button>
+      </div>
+
+      {/* Immediate Action Required - Hero Section */}
+      {(stats.expired > 0 || stats.expiringSoon > 0) && (
+        <div className="bg-gradient-to-r from-danger/10 via-warning/5 to-danger/10 border border-danger/20 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-danger rounded-xl flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-danger-foreground" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-danger mb-2">
+                Sofortiger Handlungsbedarf
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {stats.expired > 0 && (
+                  <div className="bg-danger/10 border border-danger/30 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-danger" />
+                      <span className="font-semibold text-danger text-lg">{stats.expired}</span>
+                      <span className="text-danger-foreground/80">abgelaufene Nachweise</span>
+                    </div>
+                  </div>
+                )}
+                {stats.expiringSoon > 0 && (
+                  <div className="bg-warning/10 border border-warning/30 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-warning" />
+                      <span className="font-semibold text-warning text-lg">{stats.expiringSoon}</span>
+                      <span className="text-warning-foreground/80">laufen bald ab</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <Button size="lg" className="bg-danger hover:bg-danger/90" asChild>
+                <Link to="/app/review-queue">
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Kritische Fälle bearbeiten
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Nachunternehmer"
-          value={stats.totalSubcontractors}
-          icon={Users}
-          trend="Registrierte Firmen"
-        />
-        <StatCard
-          title="Projekte"
-          value={stats.totalProjects}
-          icon={FolderOpen}
-          trend="Aktive Bauprojekte"
-        />
-        <StatCard
-          title="Läuft bald ab"
-          value={stats.expiringSoon}
-          icon={Clock}
-          trend="Innerhalb 30 Tage"
-          className="border-warning/20 bg-warning/5"
-        />
-        <StatCard
-          title="Abgelaufen"
-          value={stats.expired}
-          icon={XCircle}
-          trend="Sofortiger Handlungsbedarf"
-          className="border-danger/20 bg-danger/5"
-        />
-      </div>
+      {/* No Critical Issues - Success State */}
+      {stats.expired === 0 && stats.expiringSoon === 0 && stats.totalSubcontractors > 0 && (
+        <div className="bg-gradient-to-r from-success/10 to-success/5 border border-success/20 rounded-xl p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-success rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-success-foreground" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-success mb-1">
+                Alles im grünen Bereich!
+              </h2>
+              <p className="text-success-foreground/80">
+                Alle Nachweise sind aktuell und gültig.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Secondary Stats */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <StatCard
-          title="In Prüfung"
-          value={stats.inReview}
-          icon={FileText}
-          trend="Warten auf Freigabe"
-        />
-        <StatCard
-          title="Freigegeben"
-          value={stats.approved}
-          icon={CheckCircle}
-          trend="Gültige Nachweise"
-          className="border-success/20 bg-success/5"
-        />
-      </div>
+      {/* Status Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Projects & Subcontractors */}
+        <Card className="col-span-full lg:col-span-1">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">Übersicht</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Projekte</span>
+              </div>
+              <span className="font-bold text-lg">{stats.totalProjects}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Nachunternehmer</span>
+              </div>
+              <span className="font-bold text-lg">{stats.totalSubcontractors}</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Critical Issues */}
-      {criticalItems.length > 0 && (
-        <Card className="border-danger/20">
-          <CardHeader>
-            <CardTitle className="flex items-center text-danger">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Kritische Nachweise ({criticalItems.length})
-            </CardTitle>
-            <CardDescription>
-              Dokumente mit sofortigem oder dringendem Handlungsbedarf
-            </CardDescription>
+        {/* Document Status */}
+        <Card className="col-span-full lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">Nachweis-Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nachunternehmer</TableHead>
-                  <TableHead>Projekt</TableHead>
-                  <TableHead>Dokument</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Fällig</TableHead>
-                  <TableHead>Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {criticalItems.slice(0, 5).map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">
-                      {item.company_name}
-                    </TableCell>
-                    <TableCell>{item.project_name}</TableCell>
-                    <TableCell>{item.document_type}</TableCell>
-                    <TableCell>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-success/5 border border-success/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-success" />
+                    <span className="text-sm font-medium">Gültig</span>
+                  </div>
+                  <span className="font-bold text-lg text-success">{stats.approved}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/50 border rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">In Prüfung</span>
+                  </div>
+                  <span className="font-bold text-lg">{stats.inReview}</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-warning/5 border border-warning/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-warning" />
+                    <span className="text-sm font-medium">Läuft ab</span>
+                  </div>
+                  <span className="font-bold text-lg text-warning">{stats.expiringSoon}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-danger/5 border border-danger/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-danger" />
+                    <span className="text-sm font-medium">Abgelaufen</span>
+                  </div>
+                  <span className="font-bold text-lg text-danger">{stats.expired}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Critical Items - Compact View */}
+      {criticalItems.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-danger" />
+                Kritische Nachweise
+              </CardTitle>
+              <Badge variant="outline" className="border-danger text-danger">
+                {criticalItems.length} Fälle
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {criticalItems.slice(0, 3).map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{item.company_name}</span>
                       <Badge 
-                        variant="outline"
+                        variant="outline" 
                         className={
                           item.status === 'expired' 
-                            ? 'border-danger text-danger bg-danger/10' 
-                            : 'border-warning text-warning bg-warning/10'
+                            ? 'border-danger text-danger' 
+                            : 'border-warning text-warning'
                         }
                       >
                         {item.status === 'expired' ? 'Abgelaufen' : 'Läuft ab'}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm">
-                          {item.due_date 
-                            ? format(new Date(item.due_date), 'dd.MM.yyyy', { locale: de })
-                            : 'Nicht gesetzt'
-                          }
-                        </span>
-                        <span className={`text-xs ${
-                          item.days_until_expiry < 0 
-                            ? 'text-danger' 
-                            : item.days_until_expiry <= 7 
-                            ? 'text-warning' 
-                            : 'text-muted-foreground'
-                        }`}>
-                          {item.days_until_expiry < 0 
-                            ? `${Math.abs(item.days_until_expiry)} Tage überfällig`
-                            : item.days_until_expiry === 0
-                            ? 'Heute fällig'
-                            : `${item.days_until_expiry} Tage verbleibend`
-                          }
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Erinnern
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            
-            {criticalItems.length > 5 && (
-              <div className="mt-4 text-center">
-                <Button variant="outline">
-                  Alle {criticalItems.length} kritischen Fälle anzeigen
-                </Button>
-              </div>
-            )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {item.project_name} • {item.document_type}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium">
+                      {item.due_date 
+                        ? format(new Date(item.due_date), 'dd.MM.yyyy', { locale: de })
+                        : 'Nicht gesetzt'
+                      }
+                    </div>
+                    <div className={`text-xs ${
+                      item.days_until_expiry < 0 
+                        ? 'text-danger' 
+                        : item.days_until_expiry <= 7
+                          ? 'text-warning'
+                          : 'text-muted-foreground'
+                    }`}>
+                      {item.days_until_expiry < 0 
+                        ? `${Math.abs(item.days_until_expiry)} Tage überfällig`
+                        : `${item.days_until_expiry} Tage verbleibend`
+                      }
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {criticalItems.length > 3 && (
+                <div className="pt-3 border-t">
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/app/review-queue">
+                      Alle {criticalItems.length} kritischen Fälle anzeigen
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingUp className="mr-2 h-5 w-5" />
-              Schnellaktionen
-            </CardTitle>
-            <CardDescription>
-              Häufig verwendete Funktionen für die tägliche Arbeit
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              <Button className="justify-start h-12" asChild>
-                <Link to="/app/subcontractors">
-                  <Users className="mr-2 h-4 w-4" />
-                  Nachunternehmer verwalten
-                </Link>
-              </Button>
-              <Button variant="outline" className="justify-start h-12" asChild>
-                <Link to="/app/projects">
-                  <FolderOpen className="mr-2 h-4 w-4" />
-                  Neues Projekt erstellen
-                </Link>
-              </Button>
-              <Button variant="outline" className="justify-start h-12" asChild>
-                <Link to="/app/review">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Prüfungsqueue öffnen
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Nächste Schritte</CardTitle>
-            <CardDescription>
-              Empfohlene Aktionen für bessere Organisation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {stats.totalSubcontractors < 3 && (
-                <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 text-primary mr-2" />
-                    <span className="text-sm font-medium">Weitere Nachunternehmer hinzufügen</span>
-                  </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link to="/app/subcontractors">Hinzufügen</Link>
-                  </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Schnellaktionen</CardTitle>
+          <CardDescription>
+            Häufig verwendete Funktionen für die tägliche Arbeit
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Button variant="outline" className="h-auto p-4 flex-col items-start" asChild>
+              <Link to="/app/subcontractors">
+                <Users className="w-6 h-6 mb-2 self-center" />
+                <div className="text-center">
+                  <div className="font-semibold">Nachunternehmer</div>
+                  <div className="text-xs text-muted-foreground">Verwalten & hinzufügen</div>
                 </div>
-              )}
-              
-              {stats.totalProjects < 2 && (
-                <div className="flex items-center justify-between p-3 bg-accent/5 rounded-lg border border-accent/20">
-                  <div className="flex items-center">
-                    <FolderOpen className="w-4 h-4 text-accent mr-2" />
-                    <span className="text-sm font-medium">Zweites Projekt anlegen</span>
-                  </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link to="/app/projects">Erstellen</Link>
-                  </Button>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col items-start" asChild>
+              <Link to="/app/projects">
+                <FolderOpen className="w-6 h-6 mb-2 self-center" />
+                <div className="text-center">
+                  <div className="font-semibold">Projekte</div>
+                  <div className="text-xs text-muted-foreground">Erstellen & bearbeiten</div>
                 </div>
-              )}
-
-              {stats.inReview > 0 && (
-                <div className="flex items-center justify-between p-3 bg-warning/5 rounded-lg border border-warning/20">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 text-warning mr-2" />
-                    <span className="text-sm font-medium">{stats.inReview} Nachweise prüfen</span>
-                  </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <Link to="/app/review">Prüfen</Link>
-                  </Button>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col items-start" asChild>
+              <Link to="/app/review-queue">
+                <FileText className="w-6 h-6 mb-2 self-center" />
+                <div className="text-center">
+                  <div className="font-semibold">Prüfungen</div>
+                  <div className="text-xs text-muted-foreground">Dokumente freigeben</div>
                 </div>
-              )}
-
-              {stats.totalSubcontractors >= 3 && stats.totalProjects >= 2 && stats.inReview === 0 && (
-                <div className="text-center py-4">
-                  <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
-                  <p className="text-sm text-success font-medium">Alles unter Kontrolle!</p>
-                  <p className="text-xs text-muted-foreground">Ihr System läuft optimal.</p>
+              </Link>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex-col items-start" asChild>
+              <Link to="/app/settings">
+                <Calendar className="w-6 h-6 mb-2 self-center" />
+                <div className="text-center">
+                  <div className="font-semibold">Einstellungen</div>
+                  <div className="text-xs text-muted-foreground">System konfigurieren</div>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
