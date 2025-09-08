@@ -21,39 +21,28 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
     
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session only once
-    const initSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const handleAuthChange = (event: any, session: Session | null) => {
       if (!mounted) return;
       
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        fetchProfile(session.user.id);
       } else {
+        setProfile(null);
         setLoading(false);
       }
     };
     
-    initSession();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      handleAuthChange('INITIAL_SESSION', session);
+    });
 
     return () => {
       mounted = false;
@@ -71,20 +60,16 @@ export function useAuth() {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        setLoading(false);
-        return;
       }
       
       if (data) {
-        // Check if user has tenant_id - if not, they need to complete setup
         if (!data.tenant_id) {
           console.log('User has no tenant_id - needs setup:', userId);
-          setProfile(null); // This will trigger setup flow
+          setProfile(null);
         } else {
           setProfile(data as UserProfile);
         }
       } else {
-        // No profile found - user needs to complete setup
         console.log('No profile found for user:', userId);
         setProfile(null);
       }

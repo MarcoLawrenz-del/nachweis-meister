@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { AuthProvider, useAuthContext } from "./contexts/AuthContext";
 import { AppLayout } from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -28,7 +29,16 @@ const queryClient = new QueryClient();
 function RootRoute() {
   const { user, profile, loading } = useAuthContext();
   
-  if (loading) {
+  // Force loading to false after 3 seconds max
+  const [forceLoaded, setForceLoaded] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setForceLoaded(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const isLoading = loading && !forceLoaded;
+  
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
