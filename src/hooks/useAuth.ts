@@ -88,12 +88,28 @@ export function useAuth() {
     try {
       console.log('Starting setup for user:', user.id);
       
-      // Create user profile first (without tenant_id for now)
+      // First create the tenant
+      const { data: newTenant, error: tenantError } = await supabase
+        .from('tenants')
+        .insert({
+          name: userData.companyName
+        })
+        .select()
+        .single();
+
+      if (tenantError) {
+        console.error('Error creating tenant:', tenantError);
+        return { error: tenantError };
+      }
+
+      console.log('Tenant created successfully:', newTenant);
+
+      // Now create user profile with the tenant_id
       const { data: newProfile, error: profileError } = await supabase
         .from('users')
         .insert({
           id: user.id,
-          tenant_id: null, // Set to null initially
+          tenant_id: newTenant.id,
           name: userData.name,
           email: user.email,
           role: 'owner'
