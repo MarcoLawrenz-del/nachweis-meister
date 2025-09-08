@@ -444,15 +444,6 @@ export default function PublicUpload() {
                 </p>
               </div>
               
-              <div>
-                <Label htmlFor="document_number">Dokumentnummer (optional)</Label>
-                <Input
-                  id="document_number"
-                  placeholder="z.B. 123456789"
-                  value={uploadData.documentNumber}
-                  onChange={(e) => setUploadData(prev => ({ ...prev, documentNumber: e.target.value }))}
-                />
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>

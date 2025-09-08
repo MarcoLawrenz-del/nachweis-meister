@@ -240,13 +240,12 @@ export default function Projects() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="code">Projekt-Code *</Label>
+                  <Label htmlFor="code">Projekt-Code</Label>
                   <Input
                     id="code"
                     placeholder="z.B. KITA-2024-001"
                     value={newProject.code}
                     onChange={(e) => setNewProject(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
