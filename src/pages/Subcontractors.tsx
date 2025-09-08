@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { ComplianceStatusBadge, ComplianceIndicator } from '@/components/ComplianceStatusBadge';
 import { 
   Table, 
   TableBody, 
@@ -60,6 +61,8 @@ interface Subcontractor {
   country_code: string;
   notes: string | null;
   created_at: string;
+  status: 'active' | 'inactive';
+  compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
   project_count: number;
   critical_issues: number;
 }
@@ -123,6 +126,8 @@ export default function Subcontractors() {
           country_code,
           notes,
           created_at,
+          status,
+          compliance_status,
           project_subs (
             id,
             requirements (
@@ -145,10 +150,12 @@ export default function Subcontractors() {
           contact_name: sub.contact_name,
           contact_email: sub.contact_email,
           phone: sub.phone,
-          address: sub.address,
+          address: sub.address,  
           country_code: sub.country_code,
           notes: sub.notes,
           created_at: sub.created_at,
+          status: sub.status as 'active' | 'inactive',
+          compliance_status: sub.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon',
           project_count: sub.project_subs.length,
           critical_issues: criticalIssues
         };
@@ -306,7 +313,7 @@ export default function Subcontractors() {
         <div>
           <h1 className="text-3xl font-bold text-professional">Nachunternehmer</h1>
           <p className="text-muted-foreground">
-            Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
+            Verwalten Sie Ihre Nachunternehmer und deren rechtlichen Compliance-Status
           </p>
         </div>
         
@@ -512,13 +519,14 @@ export default function Subcontractors() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Unternehmen</TableHead>
-                  <TableHead>Kontakt</TableHead>
-                  <TableHead>Land</TableHead>
-                  <TableHead className="text-center">Projekte</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead>Erstellt</TableHead>
-                  <TableHead>Aktionen</TableHead>
+                   <TableHead>Unternehmen</TableHead>
+                   <TableHead>Kontakt</TableHead>
+                   <TableHead>Land</TableHead>
+                   <TableHead>Rechtsstatus</TableHead>
+                   <TableHead className="text-center">Projekte</TableHead>
+                   <TableHead className="text-center">Status</TableHead>
+                   <TableHead>Erstellt</TableHead>
+                   <TableHead>Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -551,29 +559,36 @@ export default function Subcontractors() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {subcontractor.country_code}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>{subcontractor.project_count}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {subcontractor.critical_issues > 0 ? (
-                        <Badge variant="destructive" className="text-xs">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {subcontractor.critical_issues} Probleme
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs">
-                          Alles aktuell
-                        </Badge>
-                      )}
-                    </TableCell>
+                     <TableCell>
+                       <Badge variant="outline">
+                         {subcontractor.country_code}
+                       </Badge>
+                     </TableCell>
+                     <TableCell>
+                       <ComplianceStatusBadge 
+                         complianceStatus={subcontractor.compliance_status}
+                         subcontractorStatus={subcontractor.status}
+                         size="sm"
+                       />
+                     </TableCell>
+                     <TableCell className="text-center">
+                       <div className="flex items-center justify-center gap-2">
+                         <Users className="h-4 w-4 text-muted-foreground" />
+                         <span>{subcontractor.project_count}</span>
+                       </div>
+                     </TableCell>
+                     <TableCell className="text-center">
+                       {subcontractor.critical_issues > 0 ? (
+                         <Badge variant="destructive" className="text-xs">
+                           <AlertTriangle className="h-3 w-3 mr-1" />
+                           {subcontractor.critical_issues} Probleme
+                         </Badge>
+                       ) : (
+                         <Badge variant="secondary" className="text-xs">
+                           Alles aktuell
+                         </Badge>
+                       )}
+                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted-foreground">
                         {format(new Date(subcontractor.created_at), 'dd.MM.yyyy', { locale: de })}

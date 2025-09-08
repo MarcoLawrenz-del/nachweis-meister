@@ -407,41 +407,56 @@ export type Database = {
       }
       subcontractors: {
         Row: {
+          activation_date: string | null
           address: string | null
           company_name: string
+          compliance_status: string | null
           contact_email: string
           contact_name: string | null
           country_code: string
           created_at: string
           id: string
+          last_compliance_check: string | null
+          next_reminder_date: string | null
           notes: string | null
           phone: string | null
+          status: string | null
           tenant_id: string
           updated_at: string
         }
         Insert: {
+          activation_date?: string | null
           address?: string | null
           company_name: string
+          compliance_status?: string | null
           contact_email: string
           contact_name?: string | null
           country_code?: string
           created_at?: string
           id?: string
+          last_compliance_check?: string | null
+          next_reminder_date?: string | null
           notes?: string | null
           phone?: string | null
+          status?: string | null
           tenant_id: string
           updated_at?: string
         }
         Update: {
+          activation_date?: string | null
           address?: string | null
           company_name?: string
+          compliance_status?: string | null
           contact_email?: string
           contact_name?: string | null
           country_code?: string
           created_at?: string
           id?: string
+          last_compliance_check?: string | null
+          next_reminder_date?: string | null
           notes?: string | null
           phone?: string | null
+          status?: string | null
           tenant_id?: string
           updated_at?: string
         }
@@ -513,6 +528,14 @@ export type Database = {
     Functions: {
       auto_assign_reviewer: {
         Args: { tenant_id_param: string }
+        Returns: string
+      }
+      calculate_next_reminder_date: {
+        Args: { subcontractor_id_param: string }
+        Returns: string
+      }
+      calculate_subcontractor_compliance: {
+        Args: { subcontractor_id_param: string }
         Returns: string
       }
     }

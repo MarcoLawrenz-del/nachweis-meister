@@ -6,6 +6,7 @@ import {
   FileCheck,
   Settings,
   FolderOpen,
+  Shield,
   LogOut
 } from "lucide-react";
 import {
@@ -24,6 +25,7 @@ import { Button } from "@/components/ui/button";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
+  { title: "Rechtliche Compliance", url: "/app/compliance", icon: Shield },
   { title: "Projekte", url: "/app/projects", icon: FolderOpen },
   { title: "Nachunternehmer", url: "/app/subcontractors", icon: Users },
   { title: "Prüfungen", url: "/app/review", icon: FileCheck },
