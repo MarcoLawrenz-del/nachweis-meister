@@ -439,28 +439,28 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Compliance Dashboard</h1>
           <p className="text-muted-foreground">
-            1-Blick-Verständnis: Was brennt? Was tue ich?
+            Aktuelle Rechtslage und Handlungsempfehlungen für Ihr Bauunternehmen
           </p>
         </div>
       </div>
 
-      {/* Onboarding-Hinweise (dezent) */}
-      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <Info className="w-4 h-4" />
-          <span>Nur Pflichtdokumente werden gewarnt</span>
+      {/* Compliance-Hinweise */}
+      <div className="flex flex-wrap gap-6 text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-primary" />
+          <span>Automatische Überwachung aller Pflichtdokumente nach deutschem Baurecht</span>
         </div>
-        <span>•</span>
-        <div className="flex items-center gap-1">
-          <Info className="w-4 h-4" />
-          <span>Engagements optional – Compliance läuft auch global</span>
+        <span className="text-muted-foreground/50">•</span>
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-primary" />
+          <span>Projekt-spezifische und globale Nachweise werden zentral verwaltet</span>
         </div>
-        <span>•</span>
-        <div className="flex items-center gap-1">
-          <Info className="w-4 h-4" />
-          <span>Monatliche Pflichten werden automatisch erinnert</span>
+        <span className="text-muted-foreground/50">•</span>
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-primary" />
+          <span>Wiederkehrende Pflichten werden automatisch terminiert</span>
         </div>
       </div>
 
@@ -474,14 +474,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Aktive Nachunternehmer</p>
+                  <p className="text-sm font-medium text-muted-foreground">Arbeitsfähige Nachunternehmer</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Anzahl der aktiven, arbeitsfähigen Nachunternehmer</p>
+                        <p>Nachunternehmer mit vollständiger Compliance, die sofort eingesetzt werden können</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -501,14 +501,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Fehlend</p>
+                  <p className="text-sm font-medium text-muted-foreground">Fehlende Nachweise</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Anzahl fehlender Pflichtdokumente</p>
+                        <p>Pflichtdokumente, die noch nicht hochgeladen wurden</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -528,14 +528,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Abgelaufen</p>
+                  <p className="text-sm font-medium text-muted-foreground">Abgelaufene Nachweise</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Anzahl bereits abgelaufener Pflichtdokumente</p>
+                        <p>Dokumente, deren Gültigkeit bereits überschritten ist - sofortiger Handlungsbedarf</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -555,14 +555,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">≤30 Tage</p>
+                  <p className="text-sm font-medium text-muted-foreground">Laufen bald ab</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Dokumente, die in den nächsten 30 Tagen ablaufen</p>
+                        <p>Nachweise, die in den nächsten 30 Tagen erneuert werden müssen</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -582,14 +582,14 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">In Prüfung</p>
+                  <p className="text-sm font-medium text-muted-foreground">Zur Prüfung</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Dokumente, die aktuell vom Team geprüft werden</p>
+                        <p>Hochgeladene Dokumente, die eine Freigabe durch Ihr Team benötigen</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -613,7 +613,7 @@ export default function Dashboard() {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-danger mb-2">
-                Sofortiger Handlungsbedarf
+                Rechtliche Risiken - Sofortmaßnahmen erforderlich
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {stats.expired > 0 && (
@@ -621,7 +621,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                       <XCircle className="w-5 h-5 text-danger" />
                       <span className="font-semibold text-danger text-lg">{stats.expired}</span>
-                      <span className="text-danger-foreground/80">abgelaufene Nachweise</span>
+                      <span className="text-danger-foreground/80">rechtlich kritische Fälle</span>
                     </div>
                   </div>
                 )}
@@ -630,7 +630,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                       <Clock className="w-5 h-5 text-warning" />
                       <span className="font-semibold text-warning text-lg">{stats.expiringSoon}</span>
-                      <span className="text-warning-foreground/80">laufen bald ab</span>
+                      <span className="text-warning-foreground/80">benötigen Verlängerung</span>
                     </div>
                   </div>
                 )}
@@ -638,7 +638,7 @@ export default function Dashboard() {
               <Button size="lg" className="bg-danger hover:bg-danger/90" asChild>
                 <Link to="/app/review">
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  Kritische Fälle bearbeiten
+                  Rechtliche Risiken bearbeiten
                 </Link>
               </Button>
             </div>
@@ -653,10 +653,10 @@ export default function Dashboard() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                Kritische Fälle (Top 10)
+                Prioritätenliste Compliance
               </CardTitle>
               <CardDescription>
-                Sub • (Projekt/Global) • Pflichtdokument • Fällig/Überfällig • Action
+                Die 10 wichtigsten Nachweise sortiert nach Dringlichkeit und rechtlichem Risiko
               </CardDescription>
             </div>
             {filter !== 'all' && (
@@ -676,12 +676,21 @@ export default function Dashboard() {
           {criticalItems.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Shield className="w-12 h-12 mx-auto mb-4" />
-              <p>Keine kritischen Fälle gefunden</p>
-              <p className="text-sm">Ihre Compliance ist auf dem neuesten Stand!</p>
+              <p className="font-medium">Alle Nachweise aktuell</p>
+              <p className="text-sm">Ihr Unternehmen erfüllt alle rechtlichen Anforderungen</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {criticalItems.map((item, index) => (
+              {criticalItems
+                .filter(item => {
+                  if (filter === 'all') return true;
+                  if (filter === 'expired') return item.status === 'expired';
+                  if (filter === 'expiring') return item.status === 'expiring';
+                  if (filter === 'missing') return item.status === 'missing';
+                  if (filter === 'review') return item.status === 'in_review';
+                  return true;
+                })
+                .map((item, index) => (
                 <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-white text-xs flex items-center justify-center font-semibold">
@@ -727,11 +736,11 @@ export default function Dashboard() {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-success mb-2">
-                Alles unter Kontrolle!
+                Rechtssichere Projektabwicklung
               </h2>
               <p className="text-success-foreground/80 mb-4">
-                Aktuell sind keine kritischen Nachweise abgelaufen oder laufen in den nächsten 30 Tagen ab. 
-                Ihre Compliance ist auf dem neuesten Stand.
+                Alle Pflichtdokumente sind gültig und aktuell. Ihre Nachunternehmer können 
+                ohne rechtliche Risiken eingesetzt werden.
               </p>
               <div className="flex gap-3">
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>
@@ -756,9 +765,9 @@ export default function Dashboard() {
       <Alert className="border-amber-200 bg-amber-50">
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Rechtliche Compliance:</strong> Als Generalunternehmer sind Sie verpflichtet, 
-          die Nachweise Ihrer Nachunternehmer zu prüfen und zu dokumentieren. 
-          Fehlende oder abgelaufene Dokumente können zu Haftungsrisiken und Bauabzugssteuer führen.
+          <strong>Rechtliche Hinweise:</strong> Als Generalunternehmer tragen Sie die Verantwortung für die 
+          ordnungsgemäße Dokumentation aller Nachunternehmer. Unvollständige Nachweise können zu 
+          Haftungsrisiken, Bußgeldern und Bauabzugssteuer-Problemen führen.
         </AlertDescription>
       </Alert>
     </div>
