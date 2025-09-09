@@ -61,10 +61,6 @@ export default function Pricing() {
   const { subscription, createCheckoutSession, openCustomerPortal, loading } = useSubscription();
 
   const handlePlanSelection = (priceId: string) => {
-    console.log('🎯 Button clicked! PriceId:', priceId);
-    alert(`Button clicked for price: ${priceId}`);
-    console.log('📋 Subscription:', subscription);
-    console.log('📊 Plan quotas and current status');
     createCheckoutSession(priceId);
   };
 

@@ -123,16 +123,11 @@ export function useSubscription() {
         return;
       }
       
-      // Add success/cancel URLs as parameters if Stripe supports it
-      const url = new URL(paymentLink);
-      url.searchParams.set('success_url', `${window.location.origin}/dashboard?success=true`);
-      url.searchParams.set('cancel_url', `${window.location.origin}/pricing?canceled=true`);
-      
-      console.log('✅ Opening Stripe Payment Link:', url.toString());
+      console.log('✅ Opening direct Stripe Payment Link:', paymentLink);
       toast.success('Weiterleitung zu Stripe Checkout...');
       
-      // Direct redirect to Stripe (same window for better UX)
-      window.location.href = url.toString();
+      // Direct redirect to Stripe Payment Link (no URL parameters needed)
+      window.location.href = paymentLink;
       
     } catch (error) {
       console.error('❌ Error in payment link checkout:', error);
