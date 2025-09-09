@@ -10,6 +10,23 @@ A comprehensive compliance management platform for subcontractors built with Rea
 - **Real-time KPI Dashboard**: Live updating dashboard with WebSocket connections
 - **Data Accuracy**: 1:1 correspondence between dashboard numbers, lists, and individual records
 
+## 📝 MSG-0 - Global Messaging & Wording
+
+### ✅ Completed Implementation
+- **Global Wording System**: Created `src/content/wording.ts` with consistent terminology
+- **Pitch Integration**: Exact pitch and subline now displayed on landing page and dashboard
+- **"Nur Pflichten" Messaging**: Prominently featured across hero, dashboard hints, and info sections
+- **Build Guards**: ESLint rule prevents usage of "Bausicht" - build fails on violations
+- **Terminology Consistency**: Replaced "Subs" abbreviation with full "Nachunternehmer (Subunternehmer)"
+- **Email Templates**: Updated to use WORDING.email constants for consistency
+- **UI/UX Updates**: All user-facing strings now use WORDING constants
+
+### Key Features
+- `WORDING.pitchOneLiner`: "Nachunterlagen automatisch einsammeln – nur das, was wirklich Pflicht ist."
+- `WORDING.pitchSubline`: Full explanation emphasizing "Pflichtnachweise"
+- `WORDING.valuePillars`: ["Einfachheit", "Zeitersparnis", "Rechtssicherheit", "Nur Pflichten"]
+- `WORDING.info.onlyRequiredWarn`: Build-in messaging about "Nur Pflichtnachweise"
+
 ## 🧪 E2E Test Coverage
 
 Our Playwright test suite ensures **"Keine Regressionen, KPIs = Wahrheit"** with comprehensive scenarios:

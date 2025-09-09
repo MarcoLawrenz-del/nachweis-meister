@@ -161,7 +161,7 @@ export function useRealtimeKPIs() {
           table: 'project_subs'
         },
         () => {
-          console.log('Project subs changed, refreshing KPIs');
+          console.log('Project subcontractors changed, refreshing KPIs');
           fetchKPIs();
         }
       )

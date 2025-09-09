@@ -241,7 +241,7 @@ const demoStats = {
   inReview: 0,
   missing: 1,
   criticalCount: 3,
-  complianceRate: 67 // 2 of 3 subs have some level of compliance
+  complianceRate: 67 // 2 of 3 subcontractors have some level of compliance
 };
 
 /**

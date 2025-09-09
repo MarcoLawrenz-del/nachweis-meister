@@ -9,6 +9,7 @@ import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
 import { debug } from '@/lib/debug';
 import { Link } from 'react-router-dom';
+import { WORDING } from '@/content/wording';
 import { 
   Shield, AlertTriangle, Clock, Eye, Users, AlertCircle, 
   Bell, Pause, Building2, FileText, Info, Filter, XCircle,
@@ -336,14 +337,14 @@ export default function Dashboard() {
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Users className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-lg mb-2 text-gray-900">Nachunternehmer hinzufügen</h3>
+              <h3 className="font-semibold text-lg mb-2 text-gray-900">{WORDING.terms.subcontractor} hinzufügen</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Fügen Sie Ihre ersten Nachunternehmer hinzu und verwalten Sie deren Kontaktdaten.
+                Fügen Sie Ihre ersten {WORDING.terms.subcontractor} hinzu und verwalten Sie deren Kontaktdaten.
               </p>
               <Button className="w-full" asChild>
                 <Link to="/app/subcontractors">
                   <Users className="w-4 h-4 mr-2" />
-                  Nachunternehmer hinzufügen
+                  {WORDING.terms.subcontractor} hinzufügen
                 </Link>
               </Button>
             </CardContent>
@@ -459,10 +460,15 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Compliance Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{WORDING.productName} Dashboard</h1>
           <p className="text-muted-foreground">
-            Aktuelle Rechtslage und Handlungsempfehlungen für Ihr Bauunternehmen
+            {WORDING.pitchOneLiner}
           </p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">
+              {WORDING.info.onlyRequiredWarn}
+            </Badge>
+          </div>
         </div>
         
         {/* Filter Toggle */}
@@ -484,7 +490,7 @@ export default function Dashboard() {
               <SelectItem value="all">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Alle Nachunternehmer
+                  Alle {WORDING.terms.subcontractor}
                 </div>
               </SelectItem>
               <SelectItem value="missing">Fehlende Nachweise</SelectItem>
@@ -789,14 +795,14 @@ export default function Dashboard() {
                 Rechtssichere Projektabwicklung
               </h2>
               <p className="text-success-foreground/80 mb-4">
-                Alle Pflichtdokumente sind gültig und aktuell. Ihre Nachunternehmer können 
+                Alle {WORDING.terms.requiredDoc}e sind gültig und aktuell. Ihre {WORDING.terms.subcontractor} können 
                 ohne rechtliche Risiken eingesetzt werden.
               </p>
               <div className="flex gap-3">
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>
                   <Link to="/app/subcontractors">
                     <Users className="w-4 h-4 mr-2" />
-                    Nachunternehmer verwalten
+                    Alle {WORDING.terms.subcontractor} verwalten
                   </Link>
                 </Button>
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>

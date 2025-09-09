@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Logo } from '@/components/Brand/Logo';
+import { WORDING } from '@/content/wording';
 import { 
   Shield, 
   CheckCircle, 
@@ -155,13 +156,13 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>subfix - Nachunternehmer-Compliance automatisiert | 14 Tage kostenlos testen</title>
-        <meta name="description" content="Automatisierte Überwachung aller Pflichtdokumente für Nachunternehmer. Rechtssichere Projektabwicklung nach deutschem Baurecht. Jetzt 14 Tage kostenlos testen." />
-        <meta name="keywords" content="Nachunternehmer, Compliance, Baurecht, Pflichtdokumente, Freistellungsbescheinigung, A1-Bescheinigung, Generalunternehmer" />
+        <title>{WORDING.productName} - {WORDING.categoryLabel} | {WORDING.cta.startTrial}</title>
+        <meta name="description" content={`${WORDING.pitchSubline} Jetzt ${WORDING.cta.startTrial.toLowerCase()}.`} />
+        <meta name="keywords" content="Nachunternehmer, Compliance, Baurecht, Pflichtnachweise, Freistellungsbescheinigung, A1-Bescheinigung, Generalunternehmer" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="subfix - Nachunternehmer-Compliance automatisiert" />
-        <meta property="og:description" content="Rechtssichere Projektabwicklung durch automatisierte Überwachung aller Pflichtdokumente. 14 Tage kostenlos testen." />
+        <meta property="og:title" content={`${WORDING.productName} - ${WORDING.categoryLabel}`} />
+        <meta property="og:description" content={`${WORDING.pitchOneLiner} ${WORDING.cta.startTrial}.`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://subfix.de" />
         <meta property="og:image" content="/og-default.png" />
@@ -240,24 +241,30 @@ export default function Landing() {
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              Nachunternehmer-Compliance
-              <span className="block text-primary">automatisiert</span>
+              {WORDING.pitchOneLiner}
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Rechtssichere Projektabwicklung durch intelligente Überwachung aller Pflichtdokumente 
-              nach deutschem Baurecht. Nie wieder abgelaufene Nachweise oder Haftungsrisiken.
+              {WORDING.pitchSubline}
             </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              {WORDING.valuePillars.map((pillar) => (
+                <Badge key={pillar} variant="outline" className="text-base px-4 py-1">
+                  {pillar}
+                </Badge>
+              ))}
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button size="lg" className="text-lg px-8" onClick={handleStartTrial}>
                 <Play className="w-5 h-5 mr-2" />
-                14 Tage kostenlos testen
+                {WORDING.cta.startTrial}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" asChild>
                 <a href="#demo">
                   <Eye className="w-5 h-5 mr-2" />
-                  Live-Demo ansehen
+                  {WORDING.cta.viewDemo}
                 </a>
               </Button>
             </div>
@@ -641,7 +648,7 @@ export default function Landing() {
                       {isCreatingCheckout === plan.name ? (
                         'Wird erstellt...'
                       ) : plan.price > 0 ? (
-                        '14 Tage kostenlos testen'
+                        WORDING.cta.startTrial
                       ) : (
                         'Kontakt aufnehmen'
                       )}

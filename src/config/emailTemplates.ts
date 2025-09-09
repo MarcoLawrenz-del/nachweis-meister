@@ -1,4 +1,5 @@
 import { getHelpInfo } from './helpLinks';
+import { WORDING } from '@/content/wording';
 
 export interface EmailTemplateData {
   subcontractorName: string;
@@ -18,7 +19,7 @@ export interface EmailTemplateData {
 export const EMAIL_TEMPLATES = {
   invite_initial: {
     subject: (data: EmailTemplateData) => 
-      `Dokumentenanforderung: ${data.requirementName} für ${data.projectName || 'Compliance-Prüfung'}`,
+      WORDING.email.inviteSubject,
     
     html: (data: EmailTemplateData) => `
 <!DOCTYPE html>
@@ -26,7 +27,7 @@ export const EMAIL_TEMPLATES = {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dokumentenanforderung</title>
+    <title>${WORDING.email.inviteSubject}</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f4f4f4; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
