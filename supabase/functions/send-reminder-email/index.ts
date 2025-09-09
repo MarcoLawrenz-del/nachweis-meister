@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email via Resend
     const emailResponse = await resend.emails.send({
-      from: `${templateData.tenantName} <noreply@nachweis-meister.de>`,
+      from: `${templateData.tenantName} <onboarding@resend.dev>`,
       to: recipients,
       subject: subject,
       html: html,
