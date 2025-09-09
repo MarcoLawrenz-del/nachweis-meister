@@ -670,6 +670,38 @@ export type Database = {
           },
         ]
       }
+      tenant_domain_allowlists: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          domain: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          domain: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          domain?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_domain_allowlists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string
@@ -749,6 +781,10 @@ export type Database = {
       compute_required_requirements: {
         Args: { project_sub_id_param?: string; subcontractor_id_param: string }
         Returns: Json
+      }
+      is_domain_allowed_for_magic_link: {
+        Args: { email_param: string; tenant_id_param?: string }
+        Returns: boolean
       }
       send_compliance_reminders: {
         Args: Record<PropertyKey, never>
