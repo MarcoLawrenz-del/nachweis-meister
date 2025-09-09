@@ -57,6 +57,8 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { ComplianceFlags } from '@/components/ComplianceFlags';
 import { InviteSubcontractor } from '@/components/InviteSubcontractor';
+import EmailLogTable from '@/components/EmailLogTable';
+import ReminderControls from '@/components/ReminderControls';
 
 interface Subcontractor {
   id: string;
@@ -905,6 +907,9 @@ Mit freundlichen Grüßen`
           </CardContent>
         </Card>
       )}
+
+      {/* Email Log Table */}
+      <EmailLogTable subcontractorId={subcontractor.id} />
     </div>
   );
 }

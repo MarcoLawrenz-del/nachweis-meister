@@ -180,10 +180,12 @@ export type Database = {
           email: string
           expires_at: string
           id: string
+          invitation_type: string
           invited_by: string
           message: string
-          project_sub_id: string
+          project_sub_id: string | null
           status: string
+          subcontractor_id: string | null
           subject: string
           token: string
         }
@@ -192,10 +194,12 @@ export type Database = {
           email: string
           expires_at?: string
           id?: string
+          invitation_type?: string
           invited_by: string
           message: string
-          project_sub_id: string
+          project_sub_id?: string | null
           status?: string
+          subcontractor_id?: string | null
           subject: string
           token: string
         }
@@ -204,14 +208,24 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
+          invitation_type?: string
           invited_by?: string
           message?: string
-          project_sub_id?: string
+          project_sub_id?: string | null
           status?: string
+          subcontractor_id?: string | null
           subject?: string
           token?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invitations_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       Marco1: {
         Row: {
@@ -282,25 +296,34 @@ export type Database = {
         Row: {
           approved_at: string | null
           created_at: string
+          end_at: string | null
           id: string
           overall_status: string
           project_id: string
+          start_at: string | null
+          status: string
           subcontractor_id: string
         }
         Insert: {
           approved_at?: string | null
           created_at?: string
+          end_at?: string | null
           id?: string
           overall_status?: string
           project_id: string
+          start_at?: string | null
+          status?: string
           subcontractor_id: string
         }
         Update: {
           approved_at?: string | null
           created_at?: string
+          end_at?: string | null
           id?: string
           overall_status?: string
           project_id?: string
+          start_at?: string | null
+          status?: string
           subcontractor_id?: string
         }
         Relationships: [
