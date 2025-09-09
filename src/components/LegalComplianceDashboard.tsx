@@ -2,156 +2,197 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ComplianceStatusBadge, ComplianceIndicator } from './ComplianceStatusBadge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { 
-  Shield, 
-  AlertTriangle, 
-  Clock, 
-  CheckCircle, 
-  FileText, 
-  Scale,
-  Building2,
-  Calendar,
-  TrendingUp,
-  Users
+  Shield, AlertTriangle, Clock, Eye, Users, AlertCircle, 
+  Bell, Pause, Building2, FileText, Info, Filter
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isBefore, addDays } from 'date-fns';
 import { de } from 'date-fns/locale';
 
-interface LegalDocument {
-  code: string;
-  name_de: string;
-  description_de: string;
-  required_by_default: boolean;
-  sort_order: number;
-}
-
-interface SubcontractorCompliance {
+interface CriticalItem {
   id: string;
   company_name: string;
-  status: 'active' | 'inactive';
-  compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
-  activation_date: string | null;
-  next_reminder_date: string | null;
-  last_compliance_check: string;
-  mandatory_docs_complete: number;
-  total_mandatory_docs: number;
-  expiring_docs_count: number;
+  project_name: string | null;
+  document_name: string;
+  due_date: string | null;
+  status: 'expired' | 'expiring' | 'in_review';
+  action_type: 'remind' | 'review' | 'pause';
+  priority: number;
 }
 
 interface ComplianceStats {
-  totalSubcontractors: number;
   activeSubcontractors: number;
-  compliantSubcontractors: number;
-  expiringSubcontractors: number;
-  nonCompliantSubcontractors: number;
-  complianceRate: number;
-  upcomingReminders: number;
+  expiredDocuments: number;
+  expiringIn30Days: number;
+  inReview: number;
 }
 
+type FilterType = 'all' | 'active' | 'expired' | 'expiring' | 'review';
+
 export function LegalComplianceDashboard() {
-  const [legalDocuments, setLegalDocuments] = useState<LegalDocument[]>([]);
-  const [subcontractorsCompliance, setSubcontractorsCompliance] = useState<SubcontractorCompliance[]>([]);
   const [stats, setStats] = useState<ComplianceStats>({
-    totalSubcontractors: 0,
     activeSubcontractors: 0,
-    compliantSubcontractors: 0,
-    expiringSubcontractors: 0,
-    nonCompliantSubcontractors: 0,
-    complianceRate: 0,
-    upcomingReminders: 0
+    expiredDocuments: 0,
+    expiringIn30Days: 0,
+    inReview: 0
   });
+  const [criticalList, setCriticalList] = useState<CriticalItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>('all');
   const { profile } = useAuthContext();
 
   useEffect(() => {
     if (profile?.tenant_id) {
-      Promise.all([
-        fetchLegalDocuments(),
-        fetchSubcontractorsCompliance()
-      ]);
+      fetchDashboardData();
     }
   }, [profile?.tenant_id]);
 
-  const fetchLegalDocuments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('document_types')
-        .select('*')
-        .order('sort_order');
-
-      if (error) throw error;
-      setLegalDocuments(data || []);
-    } catch (error) {
-      console.error('Error fetching legal documents:', error);
-    }
-  };
-
-  const fetchSubcontractorsCompliance = async () => {
+  const fetchDashboardData = async () => {
     if (!profile?.tenant_id) return;
 
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // Fetch stats data
+      const { data: subcontractors } = await supabase
         .from('subcontractors')
         .select(`
-          id,
-          company_name,
-          status,
-          compliance_status,
-          activation_date,
-          next_reminder_date,
-          last_compliance_check
+          id, company_name, status, compliance_status,
+          project_subs!inner(
+            id, status, project_id,
+            projects(id, name),
+            requirements!inner(
+              id, status, due_date, assigned_reviewer_id,
+              document_types(id, name_de)
+            )
+          )
         `)
         .eq('tenant_id', profile.tenant_id);
 
-      if (error) throw error;
+      if (subcontractors) {
+        // Calculate stats
+        const activeCount = subcontractors.filter(s => s.status === 'active').length;
+        let expiredCount = 0;
+        let expiringCount = 0;
+        let reviewCount = 0;
+        const criticalItems: CriticalItem[] = [];
 
-      const processedData: SubcontractorCompliance[] = data?.map(sub => ({
-        ...sub,
-        status: sub.status as 'active' | 'inactive',
-        compliance_status: sub.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon',
-        mandatory_docs_complete: 0, // Will be calculated
-        total_mandatory_docs: 0,    // Will be calculated
-        expiring_docs_count: 0      // Will be calculated
-      })) || [];
+        const today = new Date();
+        const in30Days = addDays(today, 30);
 
-      // Calculate stats
-      const totalSubcontractors = processedData.length;
-      const activeSubcontractors = processedData.filter(s => s.status === 'active').length;
-      const compliantSubcontractors = processedData.filter(s => s.compliance_status === 'compliant').length;
-      const expiringSubcontractors = processedData.filter(s => s.compliance_status === 'expiring_soon').length;
-      const nonCompliantSubcontractors = processedData.filter(s => s.compliance_status === 'non_compliant').length;
-      const complianceRate = totalSubcontractors > 0 ? Math.round((compliantSubcontractors / totalSubcontractors) * 100) : 0;
-      const upcomingReminders = processedData.filter(s => 
-        s.next_reminder_date && new Date(s.next_reminder_date) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      ).length;
+        subcontractors.forEach(sub => {
+          sub.project_subs.forEach(ps => {
+            ps.requirements.forEach(req => {
+              const dueDate = req.due_date ? new Date(req.due_date) : null;
+              
+              if (req.status === 'in_review') {
+                reviewCount++;
+                criticalItems.push({
+                  id: req.id,
+                  company_name: sub.company_name,
+                  project_name: ps.projects?.name || null,
+                  document_name: req.document_types.name_de,
+                  due_date: req.due_date,
+                  status: 'in_review',
+                  action_type: 'review',
+                  priority: 2
+                });
+              } else if (dueDate && isBefore(dueDate, today)) {
+                expiredCount++;
+                criticalItems.push({
+                  id: req.id,
+                  company_name: sub.company_name,
+                  project_name: ps.projects?.name || null,
+                  document_name: req.document_types.name_de,
+                  due_date: req.due_date,
+                  status: 'expired',
+                  action_type: 'remind',
+                  priority: 1
+                });
+              } else if (dueDate && isBefore(dueDate, in30Days)) {
+                expiringCount++;
+                criticalItems.push({
+                  id: req.id,
+                  company_name: sub.company_name,
+                  project_name: ps.projects?.name || null,
+                  document_name: req.document_types.name_de,
+                  due_date: req.due_date,
+                  status: 'expiring',
+                  action_type: 'remind',
+                  priority: 3
+                });
+              }
+            });
+          });
+        });
 
-      setStats({
-        totalSubcontractors,
-        activeSubcontractors,
-        compliantSubcontractors,
-        expiringSubcontractors,
-        nonCompliantSubcontractors,
-        complianceRate,
-        upcomingReminders
-      });
+        setStats({
+          activeSubcontractors: activeCount,
+          expiredDocuments: expiredCount,
+          expiringIn30Days: expiringCount,
+          inReview: reviewCount
+        });
 
-      setSubcontractorsCompliance(processedData);
+        // Sort by priority and take top 10
+        setCriticalList(
+          criticalItems
+            .sort((a, b) => a.priority - b.priority)
+            .slice(0, 10)
+        );
+      }
     } catch (error) {
-      console.error('Error fetching subcontractors compliance:', error);
+      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const mandatoryDocuments = legalDocuments.filter(doc => doc.required_by_default);
-  const optionalDocuments = legalDocuments.filter(doc => !doc.required_by_default);
+  const handleKPIClick = (filterType: FilterType) => {
+    setFilter(filterType);
+  };
+
+  const getActionButton = (item: CriticalItem) => {
+    switch (item.action_type) {
+      case 'remind':
+        return (
+          <Button size="sm" variant="outline" className="text-xs">
+            <Bell className="w-3 h-3 mr-1" />
+            Erinnern
+          </Button>
+        );
+      case 'review':
+        return (
+          <Button size="sm" variant="outline" className="text-xs">
+            <Eye className="w-3 h-3 mr-1" />
+            Prüfen
+          </Button>
+        );
+      case 'pause':
+        return (
+          <Button size="sm" variant="outline" className="text-xs">
+            <Pause className="w-3 h-3 mr-1" />
+            Pausieren
+          </Button>
+        );
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'expired':
+        return <Badge variant="destructive" className="text-xs">Abgelaufen</Badge>;
+      case 'expiring':
+        return <Badge variant="secondary" className="text-xs">Läuft ab</Badge>;
+      case 'in_review':
+        return <Badge variant="outline" className="text-xs">In Prüfung</Badge>;
+      default:
+        return null;
+    }
+  };
 
   if (loading) {
     return (
@@ -174,183 +215,196 @@ export function LegalComplianceDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Legal Warning Alert - Bausicht Style */}
-      <Alert className="border-destructive/50 bg-destructive/5">
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Rechtliche Sicherheit & Compliance:</strong> Diese Dokumente sind gesetzlich erforderlich, um Rechts- und Haftungssicherheit zu gewährleisten. 
-          Ohne Freistellungsbescheinigung (§ 48b EStG) droht Bauabzugssteuer oder Haftung. Bei fehlender Dokumentation 
-          (Sozialversicherungsnachweise, Mindestlohn) haftet der Generalunternehmer.
-        </AlertDescription>
-      </Alert>
+      {/* Onboarding-Hinweise (dezent) */}
+      <div className="flex gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <Info className="w-4 h-4" />
+          <span>Nur Pflichtdokumente werden gewarnt</span>
+        </div>
+        <span>•</span>
+        <div className="flex items-center gap-1">
+          <Info className="w-4 h-4" />
+          <span>Engagements optional – Compliance läuft auch global</span>
+        </div>
+        <span>•</span>
+        <div className="flex items-center gap-1">
+          <Info className="w-4 h-4" />
+          <span>Monatliche Pflichten werden automatisch erinnert</span>
+        </div>
+      </div>
 
-      {/* Stats Overview */}
+      {/* KPI-Kacheln (klickbar) */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'active' ? 'ring-2 ring-primary' : ''}`}
+          onClick={() => handleKPIClick('active')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Compliance-Rate</p>
-                <p className="text-2xl font-bold">{stats.complianceRate}%</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-success" />
-            </div>
-            <Progress value={stats.complianceRate} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Aktive Nachunternehmer</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">Aktive Nachunternehmer</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Anzahl der aktiven, arbeitsfähigen Nachunternehmer</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <p className="text-2xl font-bold">{stats.activeSubcontractors}</p>
               </div>
-              <Users className="h-8 w-8 text-professional" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              von {stats.totalSubcontractors} gesamt
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'expired' ? 'ring-2 ring-destructive' : ''}`}
+          onClick={() => handleKPIClick('expired')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Kritische Fälle</p>
-                <p className="text-2xl font-bold text-destructive">{stats.nonCompliantSubcontractors}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">Dokumente abgelaufen</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Anzahl bereits abgelaufener Pflichtdokumente</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-2xl font-bold text-destructive">{stats.expiredDocuments}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-destructive" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Nicht compliant
-            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'expiring' ? 'ring-2 ring-warning' : ''}`}
+          onClick={() => handleKPIClick('expiring')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Anstehende Erinnerungen</p>
-                <p className="text-2xl font-bold text-warning">{stats.upcomingReminders}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">≤30 Tage</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Dokumente, die in den nächsten 30 Tagen ablaufen</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-2xl font-bold text-warning">{stats.expiringIn30Days}</p>
               </div>
-              <Calendar className="h-8 w-8 text-warning" />
+              <Clock className="h-8 w-8 text-warning" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              In den nächsten 7 Tagen
-            </p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'review' ? 'ring-2 ring-blue-500' : ''}`}
+          onClick={() => handleKPIClick('review')}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">In Prüfung</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Dokumente, die aktuell vom Team geprüft werden</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-2xl font-bold text-blue-600">{stats.inReview}</p>
+              </div>
+              <Eye className="h-8 w-8 text-blue-600" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Legal Documents Overview */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Chargenpflichtige Dokumente (Pflicht) - Bausicht */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Scale className="mr-2 h-5 w-5 text-destructive" />
-              Chargenpflichtige Dokumente (Pflicht)
-            </CardTitle>
-            <CardDescription>
-              Diese 8 Dokumente sind zwingend erforderlich nach Bausicht-Standards für rechtskonforme Nachunternehmer-Aufnahme.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {mandatoryDocuments.map((doc, index) => (
-              <div key={doc.code} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-destructive/20">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold">
-                  {index + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">{doc.name_de}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{doc.description_de}</p>
-                  <Badge className="bg-destructive text-destructive-foreground text-xs mt-2">
-                    Chargenpflichtig
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Optionale, empfohlene Unterlagen - Bausicht */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5 text-success" />
-              Optionale, empfohlene Unterlagen
-            </CardTitle>
-            <CardDescription>
-              Nicht Bausicht-spezifisch erforderlich, aber nützlich für erweiterte Compliance und Transparenz.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {optionalDocuments.map((doc, index) => (
-              <div key={doc.code} className="flex items-start gap-3 p-4 rounded-lg bg-card border border-success/20">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-success text-success-foreground text-xs flex items-center justify-center font-semibold">
-                  {index + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm">{doc.name_de}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{doc.description_de}</p>
-                  <Badge variant="outline" className="text-success border-success text-xs mt-2">
-                    Empfohlen
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Subcontractors Compliance Status */}
+      {/* Critical-List (Top 10) */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Building2 className="mr-2 h-5 w-5" />
-            Nachunternehmer Compliance-Status
-          </CardTitle>
-          <CardDescription>
-            Überblick über den rechtlichen Compliance-Status aller Nachunternehmer
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+                Kritische Fälle (Top 10)
+              </CardTitle>
+              <CardDescription>
+                Dringendste Compliance-Risiken nach Priorität sortiert
+              </CardDescription>
+            </div>
+            {filter !== 'all' && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setFilter('all')}
+                className="flex items-center gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                Filter zurücksetzen
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          {subcontractorsCompliance.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Noch keine Nachunternehmer vorhanden</p>
+          {criticalList.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Shield className="w-12 h-12 mx-auto mb-4" />
+              Keine kritischen Fälle gefunden
             </div>
           ) : (
-            <div className="space-y-4">
-              {subcontractorsCompliance.map((sub) => (
-                <div key={sub.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <ComplianceIndicator complianceStatus={sub.compliance_status} />
-                    <div>
-                      <h4 className="font-medium">{sub.company_name}</h4>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Status: {sub.status === 'active' ? 'Aktiv' : 'Inaktiv'}</span>
-                        {sub.activation_date && (
-                          <span>• Aktiviert: {format(new Date(sub.activation_date), 'dd.MM.yyyy', { locale: de })}</span>
-                        )}
+            <div className="space-y-3">
+              {criticalList.map((item, index) => (
+                <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-destructive text-white text-xs flex items-center justify-center font-semibold">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="font-medium truncate">{item.company_name}</span>
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-sm text-muted-foreground truncate">
+                          {item.project_name || 'Global'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm truncate">{item.document_name}</span>
+                        {getStatusBadge(item.status)}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <ComplianceStatusBadge 
-                      complianceStatus={sub.compliance_status}
-                      subcontractorStatus={sub.status}
-                      size="sm"
-                    />
-                    {sub.next_reminder_date && (
-                      <Badge variant="outline" className="text-xs">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Erinnerung: {format(new Date(sub.next_reminder_date), 'dd.MM.', { locale: de })}
-                      </Badge>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {item.due_date && (
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(item.due_date), 'dd.MM.yyyy', { locale: de })}
+                      </span>
                     )}
+                    {getActionButton(item)}
                   </div>
                 </div>
               ))}
@@ -358,6 +412,16 @@ export function LegalComplianceDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Rechtlicher Hinweis */}
+      <Alert className="border-amber-200 bg-amber-50">
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Rechtliche Compliance:</strong> Als Generalunternehmer sind Sie verpflichtet, 
+          die Nachweise Ihrer Nachunternehmer zu prüfen und zu dokumentieren. 
+          Fehlende oder abgelaufene Dokumente können zu Haftungsrisiken und Bauabzugssteuer führen.
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }
