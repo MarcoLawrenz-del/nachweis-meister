@@ -244,24 +244,7 @@ const App = () => (
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
             
             {/* Public document upload (no auth required) */}
-            <Route path="/public/*" element={
-              <div style={{
-                minHeight: '100vh',
-                backgroundColor: '#ef4444',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '1.5rem',
-                fontFamily: 'system-ui',
-                flexDirection: 'column',
-                gap: '20px'
-              }}>
-                <div>🚨 PUBLIC ROUTE GEFANGEN</div>
-                <div>URL: {window.location.pathname}</div>
-                <div>Zeit: {new Date().toLocaleString('de-DE')}</div>
-              </div>
-            } />
+            <Route path="/public/upload/:token" element={<PublicUpload />} />
             <Route path="/upload/:token" element={<PublicUpload />} />
             
             {/* Test route */}
