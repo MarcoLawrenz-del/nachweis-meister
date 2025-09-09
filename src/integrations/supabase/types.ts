@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          properties: Json | null
+          tenant_id: string | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          properties?: Json | null
+          tenant_id?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          properties?: Json | null
+          tenant_id?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_types: {
         Row: {
           code: string
@@ -876,6 +914,24 @@ export type Database = {
       compute_required_requirements: {
         Args: { project_sub_id_param?: string; subcontractor_id_param: string }
         Returns: Json
+      }
+      get_tenant_kpis: {
+        Args: { tenant_id: string }
+        Returns: {
+          active_subcontractors: number
+          compliance_rate: number
+          expired_requirements: number
+          expiring_requirements: number
+          in_review_requirements: number
+          inactive_subcontractors: number
+          last_updated: string
+          missing_requirements: number
+          rejected_requirements: number
+          submitted_requirements: number
+          total_requirements: number
+          total_subcontractors: number
+          valid_requirements: number
+        }[]
       }
       is_domain_allowed_for_magic_link: {
         Args: { email_param: string; tenant_id_param?: string }

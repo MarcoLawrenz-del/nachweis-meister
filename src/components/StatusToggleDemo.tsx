@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Pause, Bell } from 'lucide-react';
+import { useTelemetryIntegration } from '@/hooks/useTelemetryIntegration';
 
 interface StatusToggleDemoProps {
   subcontractorName: string;
@@ -13,11 +14,19 @@ interface StatusToggleDemoProps {
 export function StatusToggleDemo({ subcontractorName, onStatusChange }: StatusToggleDemoProps) {
   const [isActive, setIsActive] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
+  const { trackSubcontractorActivated, trackSubcontractorDeactivated } = useTelemetryIntegration();
 
   const handleToggle = (checked: boolean) => {
     setIsActive(checked);
     setShowTransition(true);
     onStatusChange?.(checked);
+    
+    // Track telemetry events
+    if (checked) {
+      trackSubcontractorActivated('demo-sub-1');
+    } else {
+      trackSubcontractorDeactivated('demo-sub-1');
+    }
     
     // Hide transition message after 3 seconds
     setTimeout(() => setShowTransition(false), 3000);
@@ -42,6 +51,7 @@ export function StatusToggleDemo({ subcontractorName, onStatusChange }: StatusTo
           <Switch
             checked={isActive}
             onCheckedChange={handleToggle}
+            data-testid="status-toggle"
           />
         </div>
 
@@ -78,7 +88,10 @@ export function StatusToggleDemo({ subcontractorName, onStatusChange }: StatusTo
 
         {/* Transition Alert */}
         {showTransition && (
-          <Alert className={isActive ? 'border-success/50 bg-success/5' : 'border-warning/50 bg-warning/5'}>
+          <Alert 
+            className={isActive ? 'border-success/50 bg-success/5' : 'border-warning/50 bg-warning/5'}
+            data-testid="status-change-alert"
+          >
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {isActive 

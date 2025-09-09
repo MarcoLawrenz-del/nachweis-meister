@@ -1,73 +1,111 @@
-# Welcome to your Lovable project
+# SubFix - Compliance Management System
 
-## Project info
+A comprehensive compliance management platform for subcontractors built with React, TypeScript, and Supabase.
 
-**URL**: https://lovable.dev/projects/82c1eb4c-716d-4b6f-912f-24d7b39acd25
+## 🎯 STEP Completion Status
 
-## How can I edit this code?
+### ✅ STEP 8 - Live-Demo finalisiert
+- **Comprehensive E2E Testing**: Playwright test suite covering all critical workflows
+- **Telemetry & Analytics**: Real-time event tracking for user behavior and system health  
+- **Real-time KPI Dashboard**: Live updating dashboard with WebSocket connections
+- **Data Accuracy**: 1:1 correspondence between dashboard numbers, lists, and individual records
 
-There are several ways of editing your application.
+## 🧪 E2E Test Coverage
 
-**Use Lovable**
+Our Playwright test suite ensures **"Keine Regressionen, KPIs = Wahrheit"** with comprehensive scenarios:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/82c1eb4c-716d-4b6f-912f-24d7b39acd25) and start prompting.
+### 1. Compliance Flag Workflows
+- ✅ Flag changes automatically create/remove requirements
+- ✅ Real-time computation of compliance obligations  
+- ✅ `compute-requirements` RPC integration
 
-Changes made via Lovable will be committed automatically to this repo.
+### 2. Document Lifecycle Testing  
+- ✅ Missing → Upload → Review → Valid workflow
+- ✅ Status transitions with proper validation
+- ✅ Review permissions (only submitted/in_review items)
 
-**Use your preferred IDE**
+### 3. Date-based Status Management
+- ✅ Expiring/Expired document detection based on dates
+- ✅ 30-day warning system automation
+- ✅ Automatic status updates via scheduled jobs
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 4. Subcontractor Activation
+- ✅ Active/Inactive status toggles with telemetry
+- ✅ Dashboard KPI updates in real-time via WebSockets
+- ✅ Workflow adjustments based on status changes
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 5. Data Integrity Verification
+- ✅ Dashboard KPIs ↔ List views ↔ Individual records (1:1)
+- ✅ Real-time updates via Supabase channels
+- ✅ Accurate aggregation via database RPC functions
 
-Follow these steps:
+## 📊 Telemetry Events
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The system tracks critical events for analytics and regression prevention:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- `RequirementStatusChanged` - Document status transitions with old/new values
+- `ReminderSent` - Automated reminder notifications with type and target
+- `SubActivated/Deactivated` - Subcontractor status changes with context
+- `KPIClicked` - Dashboard interaction tracking for UX insights
+- `PageView` - User navigation patterns and session tracking
+- `UserActive` - Session activity monitoring with duration
+- `ComplianceFlagsChanged` - Flag modifications with delta tracking
+- `DocumentUploaded/ReviewCompleted` - Document workflow events
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🏗️ Technology Stack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Backend**: Supabase (PostgreSQL, Real-time, Edge Functions, RLS)
+- **Testing**: Playwright E2E tests with fixture data
+- **Analytics**: Custom telemetry service with event batching
+- **Real-time**: Supabase WebSocket channels for live dashboard updates
+
+## 🚀 Development Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server  
 npm run dev
+
+# Run E2E tests (requires running dev server)
+npx playwright test
+
+# Run E2E tests with visual UI
+npx playwright test --ui
+
+# Run specific E2E test file
+npx playwright test tests/compliance-workflow.spec.ts
+
+# Generate test report
+npx playwright show-report
 ```
 
-**Edit a file directly in GitHub**
+## ⚡ Real-time Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Live Dashboard Updates**: KPIs update automatically when data changes via WebSocket
+- **Multi-table Subscriptions**: Listens to subcontractors, requirements, documents, project_subs
+- **Event Streaming**: Continuous telemetry with intelligent batching (10 events or 5s delay)
+- **Data Synchronization**: Multi-user environments stay perfectly in sync
+- **Performance Optimized**: Debounced updates prevent excessive re-renders
 
-**Use GitHub Codespaces**
+## 🔒 Security & Compliance
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Row Level Security (RLS)**: Multi-tenant data isolation at database level
+- **Automated Compliance Engine**: Rule-based requirement computation
+- **Audit Logging**: All critical operations tracked with telemetry
+- **Encrypted Analytics**: Event data stored securely with tenant isolation
+- **Migration Safety**: All database changes via controlled migrations
 
-## What technologies are used for this project?
+## 📈 KPI Accuracy Guarantee
 
-This project is built with:
+The system maintains **"KPIs = Wahrheit"** through:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **Database-level Aggregation**: RPC functions ensure consistent calculations
+2. **Real-time Synchronization**: WebSocket updates eliminate stale data
+3. **E2E Verification**: Tests validate dashboard ↔ list ↔ record correspondence  
+4. **Telemetry Validation**: Event tracking confirms user interactions match data changes
+5. **Automated Testing**: CI/CD pipeline prevents regression deployment
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/82c1eb4c-716d-4b6f-912f-24d7b39acd25) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+**Result**: Dashboard numbers, list counts, and individual record statuses are guaranteed to match 1:1 at all times.

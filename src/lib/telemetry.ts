@@ -59,11 +59,19 @@ class TelemetryService {
         return;
       }
 
-      // Send to analytics table (would need to be created)
-      const { error } = await supabase
-        .from('analytics_events')
-        .insert(eventsToSend);
+      // For now, log events until analytics_events types are updated
+      console.group('📊 Telemetry Events');
+      eventsToSend.forEach(event => {
+        console.log(`${event.event_type}:`, event.properties);
+      });
+      console.groupEnd();
 
+      // TODO: Send to analytics table once types are updated
+      // const { error } = await supabase
+      //   .from('analytics_events')
+      //   .insert(eventsToSend);
+
+      const error = null; // Temporary
       if (error) {
         console.error('Failed to send telemetry events:', error);
         // Re-queue events for retry

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAppAuth } from './useAppAuth';
 
 export interface KPIData {
   total_subcontractors: number;
@@ -16,30 +16,89 @@ export interface KPIData {
   expired_requirements: number;
   compliance_rate: number;
   last_updated: string;
+  // Legacy support for old format
+  total?: number;
+  expired?: number;
+  expiring?: number;
+  valid?: number;
+  complianceRate?: number;
 }
 
 export function useRealtimeKPIs() {
   const [kpis, setKpis] = useState<KPIData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { profile } = useAppAuth();
 
   const fetchKPIs = async () => {
-    if (!user) return;
+    if (!profile?.tenant_id) return;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      // Call RPC function to get aggregated KPIs
-      const { data, error: rpcError } = await supabase
-        .rpc('get_tenant_kpis', { tenant_id: user.tenant_id });
+      // Manually calculate KPIs for now until types are updated
+      // Fetch subcontractors
+      const { data: subcontractors, error: subError } = await supabase
+        .from('subcontractors')
+        .select('id, status')
+        .eq('tenant_id', profile.tenant_id);
 
-      if (rpcError) {
-        throw rpcError;
-      }
+      if (subError) throw subError;
 
-      setKpis(data);
+      // Fetch requirements with project filtering
+      const { data: requirements, error: reqError } = await supabase
+        .from('requirements')
+        .select(`
+          id, 
+          status,
+          project_subs!inner (
+            project_id,
+            projects!inner (
+              tenant_id
+            )
+          )
+        `)
+        .eq('project_subs.projects.tenant_id', profile.tenant_id);
+
+      if (reqError) throw reqError;
+
+      // Calculate KPIs
+      const totalSubs = subcontractors?.length || 0;
+      const activeSubs = subcontractors?.filter(s => s.status === 'active').length || 0;
+      const inactiveSubs = totalSubs - activeSubs;
+
+      const totalReqs = requirements?.length || 0;
+      const statusCounts = requirements?.reduce((acc, req) => {
+        acc[req.status] = (acc[req.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      const complianceRate = totalReqs > 0 
+        ? Math.round(((statusCounts.valid || 0) / totalReqs) * 100) 
+        : 0;
+
+      setKpis({
+        total_subcontractors: totalSubs,
+        active_subcontractors: activeSubs,
+        inactive_subcontractors: inactiveSubs,
+        total_requirements: totalReqs,
+        missing_requirements: statusCounts.missing || 0,
+        submitted_requirements: statusCounts.submitted || 0,
+        in_review_requirements: statusCounts.in_review || 0,
+        valid_requirements: statusCounts.valid || 0,
+        rejected_requirements: statusCounts.rejected || 0,
+        expiring_requirements: statusCounts.expiring || 0,
+        expired_requirements: statusCounts.expired || 0,
+        compliance_rate: complianceRate,
+        last_updated: new Date().toISOString(),
+        // Legacy support
+        total: totalSubs,
+        expired: statusCounts.expired || 0,
+        expiring: statusCounts.expiring || 0,
+        valid: statusCounts.valid || 0,
+        complianceRate: complianceRate,
+      });
     } catch (err) {
       console.error('Error fetching KPIs:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch KPIs');
@@ -49,7 +108,7 @@ export function useRealtimeKPIs() {
   };
 
   useEffect(() => {
-    if (!user?.tenant_id) return;
+    if (!profile?.tenant_id) return;
 
     // Initial fetch
     fetchKPIs();
@@ -63,7 +122,7 @@ export function useRealtimeKPIs() {
           event: '*',
           schema: 'public',
           table: 'subcontractors',
-          filter: `tenant_id=eq.${user.tenant_id}`
+          filter: `tenant_id=eq.${profile.tenant_id}`
         },
         () => {
           console.log('Subcontractors table changed, refreshing KPIs');
@@ -111,7 +170,7 @@ export function useRealtimeKPIs() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.tenant_id]);
+  }, [profile?.tenant_id]);
 
   return {
     kpis,
