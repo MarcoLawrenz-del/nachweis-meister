@@ -24,6 +24,7 @@ import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { debug } from "@/lib/debug";
 
 const queryClient = new QueryClient();
@@ -57,73 +58,101 @@ function RootRoute() {
   if (!user) {
     debug.log('🚀 SHOWING NEW LANDING PAGE - TIMESTAMP:', Date.now());
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        {/* NEUE LANDING PAGE - CACHE BREAK */}
-        <div className="absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded text-xs">
-          NEUE SEITE GELADEN: {new Date().toLocaleTimeString()}
-        </div>
-        
-        <header className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Nachweis-Meister</h1>
-                <p className="text-xs text-gray-600">Baugewerbe Management</p>
-              </div>
+      <div className="min-h-screen bg-background">
+        {/* Navigation */}
+        <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/brand/subfix-logo.svg" 
+                alt="subfix" 
+                className="h-8"
+              />
             </div>
-            <div className="flex items-center gap-4">
-              <Link to="/login">
-                <Button variant="ghost" className="text-gray-700">Anmelden</Button>
-              </Link>
-              <Link to="/register">
-                <Button className="bg-blue-600 hover:bg-blue-700">Registrieren</Button>
-              </Link>
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link to="/login">Anmelden</Link>
+              </Button>
+              <Button asChild className="bg-brand-primary hover:bg-brand-primary/90 text-white">
+                <Link to="/register">Registrieren</Link>
+              </Button>
             </div>
           </div>
-        </header>
+        </nav>
 
-        <section className="container mx-auto px-4 py-12 text-center">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="text-4xl font-bold tracking-tight mb-6 text-gray-900">
-              ✅ NEUE Professionelle Nachweisführung
-              <span className="text-blue-600 block mt-2">für das Baugewerbe</span>
-            </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              🆕 Verwalten Sie alle pflichtrelevanten Nachweise Ihrer Subunternehmer sicher und rechtskonform. 
-              Automatische Fristüberwachung inklusive.
+        {/* Hero */}
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Compliance <span className="text-brand-primary">vereinfacht</span>
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Nachunternehmer-Management für Bauprojekte. Automatisierte Prüfung von Pflichtdokumenten, 
+              rechtssichere Abwicklung und transparente Compliance-Übersicht.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
-                <Button size="lg" className="min-w-48 bg-blue-600 hover:bg-blue-700">
-                  <Users className="mr-2 h-5 w-5" />
-                  🚀 KOSTENLOS REGISTRIEREN
-                </Button>
-              </Link>
-              <Link to="/public-demo">
-                <Button size="lg" className="min-w-48 bg-green-600 hover:bg-green-700">
-                  🎯 VOLLSTÄNDIGE DEMO
-                </Button>
-              </Link>
-              <Link to="/demo">
-                <Button variant="outline" size="lg" className="min-w-48 border-blue-600 text-blue-600 hover:bg-blue-50">
-                  🧪 EINFACHE DEMO
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="ghost" size="lg" className="min-w-48 text-blue-600 hover:bg-blue-50">
-                  ✨ Bereits registriert? Anmelden
-                </Button>
-              </Link>
+              <Button size="lg" asChild className="bg-brand-primary hover:bg-brand-primary/90 text-white">
+                <Link to="/register">Jetzt starten</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/public-demo">Demo ansehen</Link>
+              </Button>
             </div>
           </div>
-        </section>
-
-        <div className="text-center text-gray-500 text-sm mt-8">
-          Cache-Break ID: {Math.random().toString(36).substring(7)}
         </div>
+
+        {/* Features */}
+        <div className="bg-muted/20 py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold mb-4">Warum subfix?</h2>
+              <p className="text-muted-foreground">Alles was Sie für rechtssichere Nachunternehmer-Verwaltung brauchen</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Building2 className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <h3 className="font-semibold mb-2">Automatisierte Prüfung</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Pflichtdokumente werden automatisch auf Vollständigkeit und Gültigkeit geprüft
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Users className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <h3 className="font-semibold mb-2">Zentrale Verwaltung</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Alle Nachunternehmer und ihre Dokumente an einem Ort verwalten
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <span className="text-2xl font-bold text-brand-primary block mb-4">§</span>
+                  <h3 className="font-semibold mb-2">Rechtssicherheit</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Vollständige Compliance nach aktuellen Gesetzen und Vorschriften
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="border-t py-12 bg-background">
+          <div className="container mx-auto px-4 text-center">
+            <img 
+              src="/brand/subfix-logo.svg" 
+              alt="subfix" 
+              className="h-8 mx-auto mb-4"
+            />
+            <p className="text-sm text-muted-foreground">
+              subfix · Compliance vereinfacht
+            </p>
+          </div>
+        </footer>
       </div>
     );
   }

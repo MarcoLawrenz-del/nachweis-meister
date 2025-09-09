@@ -1,0 +1,22 @@
+{
+  "name": "subfix",
+  "short_name": "subfix",
+  "description": "Compliance vereinfacht - Nachunternehmer-Management für Bauprojekte",
+  "icons": [
+    {
+      "src": "/brand/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#FF7A00",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

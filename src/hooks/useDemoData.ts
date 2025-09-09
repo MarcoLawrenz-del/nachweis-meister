@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { debug } from '@/lib/debug';
+import '@/styles/brand.css';
 
 // Demo data for dashboard
 const demoStats = {
