@@ -22,7 +22,7 @@ import Register from "./pages/Register";
 import MagicLinkWizard from "./pages/MagicLinkWizard";
 import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
-import DemoApp from "./pages/DemoApp";
+import PublicDemo from "./pages/PublicDemo";
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -102,9 +102,14 @@ function RootRoute() {
                   🚀 KOSTENLOS REGISTRIEREN
                 </Button>
               </Link>
+              <Link to="/public-demo">
+                <Button size="lg" className="min-w-48 bg-green-600 hover:bg-green-700">
+                  🎯 VOLLSTÄNDIGE DEMO
+                </Button>
+              </Link>
               <Link to="/demo">
-                <Button variant="outline" size="lg" className="min-w-48 border-green-600 text-green-600 hover:bg-green-50">
-                  🎯 DEMO TESTEN
+                <Button variant="outline" size="lg" className="min-w-48 border-blue-600 text-blue-600 hover:bg-blue-50">
+                  🧪 EINFACHE DEMO
                 </Button>
               </Link>
               <Link to="/login">
@@ -211,6 +216,11 @@ const App = () => (
             
             {/* Public document upload (no auth required) */}
             <Route path="/upload/:token" element={<PublicUpload />} />
+            
+            {/* Public Demo Route - No Auth Required */}
+            <Route path="/public-demo" element={
+              <PublicDemo />
+            } />
             
             {/* Demo mode (no auth required) */}
             <Route path="/demo" element={
