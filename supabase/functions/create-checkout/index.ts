@@ -39,15 +39,30 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get user's tenant and current plan
-    const { data: userProfile } = await supabaseClient
+    // Get user's profile first
+    const { data: userProfile, error: profileError } = await supabaseClient
       .from("users")
-      .select("tenant_id, tenants!inner(id, name, stripe_customer_id, plan, subscription_status)")
+      .select("tenant_id")
       .eq("id", user.id)
       .single();
 
-    if (!userProfile?.tenant_id) throw new Error("User has no tenant");
-    const tenant = userProfile.tenants as any;
+    if (profileError || !userProfile?.tenant_id) {
+      logStep("ERROR: User profile lookup failed", { profileError, userProfile });
+      throw new Error("User has no tenant");
+    }
+
+    // Get tenant info separately
+    const { data: tenant, error: tenantError } = await supabaseClient
+      .from("tenants")
+      .select("id, name, stripe_customer_id, plan, subscription_status")
+      .eq("id", userProfile.tenant_id)
+      .single();
+
+    if (tenantError || !tenant) {
+      logStep("ERROR: Tenant lookup failed", { tenantError, tenant });
+      throw new Error("Tenant not found");
+    }
+
     logStep("Retrieved tenant info", { tenantId: tenant.id, currentPlan: tenant.plan });
 
     const { priceId } = await req.json();
