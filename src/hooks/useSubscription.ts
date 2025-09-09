@@ -91,7 +91,7 @@ export function useSubscription() {
   const createCheckoutSession = async (priceId: string) => {
     try {
       console.log('🚀 Starting checkout with priceId:', priceId);
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+      const { data, error } = await supabase.functions.invoke('payment-create', {
         body: { priceId }
       });
 
