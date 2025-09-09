@@ -17,6 +17,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log("🔥 EDGE FUNCTION CALLED - create-checkout");
+  console.log("🔥 Request method:", req.method);
+  console.log("🔥 Request headers:", Object.fromEntries(req.headers.entries()));
+
   try {
     logStep("Function started");
     console.log("DEBUG: Function started with request");

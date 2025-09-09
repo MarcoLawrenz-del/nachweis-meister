@@ -90,16 +90,19 @@ export function useSubscription() {
 
   const createCheckoutSession = async (priceId: string) => {
     try {
+      console.log('🚀 Starting checkout with priceId:', priceId);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId }
       });
 
+      console.log('📦 Checkout response:', { data, error });
       if (error) throw error;
       if (data.url) {
+        console.log('✅ Opening checkout URL:', data.url);
         window.open(data.url, '_blank');
       }
     } catch (error) {
-      console.error('Error creating checkout:', error);
+      console.error('❌ Error creating checkout:', error);
       toast.error('Fehler beim Erstellen der Checkout-Session');
     }
   };
