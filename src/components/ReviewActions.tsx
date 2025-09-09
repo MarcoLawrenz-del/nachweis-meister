@@ -41,9 +41,9 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            {action === 'approve' && <CheckCircle className="h-5 w-5 text-green-600" />}
-            {action === 'reject' && <XCircle className="h-5 w-5 text-red-600" />}
-            {action === 'escalate' && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
+            {action === 'approve' && <CheckCircle className="h-5 w-5 text-success" />}
+            {action === 'reject' && <XCircle className="h-5 w-5 text-destructive" />}
+            {action === 'escalate' && <AlertTriangle className="h-5 w-5 text-warning" />}
             {action === 'approve' && 'Dokument genehmigen'}
             {action === 'reject' && 'Dokument ablehnen'}
             {action === 'escalate' && 'Dokument eskalieren'}
@@ -91,7 +91,7 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
         onClick={() => setAction('approve')}
         disabled={disabled || isLoading}
         variant="default"
-        className="bg-green-600 hover:bg-green-700 text-white"
+        className="bg-success hover:bg-success/90 text-success-foreground"
       >
         <CheckCircle className="h-4 w-4 mr-2" />
         Genehmigen

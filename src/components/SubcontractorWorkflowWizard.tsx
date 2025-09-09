@@ -414,7 +414,7 @@ export function SubcontractorWorkflowWizard({
       <Alert className="border-primary/50 bg-primary/5">
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Rechtliche Compliance:</strong> Dieser Workflow stellt sicher, dass alle gesetzlichen Anforderungen 
+          <strong>Rechtliche Sicherheit:</strong> Dieser Workflow stellt sicher, dass alle gesetzlichen Anforderungen 
           nach deutschem Baurecht erfüllt werden. Nur aktivierte Nachunternehmer können Projekten zugewiesen werden.
         </AlertDescription>
       </Alert>

@@ -295,7 +295,7 @@ export default function RequirementsDetail() {
         </Badge>;
       case 'missing':
       default:
-        return <Badge variant="outline" className={hasDocuments ? 'border-blue-500 text-blue-700' : ''}>
+        return <Badge variant="outline" className={hasDocuments ? 'border-primary text-primary' : ''}>
           <FileText className="h-3 w-3 mr-1" />
           {hasDocuments ? 'Hochgeladen' : 'Fehlend'}
         </Badge>;

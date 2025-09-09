@@ -63,7 +63,7 @@ export default function MagicLinkWizard() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-red-600">Ungültiger Link</CardTitle>
+            <CardTitle className="text-destructive">Ungültiger Link</CardTitle>
             <CardDescription>
               Dieser Einladungslink ist ungültig oder abgelaufen.
             </CardDescription>

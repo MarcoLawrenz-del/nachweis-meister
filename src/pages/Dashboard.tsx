@@ -241,8 +241,8 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto p-6">
         {/* Welcome Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
-            <Users className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
+            <Users className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold mb-2 text-gray-900">Willkommen bei {BRAND.name}!</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -254,17 +254,17 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card className="relative overflow-hidden border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors bg-white">
             <CardContent className="p-6 text-center">
-              <div className="absolute top-4 right-4 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+              <div className="absolute top-4 right-4 bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded-full">
                 Schritt 1
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-lg mb-2 text-gray-900">Nachunternehmer hinzufügen</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Fügen Sie Ihre ersten Nachunternehmer hinzu und verwalten Sie deren Kontaktdaten.
               </p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
+              <Button className="w-full" asChild>
                 <Link to="/app/subcontractors">
                   <Users className="w-4 h-4 mr-2" />
                   Nachunternehmer hinzufügen
@@ -321,29 +321,29 @@ export default function Dashboard() {
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="text-center">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-success/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-5 h-5 text-success" />
                 </div>
                 <h4 className="font-medium text-sm mb-1 text-gray-900">Automatische Überwachung</h4>
                 <p className="text-xs text-gray-600">Nie wieder abgelaufene Nachweise</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Clock className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-5 h-5 text-primary" />
                 </div>
                 <h4 className="font-medium text-sm mb-1 text-gray-900">Rechtzeitige Erinnerungen</h4>
                 <p className="text-xs text-gray-600">Frühzeitige Benachrichtigungen</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <TrendingUp className="w-5 h-5 text-accent" />
                 </div>
                 <h4 className="font-medium text-sm mb-1 text-gray-900">Vollständige Übersicht</h4>
                 <p className="text-xs text-gray-600">Dashboard mit allen Kennzahlen</p>
               </div>
               <div className="text-center">
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="w-5 h-5 text-warning" />
                 </div>
                 <h4 className="font-medium text-sm mb-1 text-gray-900">Kritische Warnungen</h4>
                 <p className="text-xs text-gray-600">Sofortige Handlungshinweise</p>

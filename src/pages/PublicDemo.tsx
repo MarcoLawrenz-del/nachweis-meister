@@ -140,7 +140,7 @@ function PublicDashboard() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{demoStats.expiringSoon}</div>
+            <div className="text-2xl font-bold text-warning">{demoStats.expiringSoon}</div>
             <p className="text-xs text-muted-foreground">Laufen bald ab</p>
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ function PublicDashboard() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{demoStats.expired}</div>
+            <div className="text-2xl font-bold text-destructive">{demoStats.expired}</div>
             <p className="text-xs text-muted-foreground">Sofortige Aktion nötig</p>
           </CardContent>
         </Card>
@@ -187,18 +187,18 @@ function PublicDashboard() {
 function PublicProjects() {
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-green-100 text-green-800">Aktiv</Badge>;
-      case 'planning': return <Badge className="bg-blue-100 text-blue-800">Planung</Badge>;
-      case 'completed': return <Badge className="bg-gray-100 text-gray-800">Abgeschlossen</Badge>;
+      case 'active': return <Badge className="bg-success/10 text-success border-success/20">Aktiv</Badge>;
+      case 'planning': return <Badge className="bg-primary/10 text-primary border-primary/20">Planung</Badge>;
+      case 'completed': return <Badge className="bg-muted text-muted-foreground border-border">Abgeschlossen</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
 
   const getComplianceBadge = (status: string) => {
     switch (status) {
-      case 'compliant': return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Konform</Badge>;
-      case 'expiring_soon': return <Badge className="bg-orange-100 text-orange-800"><Clock className="w-3 h-3 mr-1" />Läuft ab</Badge>;
-      case 'non_compliant': return <Badge className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Nicht konform</Badge>;
+      case 'compliant': return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Konform</Badge>;
+      case 'expiring_soon': return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Läuft ab</Badge>;
+      case 'non_compliant': return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Nicht konform</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -241,9 +241,9 @@ function PublicProjects() {
 function PublicSubcontractors() {
   const getComplianceBadge = (status: string) => {
     switch (status) {
-      case 'compliant': return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Konform</Badge>;
-      case 'expiring_soon': return <Badge className="bg-orange-100 text-orange-800"><Clock className="w-3 h-3 mr-1" />Läuft ab</Badge>;
-      case 'non_compliant': return <Badge className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Nicht konform</Badge>;
+      case 'compliant': return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="w-3 h-3 mr-1" />Konform</Badge>;
+      case 'expiring_soon': return <Badge className="bg-warning/10 text-warning border-warning/20"><Clock className="w-3 h-3 mr-1" />Läuft ab</Badge>;
+      case 'non_compliant': return <Badge className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1" />Nicht konform</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };
@@ -306,7 +306,7 @@ export default function PublicDemo() {
   return (
     <div className="min-h-screen bg-background">
       {/* Public Demo Header */}
-      <div className="bg-blue-600 text-white p-4 text-center">
+      <div className="bg-primary text-primary-foreground p-4 text-center">
         <div className="flex items-center justify-center gap-3">
           <Logo width={160} height={48} />
           <div>

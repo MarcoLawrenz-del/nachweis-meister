@@ -230,7 +230,7 @@ export function ReviewQueue() {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="font-medium">Fällig:</span>
-                    <span className={isOverdue(requirement.due_date) ? 'text-red-600 font-medium' : ''}>
+                    <span className={isOverdue(requirement.due_date) ? 'text-destructive font-medium' : ''}>
                       {formatDate(requirement.due_date)}
                     </span>
                   </div>
@@ -255,8 +255,8 @@ export function ReviewQueue() {
                 )}
 
                 {requirement.rejection_reason && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-800">
+                  <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive">
                       <strong>Ablehnungsgrund:</strong> {requirement.rejection_reason}
                     </p>
                   </div>

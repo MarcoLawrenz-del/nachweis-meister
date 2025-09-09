@@ -186,7 +186,7 @@ export function DocumentDetail() {
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
-                <p className={`mt-1 ${isOverdue(requirement.due_date) ? 'text-red-600 font-medium' : ''}`}>
+                <p className={`mt-1 ${isOverdue(requirement.due_date) ? 'text-destructive font-medium' : ''}`}>
                   {formatDate(requirement.due_date)}
                 </p>
               </div>
@@ -211,16 +211,16 @@ export function DocumentDetail() {
             )}
 
             {requirement.rejection_reason && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <label className="text-sm font-medium text-red-800">Ablehnungsgrund</label>
-                <p className="mt-1 text-sm text-red-700">{requirement.rejection_reason}</p>
+              <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
+                <label className="text-sm font-medium text-destructive">Ablehnungsgrund</label>
+                <p className="mt-1 text-sm text-destructive">{requirement.rejection_reason}</p>
               </div>
             )}
 
             {requirement.escalation_reason && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <label className="text-sm font-medium text-yellow-800">Eskalationsgrund</label>
-                <p className="mt-1 text-sm text-yellow-700">{requirement.escalation_reason}</p>
+              <div className="p-3 bg-warning/5 border border-warning/20 rounded-lg">
+                <label className="text-sm font-medium text-warning">Eskalationsgrund</label>
+                <p className="mt-1 text-sm text-warning">{requirement.escalation_reason}</p>
               </div>
             )}
             
