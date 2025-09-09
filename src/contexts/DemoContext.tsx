@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 // Mock data for demo mode
 const mockUser = {
   id: 'demo-user-123',
-  email: 'demo@nachweis-meister.de',
+  email: 'demo@subfix.de',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
@@ -12,7 +12,7 @@ const mockProfile = {
   id: 'demo-profile-123',
   tenant_id: 'demo-tenant-123',
   name: 'Demo Benutzer',
-  email: 'demo@nachweis-meister.de',
+  email: 'demo@subfix.de',
   role: 'owner' as const,
 };
 

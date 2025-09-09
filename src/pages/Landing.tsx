@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Shield, Clock, FileCheck, Users, BarChart3 } from 'lucide-react';
+import { Logo } from '@/components/Brand/Logo';
+import { BRAND } from '@/config/brand';
 
 export default function Landing() {
   return (
@@ -9,15 +11,7 @@ export default function Landing() {
       {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Nachweis-Meister</h1>
-              <p className="text-xs text-muted-foreground">Baugewerbe Management</p>
-            </div>
-          </div>
+          <Logo width={160} height={48} />
           <div className="flex items-center gap-4">
             <Link to="/login">
               <Button variant="ghost">Anmelden</Button>
@@ -185,7 +179,7 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
-        <p>&copy; 2025 Nachweis-Meister. Professionelle Lösung für das Baugewerbe.</p>
+        <p>&copy; 2025 {BRAND.name} · {BRAND.tagline}</p>
       </footer>
     </div>
   );

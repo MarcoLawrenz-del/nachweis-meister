@@ -1,4 +1,4 @@
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/Theme/ThemeProvider";
 import { BRAND } from "@/config/brand";
 
 interface LogoProps {

@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
+import { Logo } from '@/components/Brand/Logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +31,7 @@ export function AppLayout() {
           <header className="h-14 border-b bg-card flex items-center justify-between px-4">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold text-professional">
-                Nachweis-Meister
-              </h1>
+              <Logo width={120} height={36} />
             </div>
             
             <DropdownMenu>

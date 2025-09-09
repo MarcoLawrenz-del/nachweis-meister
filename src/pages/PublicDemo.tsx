@@ -16,6 +16,8 @@ import {
   BarChart3,
   Settings
 } from "lucide-react";
+import { Logo } from "@/components/Brand/Logo";
+import { BRAND } from "@/config/brand";
 
 // Demo-Daten für die öffentliche Ansicht
 const demoStats = {
@@ -306,9 +308,8 @@ export default function PublicDemo() {
       {/* Public Demo Header */}
       <div className="bg-blue-600 text-white p-4 text-center">
         <div className="flex items-center justify-center gap-3">
-          <Shield className="h-6 w-6" />
+          <Logo width={160} height={48} />
           <div>
-            <h1 className="text-xl font-bold">Nachweis-Meister - Öffentliche Demo</h1>
             <p className="text-sm opacity-90">Vollständige App-Funktionalität ohne Login • Alle Daten sind Beispieldaten</p>
           </div>
         </div>
@@ -354,8 +355,8 @@ export default function PublicDemo() {
       {/* Footer Info */}
       <div className="border-t bg-muted/30 p-4 mt-12">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>🎯 Öffentliche Demo der Nachweis-Meister App</p>
-          <p>Verfügbare Bereiche: Dashboard, Projekte, Nachunternehmer, Compliance-Management</p>
+          <p>🎯 Öffentliche Demo der {BRAND.name} App</p>
+          <p>Verfügbare Bereiche: Dashboard, Projekte, {BRAND.terms.subcontractor}, Compliance-Management</p>
           <p className="mt-2">URL: <code>{window.location.href}</code></p>
         </div>
       </div>

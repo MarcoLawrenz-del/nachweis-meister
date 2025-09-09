@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { BRAND } from '@/config/brand';
 
 interface DashboardStats {
   totalSubcontractors: number;
@@ -243,9 +244,9 @@ export default function Dashboard() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
             <Users className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-2 text-gray-900">Willkommen bei Nachweis-Meister!</h1>
+          <h1 className="text-3xl font-bold mb-2 text-gray-900">Willkommen bei {BRAND.name}!</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Verwalten Sie Ihre Nachunternehmer-Nachweise professionell und behalten Sie alle wichtigen Dokumente im Blick.
+            {BRAND.description} - {BRAND.tagline}
           </p>
         </div>
 
@@ -315,8 +316,8 @@ export default function Dashboard() {
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <CardContent className="p-8">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold mb-2 text-gray-900">Was Sie mit Nachweis-Meister erreichen:</h2>
-              <p className="text-gray-600">Professionelle Compliance-Verwaltung für das Baugewerbe</p>
+              <h2 className="text-xl font-semibold mb-2 text-gray-900">Was Sie mit {BRAND.name} erreichen:</h2>
+              <p className="text-gray-600">{BRAND.description}</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="text-center">

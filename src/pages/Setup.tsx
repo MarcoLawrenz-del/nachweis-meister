@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Users, CheckCircle } from 'lucide-react';
+import { BRAND } from '@/config/brand';
 
 export default function Setup() {
   const [name, setName] = useState('');
@@ -66,9 +67,9 @@ export default function Setup() {
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Building2 className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Willkommen bei Nachweis-Meister!</CardTitle>
+          <CardTitle className="text-2xl">Willkommen bei {BRAND.name}!</CardTitle>
           <CardDescription>
-            Vervollständigen Sie Ihr Profil, um mit der Verwaltung Ihrer Nachunternehmer zu beginnen.
+            Vervollständigen Sie Ihr Profil, um mit der Verwaltung Ihrer {BRAND.terms.subcontractor} zu beginnen.
           </CardDescription>
         </CardHeader>
         

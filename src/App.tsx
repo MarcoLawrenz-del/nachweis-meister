@@ -269,9 +269,9 @@ const App = () => (
                   <h1 style={{ fontSize: '2.5rem', marginBottom: '20px' }}>
                     ✅ ÖFFENTLICHE DEMO FUNKTIONIERT!
                   </h1>
-                  <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>
-                    Nachweis-Meister App - Vollständige Demo ohne Login
-                  </p>
+                   <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>
+                     subfix App - Vollständige Demo ohne Login
+                   </p>
                   <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
                     <h2>📊 Demo-Statistiken:</h2>
                     <p>👥 <strong>12 Nachunternehmer</strong></p>

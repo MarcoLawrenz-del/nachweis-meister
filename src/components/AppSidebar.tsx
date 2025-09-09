@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAppAuth } from "@/hooks/useAppAuth";
 import { Button } from "@/components/ui/button";
+import { BRAND } from "@/config/brand";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
@@ -76,8 +77,8 @@ export function AppSidebar() {
               <Building2 className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold">Nachweis-Meister</h2>
-              <p className="text-xs text-muted-foreground">Baugewerbe</p>
+              <h2 className="text-sm font-semibold">{BRAND.name}</h2>
+              <p className="text-xs text-muted-foreground">{BRAND.tagline}</p>
             </div>
           </div>
         </div>
