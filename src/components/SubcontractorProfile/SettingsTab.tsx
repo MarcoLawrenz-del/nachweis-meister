@@ -90,8 +90,8 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
               </div>
               <p className="text-sm text-muted-foreground">
                 {profile.status === 'active' 
-                  ? 'Der Nachunternehmer ist global aktiv und kann Projekten zugewiesen werden.'
-                  : 'Der Nachunternehmer ist deaktiviert und kann nicht für neue Projekte verwendet werden.'
+                  ? 'Der Nachunternehmer ist global aktiv. Warnungen und Erinnerungen werden versendet.'
+                  : 'Der Nachunternehmer ist inaktiv. Warnungen und Erinnerungen sind pausiert.'
                 }
               </p>
             </div>
@@ -106,7 +106,9 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
             <Alert className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Inaktive Nachunternehmer können nicht für neue Projekte verwendet werden.
+                <strong>Warnungen pausiert:</strong> Inaktive Nachunternehmer erhalten keine 
+                automatischen Erinnerungen oder Compliance-Warnungen. Bei Reaktivierung 
+                werden alle Pflichten und Warnungen wieder aktiviert.
               </AlertDescription>
             </Alert>
           )}

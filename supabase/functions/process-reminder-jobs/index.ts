@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Processing reminder jobs...');
 
-    // Fetch all active reminder jobs that are due
+    // Fetch all active reminder jobs that are due (only for active subcontractors)
     const { data: reminderJobs, error: fetchError } = await supabaseClient
       .from('reminder_jobs')
       .select(`
@@ -76,10 +76,11 @@ const handler = async (req: Request): Promise<Response> => {
             code
           ),
           project_sub:project_subs (
-            subcontractor:subcontractors (
+            subcontractor:subcontractors!inner (
               id,
               company_name,
-              contact_email
+              contact_email,
+              status
             ),
             project:projects (
               name,
@@ -93,6 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
         )
       `)
       .eq('state', 'active')
+      .eq('requirement.project_sub.subcontractor.status', 'active') // Only active subcontractors
       .lte('next_run_at', new Date().toISOString())
       .limit(50); // Process max 50 jobs per run
 

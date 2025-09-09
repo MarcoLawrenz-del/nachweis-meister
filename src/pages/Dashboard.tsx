@@ -53,7 +53,7 @@ export default function Dashboard() {
   });
   const [criticalItems, setCriticalItems] = useState<CriticalItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>('active'); // Default: nur aktive Engagements
   const { profile } = useAppAuth();
   const { isDemo, demoStats, demoCriticalItems } = useDemoData();
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
       debug.log('📊 Fetching dashboard data for tenant:', profile.tenant_id);
       fetchDashboardData();
     }
-  }, [profile, isDemo]);
+  }, [profile, isDemo, filter]); // Add filter as dependency
 
   const fetchDashboardData = async () => {
     debug.log('🚀 fetchDashboardData started, profile:', profile);
@@ -105,8 +105,8 @@ export default function Dashboard() {
 
       debug.log('🏢 Fetching data for tenant:', profile.tenant_id);
 
-      // Fetch comprehensive data including subcontractors with requirements
-      const { data: subcontractors } = await supabase
+      // Fetch comprehensive data including subcontractors with requirements (only active for default filter)
+      let subcontractorQuery = supabase
         .from('subcontractors')
         .select(`
           id, company_name, status, compliance_status,
@@ -120,6 +120,13 @@ export default function Dashboard() {
           )
         `)
         .eq('tenant_id', profile.tenant_id);
+        
+      // Apply active filter by default to only show active subcontractors
+      if (filter === 'active') {
+        subcontractorQuery = subcontractorQuery.eq('status', 'active');
+      }
+      
+      const { data: subcontractors } = await subcontractorQuery;
 
       const { data: projects } = await supabase
         .from('projects')
@@ -139,6 +146,11 @@ export default function Dashboard() {
         const in30Days = addDays(today, 30);
 
         subcontractors.forEach(sub => {
+          // Only process requirements for active subcontractors or when filter allows all
+          if (sub.status !== 'active' && filter === 'active') {
+            return; // Skip inactive subcontractors in active filter
+          }
+          
           sub.project_subs.forEach(ps => {
             ps.requirements.forEach(req => {
               const dueDate = req.due_date ? new Date(req.due_date) : null;
