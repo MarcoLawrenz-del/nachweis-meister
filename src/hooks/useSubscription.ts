@@ -104,8 +104,11 @@ export function useSubscription() {
   const createCheckoutSession = async (priceId: string) => {
     try {
       console.log('🚀 Starting Stripe Payment Link checkout with priceId:', priceId);
+      console.log('👤 Current profile:', profile);
+      console.log('🏢 Tenant ID:', profile?.tenant_id);
       
       if (!profile?.tenant_id) {
+        console.error('❌ Missing profile or tenant_id:', { profile, tenantId: profile?.tenant_id });
         toast.error('Benutzer-Informationen nicht gefunden. Bitte loggen Sie sich erneut ein.');
         return;
       }
