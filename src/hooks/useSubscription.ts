@@ -3,11 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
-// Stripe Payment Links - funktionieren ohne Backend
+// Stripe Payment Links - Live Mode
 const STRIPE_PAYMENT_LINKS = {
-  starter: "https://buy.stripe.com/test_00wdR2cN8b2GePU7NKcMM02",
-  growth: "https://buy.stripe.com/test_7sY6oAbJ46Mq37c8ROcMM01",   
-  pro: "https://buy.stripe.com/test_00w6oA28u1s60Z42tqcMM00"
+  starter: "https://buy.stripe.com/cNi00c8wV50i8Wq4zB6AM02",
+  growth: "https://buy.stripe.com/9B6cMY28xboGb4y7LN6AM01",   
+  pro: "https://buy.stripe.com/aFaeV63cB3We7Sm9TV6AM00"
 };
 
 const PRICE_TO_PAYMENT_LINK = {
