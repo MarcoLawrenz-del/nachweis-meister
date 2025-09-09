@@ -214,11 +214,19 @@ const App = () => (
             
             {/* Demo mode (no auth required) */}
             <Route path="/demo" element={
-              <div className="min-h-screen bg-green-500 flex items-center justify-center">
-                <div className="text-center text-white p-8">
-                  <h1 className="text-4xl font-bold mb-4">✅ DEMO FUNKTIONIERT!</h1>
-                  <p className="text-xl">Demo-Seite erfolgreich geladen</p>
-                  <p className="text-sm mt-4">Zeit: {new Date().toLocaleString()}</p>
+              <div className="min-h-screen bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h1 className="text-3xl font-bold text-gray-800 mb-4">
+                    DEMO ERFOLGREICH!
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-4">
+                    Die Demo-Seite funktioniert jetzt korrekt.
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    <p>URL: {window.location.href}</p>
+                    <p>Zeit: {new Date().toLocaleString("de-DE")}</p>
+                  </div>
                 </div>
               </div>
             } />
