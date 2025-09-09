@@ -723,6 +723,10 @@ export type Database = {
         Args: { subcontractor_id_param: string }
         Returns: string
       }
+      compute_required_requirements: {
+        Args: { project_sub_id_param?: string; subcontractor_id_param: string }
+        Returns: Json
+      }
       send_compliance_reminders: {
         Args: Record<PropertyKey, never>
         Returns: undefined

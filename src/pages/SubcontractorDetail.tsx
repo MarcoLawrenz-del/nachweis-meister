@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { ComplianceFlags } from '@/components/ComplianceFlags';
 
 interface Subcontractor {
   id: string;
@@ -64,6 +65,12 @@ interface Subcontractor {
   country_code: string;
   notes: string | null;
   created_at: string;
+  requires_employees?: boolean | null;
+  has_non_eu_workers?: boolean | null;
+  employees_not_employed_in_germany?: boolean | null;
+  company_type: string;
+  status: string;
+  compliance_status: string;
 }
 
 interface ProjectAssignment {
@@ -615,6 +622,24 @@ export default function SubcontractorDetail() {
             </CardContent>
           </Card>
         )}
+
+        {/* Compliance Flags */}
+        <ComplianceFlags
+          subcontractorId={subcontractor.id}
+          currentFlags={{
+            requires_employees: subcontractor.requires_employees,
+            has_non_eu_workers: subcontractor.has_non_eu_workers,
+            employees_not_employed_in_germany: subcontractor.employees_not_employed_in_germany,
+          }}
+          onFlagsUpdate={(flags) => {
+            setSubcontractor(prev => ({ ...prev, ...flags }));
+          }}
+          onCompute={() => {
+            // Refetch project assignments to update compliance status
+            fetchProjectAssignments();
+            fetchRecentDocuments();
+          }}
+        />
       </div>
 
       {/* Project Assignments */}
