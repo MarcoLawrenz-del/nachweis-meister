@@ -211,6 +211,41 @@ export function useAuth() {
     }
 
     try {
+      // Check domain allowlist before sending magic link
+      const emailDomain = sanitizedEmail.split('@')[1];
+      
+      // Get current user's profile to check tenant context
+      let tenantId = null;
+      if (profile?.tenant_id) {
+        tenantId = profile.tenant_id;
+      }
+
+      const { data: isAllowed, error: domainCheckError } = await supabase
+        .rpc('is_domain_allowed_for_magic_link', { 
+          email_param: sanitizedEmail,
+          tenant_id_param: tenantId 
+        });
+
+      if (domainCheckError) {
+        console.error('Error checking domain allowlist:', domainCheckError);
+        auditLogger.log({
+          action: 'MAGIC_LINK_DOMAIN_CHECK_ERROR',
+          userEmail: sanitizedEmail,
+          details: { error: domainCheckError.message }
+        });
+        return { error: new Error('Fehler beim Überprüfen der Berechtigung') };
+      }
+
+      if (!isAllowed) {
+        const errorMessage = `Die Domain "${emailDomain}" ist nicht für Magic Links berechtigt. Kontaktieren Sie Ihren Administrator.`;
+        auditLogger.log({
+          action: 'MAGIC_LINK_DOMAIN_BLOCKED',
+          userEmail: sanitizedEmail,
+          details: { domain: emailDomain, tenantId }
+        });
+        return { error: new Error(errorMessage) };
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email: sanitizedEmail,
         options: {
