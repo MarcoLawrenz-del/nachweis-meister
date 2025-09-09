@@ -244,7 +244,7 @@ const App = () => (
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
             
             {/* Public document upload (no auth required) */}
-            <Route path="/upload/:token" element={<PublicUpload />} />
+            <Route path="/public/upload/:token" element={<PublicUpload />} />
             
             {/* ULTRAEINFACHE PUBLIC DEMO */}
             <Route path="/public-demo" element={
