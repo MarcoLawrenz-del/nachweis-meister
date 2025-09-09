@@ -126,8 +126,8 @@ export function useSubscription() {
       console.log('✅ Opening direct Stripe Payment Link:', paymentLink);
       toast.success('Weiterleitung zu Stripe Checkout...');
       
-      // Direct redirect to Stripe Payment Link (no URL parameters needed)
-      window.location.href = paymentLink;
+      // Open Stripe Payment Link in new tab (better for security)
+      window.open(paymentLink, '_blank');
       
     } catch (error) {
       console.error('❌ Error in payment link checkout:', error);
