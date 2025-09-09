@@ -245,6 +245,23 @@ const App = () => (
             
             {/* Public document upload (no auth required) */}
             <Route path="/public/upload/:token" element={<PublicUpload />} />
+            <Route path="/upload/:token" element={<PublicUpload />} />
+            
+            {/* Test route */}
+            <Route path="/test-upload" element={
+              <div style={{
+                minHeight: '100vh',
+                backgroundColor: '#10b981',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '2rem',
+                fontFamily: 'system-ui'
+              }}>
+                ✅ UPLOAD-ROUTE FUNKTIONIERT!
+              </div>
+            } />
             
             {/* ULTRAEINFACHE PUBLIC DEMO */}
             <Route path="/public-demo" element={
