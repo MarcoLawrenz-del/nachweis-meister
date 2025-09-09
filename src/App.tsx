@@ -244,10 +244,10 @@ const App = () => (
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
             
             {/* Public document upload (no auth required) */}
-            <Route path="/public/upload/:token" element={
+            <Route path="/public/*" element={
               <div style={{
                 minHeight: '100vh',
-                backgroundColor: '#3b82f6',
+                backgroundColor: '#ef4444',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -257,8 +257,8 @@ const App = () => (
                 flexDirection: 'column',
                 gap: '20px'
               }}>
-                <div>🔍 DEBUG UPLOAD ROUTE</div>
-                <div>Token: {window.location.pathname.split('/').pop()}</div>
+                <div>🚨 PUBLIC ROUTE GEFANGEN</div>
+                <div>URL: {window.location.pathname}</div>
                 <div>Zeit: {new Date().toLocaleString('de-DE')}</div>
               </div>
             } />
