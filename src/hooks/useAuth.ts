@@ -161,6 +161,88 @@ export function useAuth() {
     }
   };
 
+  const signInWithOAuth = async (provider: 'google' | 'azure') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider === 'azure' ? 'azure' : 'google',
+        options: {
+          redirectTo: `${window.location.origin}/app/dashboard`
+        }
+      });
+      
+      if (error) {
+        auditLogger.log({
+          action: 'OAUTH_SIGN_IN_FAILED',
+          details: { provider, error: error.message }
+        });
+      } else {
+        auditLogger.log({
+          action: 'OAUTH_SIGN_IN_INITIATED',
+          details: { provider }
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      console.error('Unexpected OAuth sign in error:', error);
+      auditLogger.log({
+        action: 'OAUTH_SIGN_IN_ERROR',
+        details: { provider, error: (error as Error).message }
+      });
+      return { error: error as Error };
+    }
+  };
+
+  const sendMagicLink = async (email: string) => {
+    const sanitizedEmail = sanitizeEmail(email);
+    
+    // Rate limiting check
+    if (!authRateLimiter.isAllowed(sanitizedEmail)) {
+      const remainingTime = Math.ceil(authRateLimiter.getRemainingTime(sanitizedEmail) / 60000);
+      const error = new Error(`Zu viele Anfragen. Versuchen Sie es in ${remainingTime} Minuten erneut.`);
+      
+      auditLogger.log({
+        action: 'MAGIC_LINK_RATE_LIMITED',
+        userEmail: sanitizedEmail,
+        details: { remainingTimeMinutes: remainingTime }
+      });
+      
+      return { error };
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: sanitizedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/app/dashboard`
+        }
+      });
+      
+      if (error) {
+        auditLogger.log({
+          action: 'MAGIC_LINK_FAILED',
+          userEmail: sanitizedEmail,
+          details: { error: error.message }
+        });
+      } else {
+        auditLogger.log({
+          action: 'MAGIC_LINK_SENT',
+          userEmail: sanitizedEmail
+        });
+      }
+
+      return { error };
+    } catch (error) {
+      console.error('Unexpected magic link error:', error);
+      auditLogger.log({
+        action: 'MAGIC_LINK_ERROR',
+        userEmail: sanitizedEmail,
+        details: { error: (error as Error).message }
+      });
+      return { error: error as Error };
+    }
+  };
+
   const signUp = async (email: string, password: string, userData: { name: string; tenant_name?: string }) => {
     const sanitizedEmail = sanitizeEmail(email);
     
@@ -318,6 +400,8 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    signInWithOAuth,
+    sendMagicLink,
     completeSetup,
   };
 }
