@@ -40,28 +40,30 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get user's profile first
+    // Get user profile with SERVICE_ROLE_KEY (bypasses RLS)
+    logStep("Looking up user profile", { userId: user.id });
     const { data: userProfile, error: profileError } = await supabaseClient
       .from("users")
       .select("tenant_id")
       .eq("id", user.id)
-      .maybeSingle();
+      .single();
 
+    logStep("User profile result", { userProfile, profileError });
     if (profileError || !userProfile?.tenant_id) {
-      logStep("ERROR: User profile lookup failed", { profileError, userProfile });
-      throw new Error(`User has no tenant: ${profileError?.message || 'No profile found'}`);
+      throw new Error(`User profile not found: ${profileError?.message || 'No profile'}`);
     }
 
-    // Get tenant info separately
+    // Get tenant info 
+    logStep("Looking up tenant", { tenantId: userProfile.tenant_id });
     const { data: tenant, error: tenantError } = await supabaseClient
       .from("tenants")
       .select("id, name, stripe_customer_id, plan, subscription_status")
       .eq("id", userProfile.tenant_id)
-      .maybeSingle();
+      .single();
 
+    logStep("Tenant result", { tenant, tenantError });
     if (tenantError || !tenant) {
-      logStep("ERROR: Tenant lookup failed", { tenantError, tenant });
-      throw new Error(`Tenant not found: ${tenantError?.message || 'No tenant found'}`);
+      throw new Error(`Tenant not found: ${tenantError?.message || 'No tenant'}`);
     }
 
     logStep("Retrieved tenant info", { tenantId: tenant.id, currentPlan: tenant.plan });
