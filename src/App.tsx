@@ -21,6 +21,8 @@ const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));
 const Settings = lazy(() => import("./pages/Settings"));
+const RolesAccess = lazy(() => import("./pages/RolesAccess"));
+const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -159,6 +161,11 @@ const App = () => (
                       <Register />
                     </Suspense>
                   </PublicRoute>
+                } />
+                <Route path="/accept-invitation" element={
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AcceptInvitation />
+                  </Suspense>
                 } />
                 
                 {/* Public pricing page */}
@@ -327,6 +334,11 @@ const App = () => (
                    <Route path="settings" element={
                      <Suspense fallback={<LoadingSpinner />}>
                        <Settings />
+                     </Suspense>
+                   } />
+                   <Route path="roles-access" element={
+                     <Suspense fallback={<LoadingSpinner />}>
+                       <RolesAccess />
                      </Suspense>
                    } />
                 </Route>

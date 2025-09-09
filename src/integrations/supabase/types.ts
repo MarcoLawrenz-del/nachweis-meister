@@ -184,6 +184,7 @@ export type Database = {
           invited_by: string
           message: string
           project_sub_id: string | null
+          role: string | null
           status: string
           subcontractor_id: string | null
           subject: string
@@ -198,6 +199,7 @@ export type Database = {
           invited_by: string
           message: string
           project_sub_id?: string | null
+          role?: string | null
           status?: string
           subcontractor_id?: string | null
           subject: string
@@ -212,6 +214,7 @@ export type Database = {
           invited_by?: string
           message?: string
           project_sub_id?: string | null
+          role?: string | null
           status?: string
           subcontractor_id?: string | null
           subject?: string

@@ -79,24 +79,46 @@ export default function RolesAccess() {
         .order('created_at');
 
       if (membersError) throw membersError;
-      setTeamMembers(members || []);
+      setTeamMembers((members || []) as TeamMember[]);
 
       // Fetch pending invitations
-      const { data: invitations, error: invitationsError } = await supabase
+      const { data: invitationsRaw, error: invitationsError } = await supabase
         .from('invitations')
         .select(`
-          *,
-          invited_by:users!invitations_invited_by_fkey(name)
+          id,
+          email, 
+          role,
+          created_at,
+          expires_at,
+          invited_by
         `)
         .eq('invitation_type', 'team')
         .eq('status', 'sent')
         .gt('expires_at', new Date().toISOString());
 
       if (invitationsError) throw invitationsError;
-      setPendingInvitations(invitations?.map(inv => ({
-        ...inv,
-        invited_by_name: inv.invited_by?.name || 'Unbekannt'
-      })) || []);
+      
+      // Fetch inviter names separately to avoid relation issues
+      const invitationsWithNames = await Promise.all(
+        (invitationsRaw || []).map(async (inv) => {
+          const { data: inviterData } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', inv.invited_by)
+            .single();
+          
+          return {
+            id: inv.id,
+            email: inv.email,
+            role: inv.role as 'owner' | 'admin' | 'staff',
+            created_at: inv.created_at,
+            expires_at: inv.expires_at,
+            invited_by_name: inviterData?.name || 'Unbekannt'
+          };
+        })
+      );
+      
+      setPendingInvitations(invitationsWithNames);
 
     } catch (error) {
       console.error('Error fetching team data:', error);

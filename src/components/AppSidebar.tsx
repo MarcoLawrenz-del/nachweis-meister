@@ -34,6 +34,7 @@ const mainItems = [
 ];
 
 const settingsItems = [
+  { title: "Rollen & Zugriffe", url: "/app/roles-access", icon: Shield },
   { title: "Einstellungen", url: "/app/settings", icon: Settings },
 ];
 
