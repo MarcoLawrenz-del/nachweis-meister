@@ -213,7 +213,15 @@ const App = () => (
             <Route path="/upload/:token" element={<PublicUpload />} />
             
             {/* Demo mode (no auth required) */}
-            <Route path="/demo/*" element={<DemoApp />} />
+            <Route path="/demo" element={
+              <div className="min-h-screen bg-green-500 flex items-center justify-center">
+                <div className="text-center text-white p-8">
+                  <h1 className="text-4xl font-bold mb-4">✅ DEMO FUNKTIONIERT!</h1>
+                  <p className="text-xl">Demo-Seite erfolgreich geladen</p>
+                  <p className="text-sm mt-4">Zeit: {new Date().toLocaleString()}</p>
+                </div>
+              </div>
+            } />
             
             {/* Protected routes */}
             <Route path="/app" element={
