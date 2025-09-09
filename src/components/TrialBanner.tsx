@@ -22,33 +22,35 @@ export function TrialBanner() {
   };
 
   return (
-    <Alert className={`border-l-4 ${isExpired ? 'border-l-destructive bg-destructive/5' : 'border-l-warning bg-warning/5'}`}>
+    <Alert className={`${isExpired ? 'banner-danger' : 'banner-warning'} shadow-sm`}>
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           {isExpired ? (
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <AlertTriangle className="h-5 w-5 text-brand-danger flex-shrink-0" />
           ) : (
-            <Crown className="h-5 w-5 text-warning" />
+            <Crown className="h-5 w-5 text-brand-warning flex-shrink-0" />
           )}
           
-          <AlertDescription className="font-medium">
+          <AlertDescription className="font-medium text-foreground">
             {isExpired ? (
-              <span className="text-destructive-foreground">
-                Ihre Testphase ist abgelaufen. Upload und Einladungen sind gesperrt.
+              <span>
+                <strong>Testphase abgelaufen:</strong> Upload und Einladungen sind gesperrt.
               </span>
             ) : (
-              <span className="text-warning-foreground">
-                Testphase: Noch {daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'} verbleibend
+              <span>
+                <strong>Testphase:</strong> Noch {daysLeft} {daysLeft === 1 ? 'Tag' : 'Tage'} verbleibend
               </span>
             )}
           </AlertDescription>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Button 
             size="sm" 
             variant={isExpired ? "destructive" : "default"}
             onClick={handleUpgrade}
+            className="touch-target focus-ring"
+            aria-label={isExpired ? 'Plan aktivieren um fortzufahren' : 'Jetzt upgraden um unbegrenzt zu nutzen'}
           >
             {isExpired ? 'Plan aktivieren' : 'Jetzt upgraden'}
           </Button>
@@ -58,8 +60,11 @@ export function TrialBanner() {
               variant="ghost"
               size="sm"
               onClick={() => setDismissed(true)}
+              className="touch-target focus-ring"
+              aria-label="Banner schließen"
             >
               <X className="h-4 w-4" />
+              <span className="sr-only">Banner schließen</span>
             </Button>
           )}
         </div>
