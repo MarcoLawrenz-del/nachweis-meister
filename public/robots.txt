@@ -1,14 +1,20 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Öffentliche Bereiche
+Allow: /
+Allow: /pricing
+Allow: /public-demo
+Allow: /login
+Allow: /register
+
+# Private App-Bereiche blockieren
+Disallow: /app/
+Disallow: /upload/
+Disallow: /invite/
+
+# Sitemap
+Sitemap: https://subfix.de/sitemap.xml
+
+# Crawl-Delay
+Crawl-delay: 1
