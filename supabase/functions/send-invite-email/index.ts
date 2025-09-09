@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,26 +21,31 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log('Starting send-invite-email function...');
+    console.log('=== STARTING SEND-INVITE-EMAIL FUNCTION ===');
     
     const apiKey = Deno.env.get("RESEND_API_KEY");
     console.log('RESEND_API_KEY exists:', !!apiKey);
-    console.log('RESEND_API_KEY length:', apiKey ? apiKey.length : 0);
+    if (apiKey) {
+      console.log('RESEND_API_KEY length:', apiKey.length);
+      console.log('RESEND_API_KEY starts with:', apiKey.substring(0, 7) + '...');
+    }
     
     if (!apiKey) {
-      console.error('RESEND_API_KEY not found in environment variables');
+      console.error('RESEND_API_KEY not found!');
       throw new Error('RESEND_API_KEY not found in environment variables');
     }
     
-    console.log('Loading Resend module...');
-    const { Resend } = await import("npm:resend@2.0.0");
-    console.log('Resend module loaded successfully');
-    
+    console.log('Creating Resend client...');
     const resend = new Resend(apiKey);
-    console.log('Resend client initialized');
+    console.log('Resend client created successfully');
     
     const requestData = await req.json();
-    console.log('Request data received:', JSON.stringify(requestData, null, 2));
+    console.log('Request data received:', {
+      to: requestData.to,
+      subject: requestData.subject,
+      subcontractorName: requestData.subcontractorName,
+      projectName: requestData.projectName
+    });
     
     const {
       to,
@@ -49,11 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
       projectName
     }: SendInviteEmailRequest = requestData;
 
-    console.log('Sending invite email to:', to);
-    console.log('Subject:', subject);
-    console.log('Subcontractor name:', subcontractorName);
-
-    console.log('Calling resend.emails.send...');
+    console.log('About to call resend.emails.send...');
     const emailResponse = await resend.emails.send({
       from: "Nachweis-Meister <onboarding@resend.dev>",
       to: [to],
