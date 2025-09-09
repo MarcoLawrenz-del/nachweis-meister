@@ -40,13 +40,30 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const { signOut } = useAppAuth();
 
+  // Check if we're in demo mode
+  const isDemo = currentPath.startsWith('/demo');
+  const baseUrl = isDemo ? '/demo' : '/app';
+
+  // Adjust URLs based on demo mode
+  const adjustedMainItems = mainItems.map(item => ({
+    ...item,
+    url: item.url.replace('/app', baseUrl)
+  }));
+
+  const adjustedSettingsItems = settingsItems.map(item => ({
+    ...item,
+    url: item.url.replace('/app', baseUrl)
+  }));
+
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
 
   const getNavCls = (active: boolean) =>
     active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent hover:text-accent-foreground";
 
   const handleSignOut = async () => {
-    await signOut();
+    if (!isDemo) {
+      await signOut();
+    }
   };
 
   return (
@@ -70,7 +87,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Hauptmenü</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {adjustedMainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
@@ -92,7 +109,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {settingsItems.map((item) => (
+              {adjustedSettingsItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
@@ -111,9 +128,10 @@ export function AppSidebar() {
                     variant="ghost" 
                     onClick={handleSignOut}
                     className="justify-start w-full h-auto p-2 font-normal"
+                    disabled={isDemo}
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>Abmelden</span>
+                    <span>{isDemo ? "Abmelden (Demo)" : "Abmelden"}</span>
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
