@@ -1,28 +1,11 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
+import { DemoAuthProvider } from "@/contexts/DemoContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import Dashboard from "./Dashboard";
-import Projects from "./Projects";
-import ProjectDetail from "./ProjectDetail";
-import Subcontractors from "./Subcontractors";
-import SubcontractorDetail from "./SubcontractorDetail";
-import ComplianceDashboard from "./ComplianceDashboard";
-import { ReviewQueue } from "./ReviewQueue";
-import RequirementsDetail from "./RequirementsDetail";
-import { DocumentDetail } from "./DocumentDetail";
-import Settings from "./Settings";
-import { DemoAuthProvider } from "@/contexts/DemoContext";
-import { Info, User, LogOut } from "lucide-react";
+import { Info, User } from "lucide-react";
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAppAuth } from '@/hooks/useAppAuth';
+import Dashboard from "./Dashboard";
 import { useEffect } from "react";
 
 export default function DemoApp() {
@@ -30,66 +13,30 @@ export default function DemoApp() {
   const { profile } = useAppAuth();
 
   useEffect(() => {
-    console.log('🎯 Demo App loaded, current path:', location.pathname);
+    console.log('🎯 DEMO APP LOADED - Current location:', location.pathname);
   }, [location.pathname]);
 
-  // Get the current demo path
-  const demoPath = location.pathname.replace('/demo', '') || '/dashboard';
-  
-  console.log('🎯 Demo path calculated:', demoPath);
-
-  // Render the appropriate component based on the path
-  const renderContent = () => {
-    console.log('🎯 Rendering content for path:', demoPath);
-    
-    switch (demoPath) {
-      case '/':
-      case '/dashboard':
-        return <Dashboard />;
-      case '/compliance':
-        return <ComplianceDashboard />;
-      case '/projects':
-        return <Projects />;
-      case '/subcontractors':
-        return <Subcontractors />;
-      case '/review':
-        return <ReviewQueue />;
-      case '/settings':
-        return <Settings />;
-      default:
-        // Handle dynamic routes
-        if (demoPath.startsWith('/projects/')) {
-          return <ProjectDetail />;
-        }
-        if (demoPath.startsWith('/subcontractors/')) {
-          return <SubcontractorDetail />;
-        }
-        if (demoPath.startsWith('/requirements/')) {
-          return <RequirementsDetail />;
-        }
-        if (demoPath.startsWith('/documents/')) {
-          return <DocumentDetail />;
-        }
-        return <Dashboard />;
-    }
-  };
+  // If user just visits /demo, redirect to /demo/dashboard
+  if (location.pathname === '/demo') {
+    return <Navigate to="/demo/dashboard" replace />;
+  }
 
   return (
     <DemoAuthProvider>
       <div className="min-h-screen bg-background">
+        {/* Demo banner - ALWAYS visible */}
+        <div className="bg-green-600 text-white p-3 text-center text-sm font-medium">
+          <div className="flex items-center justify-center gap-2">
+            <Info className="h-4 w-4" />
+            <span>🎯 DEMO ERFOLGREICH GELADEN - Pfad: {location.pathname} | Alle Daten sind Beispieldaten</span>
+          </div>
+        </div>
+        
         <SidebarProvider>
-          <div className="min-h-screen flex w-full">
+          <div className="flex w-full min-h-[calc(100vh-48px)]">
             <AppSidebar />
             
             <main className="flex-1 flex flex-col">
-              {/* Demo banner */}
-              <div className="bg-blue-600 text-white p-2 text-center text-sm">
-                <div className="flex items-center justify-center gap-2">
-                  <Info className="h-4 w-4" />
-                  <span>🎯 DEMO MODUS - Alle Daten sind Beispieldaten | Demo Mode - All data is sample data</span>
-                </div>
-              </div>
-              
               {/* Header */}
               <header className="h-14 border-b bg-card flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
@@ -99,44 +46,28 @@ export default function DemoApp() {
                   </h1>
                 </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span className="hidden sm:inline">{profile?.name}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{profile?.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {profile?.email}
-                        </p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          Demo Benutzer
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Demo verlassen</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm">{profile?.name || 'Demo User'}</span>
+                </div>
               </header>
               
               {/* Main content */}
               <div className="flex-1 p-6">
-                <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded">
-                  <p className="text-sm text-green-800">
-                    🎯 Demo funktioniert! Aktueller Pfad: {location.pathname} | Demo-Pfad: {demoPath}
+                <div className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <h2 className="text-lg font-semibold text-green-800 mb-2">
+                    ✅ Demo Modus Aktiv
+                  </h2>
+                  <p className="text-sm text-green-700">
+                    Sie befinden sich im Demo-Modus. Alle angezeigten Daten sind Beispieldaten und dienen nur zur Demonstration der Funktionalitäten.
+                  </p>
+                  <p className="text-xs text-green-600 mt-2">
+                    Aktueller Pfad: {location.pathname}
                   </p>
                 </div>
-                {renderContent()}
+                
+                {/* Always show Dashboard in demo for simplicity */}
+                <Dashboard />
               </div>
             </main>
           </div>
