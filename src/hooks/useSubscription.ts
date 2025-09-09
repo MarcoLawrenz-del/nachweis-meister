@@ -3,6 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
+// Stripe Payment Links - funktionieren ohne Backend
+const STRIPE_PAYMENT_LINKS = {
+  starter: "https://buy.stripe.com/test_PLACEHOLDER_STARTER", // TODO: Erstelle Payment Link in Stripe
+  growth: "https://buy.stripe.com/test_PLACEHOLDER_GROWTH",   // TODO: Erstelle Payment Link in Stripe  
+  pro: "https://buy.stripe.com/test_PLACEHOLDER_PRO"         // TODO: Erstelle Payment Link in Stripe
+};
+
+const PRICE_TO_PAYMENT_LINK = {
+  "price_1S5Olj1U5YNMmnrGFgjjYEdM": STRIPE_PAYMENT_LINKS.starter,
+  "price_1S5OnJ1U5YNMmnrGljX4feMn": STRIPE_PAYMENT_LINKS.growth,
+  "price_1S5Onm1U5YNMmnrG04D1BaX2": STRIPE_PAYMENT_LINKS.pro,
+};
+
 export interface SubscriptionStatus {
   plan: 'free' | 'starter' | 'growth' | 'pro' | 'enterprise';
   subscription_status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete';
@@ -90,7 +103,7 @@ export function useSubscription() {
 
   const createCheckoutSession = async (priceId: string) => {
     try {
-      console.log('🚀 Testing checkout with priceId:', priceId);
+      console.log('🚀 Starting Stripe Payment Link checkout with priceId:', priceId);
       
       if (!profile?.tenant_id) {
         toast.error('Benutzer-Informationen nicht gefunden. Bitte loggen Sie sich erneut ein.');
@@ -99,18 +112,28 @@ export function useSubscription() {
 
       console.log('✅ Profile found:', { tenantId: profile.tenant_id });
       
-      // Temporärer Test - öffne eine Test-URL um zu prüfen ob das Frontend funktioniert
-      const testUrl = `https://httpbin.org/get?test=stripe&price=${priceId}&tenant=${profile.tenant_id}`;
+      const paymentLink = PRICE_TO_PAYMENT_LINK[priceId as keyof typeof PRICE_TO_PAYMENT_LINK];
       
-      console.log('✅ Opening test URL:', testUrl);
-      toast.success(`Test erfolgreich! Plan: ${priceId}`);
+      if (!paymentLink) {
+        console.error('❌ No payment link found for priceId:', priceId);
+        toast.error('Payment Link für diesen Plan nicht gefunden');
+        return;
+      }
       
-      // Für jetzt nur der Test - später echter Stripe Link
-      window.open(testUrl, '_blank');
+      // Add success/cancel URLs as parameters if Stripe supports it
+      const url = new URL(paymentLink);
+      url.searchParams.set('success_url', `${window.location.origin}/dashboard?success=true`);
+      url.searchParams.set('cancel_url', `${window.location.origin}/pricing?canceled=true`);
+      
+      console.log('✅ Opening Stripe Payment Link:', url.toString());
+      toast.success('Weiterleitung zu Stripe Checkout...');
+      
+      // Direct redirect to Stripe (same window for better UX)
+      window.location.href = url.toString();
       
     } catch (error) {
-      console.error('❌ Error in test checkout:', error);
-      toast.error('Test fehlgeschlagen');
+      console.error('❌ Error in payment link checkout:', error);
+      toast.error('Fehler beim Öffnen des Stripe Checkout');
     }
   };
 
