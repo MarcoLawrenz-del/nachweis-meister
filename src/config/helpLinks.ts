@@ -1,6 +1,6 @@
 // Help Links Configuration for Document Types
 export const helpLinks = {
-  // A1 Bescheinigung
+  // A1 Bescheinigung  
   A1: {
     title: "A1 Bescheinigung - Hilfe",
     content: "Die A1-Bescheinigung bestätigt, dass Sie weiterhin den Sozialversicherungsgesetzen Ihres Herkunftslandes unterliegen, wenn Sie vorübergehend in einem anderen EU-Land arbeiten.",
@@ -41,6 +41,14 @@ export const helpLinks = {
     content: "Bei Fragen zu den erforderlichen Dokumenten wenden Sie sich bitte an Ihren Projektverantwortlichen.",
     url: null
   }
+} as const;
+
+// Official help URLs for consistent use across the application
+export const OFFICIAL_HELP_URLS = {
+  A1_HELP_URL: "https://www.deutsche-verbindungsstelle-krankenversicherung-ausland.de/buerger/faq_a1",
+  GZD_MELDEPORTAL_URL: "https://www.zoll.de/DE/Fachthemen/Arbeit/Mindestlohn/Anmeldung-Dienstleistung/anmeldung-dienstleistung_node.html", 
+  WORK_PERMIT_INFO_URL: "https://www.make-it-in-germany.com/de/visum-aufenthalt/arten/arbeit",
+  MIN_WAGE_INFO_URL: "https://www.mindestlohn.de/"
 } as const;
 
 // Helper function to get help info by document type code

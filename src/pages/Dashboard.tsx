@@ -349,6 +349,29 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-600">Sofortige Handlungshinweise</p>
               </div>
             </div>
+            <div className="mt-6 pt-4 border-t border-blue-200 text-center">
+              <p className="text-xs text-gray-500">
+                📘 Benötigen Sie Hilfe mit Dokumenten? 
+                <a href="https://www.deutsche-verbindungsstelle-krankenversicherung-ausland.de/buerger/faq_a1" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="text-blue-600 hover:text-blue-800 underline ml-1">
+                  A1-Bescheinigung
+                </a> •
+                <a href="https://www.zoll.de/DE/Fachthemen/Arbeit/Mindestlohn/Anmeldung-Dienstleistung/anmeldung-dienstleistung_node.html" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="text-blue-600 hover:text-blue-800 underline ml-1">
+                  GZD-Meldung
+                </a> •
+                <a href="https://www.make-it-in-germany.com/de/visum-aufenthalt/arten/arbeit" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="text-blue-600 hover:text-blue-800 underline ml-1">
+                  Arbeitserlaubnis
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

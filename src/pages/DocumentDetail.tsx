@@ -9,6 +9,7 @@ import { ArrowLeft, FileText, Calendar, User, Building2, Download, Eye, Clock, A
 import { StatusBadge } from '@/components/StatusBadge';
 import { ReviewActions } from '@/components/ReviewActions';
 import { ReviewerAssignment } from '@/components/ReviewerAssignment';
+import HelpTooltip from '@/components/HelpTooltip';
 
 export function DocumentDetail() {
   const { id } = useParams();
@@ -180,10 +181,13 @@ export function DocumentDetail() {
                   )}
                 </div>
               </div>
-              <div>
+            <div>
+              <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-muted-foreground">Dokumenttyp</label>
-                <p className="mt-1">{requirement.document_type.name_de}</p>
+                <HelpTooltip documentTypeCode={requirement.document_type.code} />
               </div>
+              <p className="mt-1">{requirement.document_type.name_de}</p>
+            </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Fälligkeitsdatum</label>
                 <p className={`mt-1 ${isOverdue(requirement.due_date) ? 'text-destructive font-medium' : ''}`}>
@@ -226,8 +230,16 @@ export function DocumentDetail() {
             
             {requirement.document_type.description_de && (
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Beschreibung</label>
-                <p className="mt-1 text-sm">{requirement.document_type.description_de}</p>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Beschreibung</label>
+                  <HelpTooltip documentTypeCode={requirement.document_type.code} />
+                </div>
+                <div className="mt-1 text-sm bg-muted/30 p-3 rounded-lg">
+                  <p>{requirement.document_type.description_de}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💡 <strong>Tipp:</strong> Klicken Sie auf das Hilfe-Symbol für offizielle Informationen zu diesem Dokumenttyp.
+                  </p>
+                </div>
               </div>
             )}
           </CardContent>
