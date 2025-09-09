@@ -5,6 +5,7 @@ import { useAppAuth } from '@/hooks/useAppAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { Logo } from '@/components/Brand/Logo';
+import { TrialBanner } from '@/components/TrialBanner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,6 +62,11 @@ export function AppLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
+          
+          {/* Trial Banner */}
+          <div className="px-4 py-2">
+            <TrialBanner />
+          </div>
           
           {/* Main content */}
           <div className="flex-1 p-6">

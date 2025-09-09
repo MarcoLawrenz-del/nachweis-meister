@@ -26,6 +26,7 @@ export const BRAND = {
     validUntil: 'Gültig bis',
     escalation: 'Eskalation',
     compliance: 'Compliance',
-    project: 'Bauprojekt'
+    project: 'Bauprojekt',
+    enterprise: 'Enterprise'
   }
 } as const;

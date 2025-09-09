@@ -17,6 +17,7 @@ import RequirementsDetail from "./pages/RequirementsDetail";
 import { DocumentDetail } from "./pages/DocumentDetail";
 import PublicUpload from "./pages/PublicUpload";
 import Settings from "./pages/Settings";
+import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MagicLinkWizard from "./pages/MagicLinkWizard";
@@ -352,6 +353,7 @@ const App = () => (
                <Route path="documents/:documentId" element={<DocumentDetail />} />
                <Route path="review" element={<ReviewQueue />} />
                <Route path="settings" element={<Settings />} />
+               <Route path="pricing" element={<Pricing />} />
             </Route>
             
             {/* Catch all */}

@@ -670,6 +670,44 @@ export type Database = {
           },
         ]
       }
+      subscription_events: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          event_type: string
+          id: string
+          processed_at: string | null
+          stripe_event_id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          event_type: string
+          id?: string
+          processed_at?: string | null
+          stripe_event_id: string
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          event_type?: string
+          id?: string
+          processed_at?: string | null
+          stripe_event_id?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_domain_allowlists: {
         Row: {
           created_at: string
@@ -704,25 +742,40 @@ export type Database = {
       }
       tenants: {
         Row: {
+          active_subs_quota: number | null
           created_at: string
           id: string
           locale_default: string
           logo_url: string | null
           name: string
+          plan: string | null
+          stripe_customer_id: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
         }
         Insert: {
+          active_subs_quota?: number | null
           created_at?: string
           id?: string
           locale_default?: string
           logo_url?: string | null
           name: string
+          plan?: string | null
+          stripe_customer_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
         }
         Update: {
+          active_subs_quota?: number | null
           created_at?: string
           id?: string
           locale_default?: string
           logo_url?: string | null
           name?: string
+          plan?: string | null
+          stripe_customer_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
