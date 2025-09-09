@@ -26,7 +26,7 @@ import { BRAND } from "@/config/brand";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
-  { title: "Rechtliche Sicherheit", url: "/app/compliance", icon: Shield },
+  
   { title: "Projekte", url: "/app/projects", icon: FolderOpen },
   { title: "Nachunternehmer", url: "/app/subcontractors", icon: Users },
   { title: "Prüfungen", url: "/app/review", icon: FileCheck },

@@ -15,7 +15,7 @@ const Projects = lazy(() => import("./pages/Projects"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const Subcontractors = lazy(() => import("./pages/Subcontractors"));
 const SubcontractorDetail = lazy(() => import("./pages/SubcontractorDetail"));
-const ComplianceDashboard = lazy(() => import("./pages/ComplianceDashboard"));
+
 const ReviewQueue = lazy(() => import("./pages/ReviewQueue").then(module => ({ default: module.ReviewQueue })));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
@@ -287,11 +287,6 @@ const App = () => (
                    <Route path="dashboard" element={
                      <Suspense fallback={<LoadingSpinner />}>
                        <Dashboard />
-                     </Suspense>
-                   } />
-                   <Route path="compliance" element={
-                     <Suspense fallback={<LoadingSpinner />}>
-                       <ComplianceDashboard />
                      </Suspense>
                    } />
                    <Route path="projects" element={

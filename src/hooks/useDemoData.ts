@@ -10,7 +10,8 @@ const demoStats = {
   expiringSoon: 3,
   expired: 1,
   inReview: 5,
-  approved: 28
+  missing: 2,
+  activeSubcontractors: 10
 };
 
 const demoCriticalItems = [
@@ -18,28 +19,31 @@ const demoCriticalItems = [
     id: 'demo-1',
     company_name: 'Müller Bau GmbH',
     project_name: 'Bürogebäude Berlin',
-    document_type: 'Freistellungsbescheinigung',
-    status: 'expired',
+    document_name: 'Freistellungsbescheinigung',
+    status: 'expired' as const,
     due_date: '2025-01-05',
-    days_until_expiry: -3
+    action_type: 'remind' as const,
+    priority: 1
   },
   {
     id: 'demo-2',
     company_name: 'Schmidt Elektro',
     project_name: 'Wohnkomplex Hamburg',
-    document_type: 'A1-Entsende-Nachweis',
-    status: 'expiring',
+    document_name: 'A1-Entsende-Nachweis',
+    status: 'expiring' as const,
     due_date: '2025-01-15',
-    days_until_expiry: 7
+    action_type: 'remind' as const,
+    priority: 3
   },
   {
     id: 'demo-3',
     company_name: 'Weber Sanitär',
     project_name: 'Renovierung München',
-    document_type: 'Gewerbeschein',
-    status: 'expiring',
+    document_name: 'Gewerbeschein',
+    status: 'expiring' as const,
     due_date: '2025-01-20',
-    days_until_expiry: 12
+    action_type: 'remind' as const,
+    priority: 3
   }
 ];
 
