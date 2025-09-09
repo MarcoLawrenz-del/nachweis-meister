@@ -1,19 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -24,13 +16,20 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import DragDropUpload from '@/components/DragDropUpload';
+import HelpTooltip from '@/components/HelpTooltip';
 import { 
   Upload,
   FileText,
   CheckCircle,
   AlertTriangle,
   Building2,
-  Calendar
+  Calendar,
+  Clock,
+  ArrowRight,
+  Save,
+  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -77,6 +76,8 @@ interface Document {
 
 export default function PublicUpload() {
   const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +91,7 @@ export default function PublicUpload() {
     validTo: '',
     documentNumber: ''
   });
+  const [showCompleted, setShowCompleted] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -135,7 +137,7 @@ export default function PublicUpload() {
 
     try {
       setUploadLoading(true);
-      setUploadProgress(0);
+      setUploadProgress(10);
 
       // Generate unique file name
       const fileExt = uploadData.file.name.split('.').pop();
@@ -151,8 +153,7 @@ export default function PublicUpload() {
         });
 
       if (uploadError) throw uploadError;
-
-      setUploadProgress(50);
+      setUploadProgress(60);
 
       // Create document record via Edge Function (bypasses RLS)
       const { error: docError } = await supabase.functions.invoke('create-public-document', {
@@ -170,12 +171,11 @@ export default function PublicUpload() {
       });
 
       if (docError) throw docError;
-
       setUploadProgress(100);
 
       toast({
         title: "Dokument erfolgreich hochgeladen",
-        description: `${uploadData.file.name} wurde erfolgreich übermittelt und wird geprüft.`,
+        description: `${uploadData.file.name} wurde zur Prüfung übermittelt. Sie erhalten eine Benachrichtigung über das Prüfungsergebnis.`,
         variant: "default"
       });
 
@@ -188,7 +188,11 @@ export default function PublicUpload() {
       });
       setSelectedRequirement(null);
       setUploadDialogOpen(false);
-      fetchInvitationData();
+      
+      // Wait a bit before refreshing to ensure backend is updated
+      setTimeout(() => {
+        fetchInvitationData();
+      }, 1000);
     } catch (error: any) {
       console.error('Error uploading document:', error);
       toast({
@@ -203,8 +207,6 @@ export default function PublicUpload() {
   };
 
   const getStatusBadge = (status: string, documents: Document[]) => {
-    const hasDocuments = documents.length > 0;
-    
     switch (status) {
       case 'valid':
         return <Badge className="bg-success text-success-foreground">
@@ -212,11 +214,13 @@ export default function PublicUpload() {
           Genehmigt
         </Badge>;
       case 'in_review':
-        return <Badge variant="secondary">
-          Wird geprüft
+        return <Badge className="bg-warning text-warning-foreground">
+          <Clock className="h-3 w-3 mr-1" />
+          In Prüfung
         </Badge>;
       case 'expired':
         return <Badge variant="destructive">
+          <AlertTriangle className="h-3 w-3 mr-1" />
           Abgelaufen
         </Badge>;
       case 'expiring':
@@ -226,11 +230,30 @@ export default function PublicUpload() {
         </Badge>;
       case 'missing':
       default:
-        return <Badge variant={hasDocuments ? "default" : "outline"}>
-          <FileText className="h-3 w-3 mr-1" />
-          {hasDocuments ? 'Hochgeladen' : 'Erforderlich'}
+        return <Badge variant="outline" className="border-destructive text-destructive">
+          <Upload className="h-3 w-3 mr-1" />
+          Upload erforderlich
         </Badge>;
     }
+  };
+
+  const saveProgress = () => {
+    // In a real app, this would save progress to localStorage or server
+    localStorage.setItem(`upload_progress_${token}`, JSON.stringify({
+      completedRequirements: requirements.filter(r => r.documents.length > 0).map(r => r.id),
+      timestamp: Date.now()
+    }));
+    
+    toast({
+      title: "Fortschritt gespeichert",
+      description: "Sie können später fortfahren wo Sie aufgehört haben.",
+      variant: "default"
+    });
+  };
+
+  const continueToNext = () => {
+    // This could navigate to a completion page or close the window
+    window.close();
   };
 
   const formatFileSize = (bytes: number) => {
@@ -268,14 +291,24 @@ export default function PublicUpload() {
     );
   }
 
-  const pendingDocs = requirements.filter(r => r.status === 'missing' || (r.documents.length === 0));
-  const uploadedDocs = requirements.filter(r => r.documents.length > 0);
+  // Filter requirements: only show missing/required ones by default
+  const missingRequirements = requirements.filter(r => 
+    r.status === 'missing' || (r.documents.length === 0)
+  );
+  const completedRequirements = requirements.filter(r => 
+    r.documents.length > 0 || r.status === 'valid'
+  );
+  
+  const displayedRequirements = showCompleted ? requirements : missingRequirements;
+  const totalRequirements = requirements.length;
+  const completedCount = completedRequirements.length;
+  const progressPercent = totalRequirements > 0 ? Math.round((completedCount / totalRequirements) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6">
+      <header className="border-b bg-card sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             {invitation.project_sub.project.tenant.logo_url ? (
               <img 
@@ -288,214 +321,313 @@ export default function PublicUpload() {
                 <Building2 className="h-6 w-6 text-primary-foreground" />
               </div>
             )}
-            <div>
-              <h1 className="text-2xl font-bold">{invitation.project_sub.project.tenant.name}</h1>
-              <p className="text-muted-foreground">Dokumenten-Upload Portal</p>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold">{invitation.project_sub.project.tenant.name}</h1>
+              <p className="text-sm text-muted-foreground">Dokumenten-Upload</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Project Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building2 className="mr-2 h-5 w-5" />
-              Projekt: {invitation.project_sub.project.name}
-            </CardTitle>
-            <CardDescription>
-              Bitte laden Sie die erforderlichen Dokumente für Ihr Unternehmen "{invitation.project_sub.subcontractor.company_name}" hoch.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Projektcode:</span>
-                <p className="text-muted-foreground">{invitation.project_sub.project.code}</p>
+      <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+        {/* Above the fold: Progress and Project Info */}
+        <div className="space-y-4">
+          {/* Progress Bar */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold">Ihr Fortschritt</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {completedCount} von {totalRequirements} Dokumenten hochgeladen
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">{progressPercent}%</div>
+                    <div className="text-xs text-muted-foreground">Abgeschlossen</div>
+                  </div>
+                </div>
+                <Progress value={progressPercent} className="h-3" />
               </div>
-              <div>
-                <span className="font-medium">Ihr Unternehmen:</span>
-                <p className="text-muted-foreground">{invitation.project_sub.subcontractor.company_name}</p>
-              </div>
-              <div>
-                <span className="font-medium">Ausstehend:</span>
-                <p className="text-destructive font-medium">{pendingDocs.length} Dokumente</p>
-              </div>
-              <div>
-                <span className="font-medium">Hochgeladen:</span>
-                <p className="text-success font-medium">{uploadedDocs.length} Dokumente</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Requirements Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              Erforderliche Dokumente ({requirements.length})
-            </CardTitle>
-            <CardDescription>
-              Laden Sie alle erforderlichen Dokumente hoch. Akzeptierte Formate: PDF, JPG, PNG, DOC, DOCX
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dokumenttyp</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Hochgeladenes Dokument</TableHead>
-                  <TableHead>Gültigkeit</TableHead>
-                  <TableHead>Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {requirements.map((requirement) => (
-                  <TableRow key={requirement.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{requirement.document_type.name_de}</p>
+          {/* Project Info Compact */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-muted-foreground">Projekt:</span>
+                  <p className="font-medium">{invitation.project_sub.project.name}</p>
+                  <p className="text-xs text-muted-foreground">{invitation.project_sub.project.code}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Unternehmen:</span>
+                  <p className="font-medium">{invitation.project_sub.subcontractor.company_name}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-muted-foreground">Noch erforderlich:</span>
+                  <p className="font-medium text-destructive">{missingRequirements.length} Dokumente</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Open Requirements List */}
+        {missingRequirements.length > 0 && !showCompleted && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg flex items-center">
+                    <Upload className="mr-2 h-5 w-5 text-destructive" />
+                    Offene Pflichtdokumente ({missingRequirements.length})
+                  </CardTitle>
+                  <CardDescription>
+                    Bitte laden Sie alle erforderlichen Dokumente hoch
+                  </CardDescription>
+                </div>
+                {completedRequirements.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCompleted(true)}
+                  >
+                    Alle anzeigen
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {missingRequirements.map((requirement) => (
+                <Card key={requirement.id} className="border-destructive/20 bg-destructive/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{requirement.document_type.name_de}</h3>
+                          <HelpTooltip documentTypeCode={requirement.document_type.code} />
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {requirement.document_type.description_de}
                         </p>
                         {requirement.due_date && (
-                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <div className="flex items-center text-sm text-muted-foreground">
                             <Calendar className="h-3 w-3 mr-1" />
                             Fällig: {format(new Date(requirement.due_date), 'dd.MM.yyyy', { locale: de })}
                           </div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getStatusBadge(requirement.status, requirement.documents)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {requirement.documents.map((doc) => (
-                          <div key={doc.id} className="flex items-center gap-2 text-sm">
-                            <FileText className="h-3 w-3" />
-                            <span className="truncate max-w-[200px]">{doc.file_name}</span>
-                            <span className="text-muted-foreground">
-                              ({formatFileSize(doc.file_size)})
-                            </span>
-                          </div>
-                        ))}
-                        {requirement.documents.length === 0 && (
-                          <span className="text-sm text-muted-foreground">Noch nicht hochgeladen</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {requirement.documents.length > 0 && requirement.documents[0].valid_to ? (
-                        <div className="text-sm">
-                          {requirement.documents[0].valid_from && (
-                            <div>Ab: {format(new Date(requirement.documents[0].valid_from), 'dd.MM.yyyy', { locale: de })}</div>
-                          )}
-                          <div>Bis: {format(new Date(requirement.documents[0].valid_to), 'dd.MM.yyyy', { locale: de })}</div>
+                        <div className="pt-1">
+                          {getStatusBadge(requirement.status, requirement.documents)}
                         </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Nicht angegeben</span>
+                      </div>
+                      <div>
+                        <Button 
+                          onClick={() => {
+                            setSelectedRequirement(requirement);
+                            setUploadDialogOpen(true);
+                          }}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Jetzt hochladen
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* All Requirements (when showing completed) */}
+        {showCompleted && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">
+                  Alle Dokumente ({requirements.length})
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCompleted(false)}
+                >
+                  Nur offene anzeigen
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {requirements.map((requirement) => (
+                <Card key={requirement.id} className={`${
+                  requirement.status === 'valid' ? 'border-success/20 bg-success/5' :
+                  requirement.status === 'in_review' ? 'border-warning/20 bg-warning/5' :
+                  'border-destructive/20 bg-destructive/5'
+                }`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{requirement.document_type.name_de}</h3>
+                          <HelpTooltip documentTypeCode={requirement.document_type.code} />
+                        </div>
+                        {requirement.documents.length > 0 && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <FileText className="h-3 w-3" />
+                            <span>{requirement.documents[0].file_name}</span>
+                            {requirement.status === 'in_review' && (
+                              <span className="text-warning font-medium">• Wird geprüft</span>
+                            )}
+                          </div>
+                        )}
+                        <div>
+                          {getStatusBadge(requirement.status, requirement.documents)}
+                        </div>
+                      </div>
+                      {requirement.status !== 'valid' && (
+                        <Button 
+                          size="sm"
+                          variant={requirement.documents.length > 0 ? "outline" : "default"}
+                          onClick={() => {
+                            setSelectedRequirement(requirement);
+                            setUploadDialogOpen(true);
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {requirement.documents.length > 0 ? 'Neu hochladen' : 'Hochladen'}
+                        </Button>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequirement(requirement);
-                          setUploadDialogOpen(true);
-                        }}
-                        disabled={requirement.status === 'valid'}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {requirement.documents.length > 0 ? 'Neu hochladen' : 'Hochladen'}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Upload Dialog */}
-        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Dokument hochladen</DialogTitle>
-              <DialogDescription>
-                {selectedRequirement?.document_type.name_de} für {invitation.project_sub.subcontractor.company_name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="file">Datei auswählen *</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                  onChange={(e) => setUploadData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Erlaubte Formate: PDF, JPG, PNG, DOC, DOCX (max. 10MB)
-                </p>
-              </div>
-              
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="valid_from">Gültig von</Label>
-                  <Input
-                    id="valid_from"
-                    type="date"
-                    value={uploadData.validFrom}
-                    onChange={(e) => setUploadData(prev => ({ ...prev, validFrom: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="valid_to">Gültig bis</Label>
-                  <Input
-                    id="valid_to"
-                    type="date"
-                    value={uploadData.validTo}
-                    onChange={(e) => setUploadData(prev => ({ ...prev, validTo: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {uploadLoading && (
-                <div>
-                  <Label>Upload-Fortschritt</Label>
-                  <Progress value={uploadProgress} className="mt-2" />
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(false)} disabled={uploadLoading}>
-                Abbrechen
-              </Button>
+        {/* Action Buttons */}
+        <div className="sticky bottom-0 bg-background border-t p-4 -mx-4">
+          <div className="flex gap-3 justify-center max-w-md mx-auto">
+            <Button 
+              variant="outline" 
+              onClick={saveProgress}
+              className="flex-1"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Später abschließen
+            </Button>
+            {missingRequirements.length === 0 && (
               <Button 
-                onClick={handleFileUpload}
-                disabled={!uploadData.file || uploadLoading}
+                onClick={continueToNext}
+                className="flex-1 bg-success hover:bg-success/90"
               >
-                {uploadLoading ? "Lade hoch..." : "Hochladen"}
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Fertig
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            )}
+          </div>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t bg-muted mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} {invitation.project_sub.project.tenant.name} - 
-          Dokument-Upload Portal
-        </div>
-      </footer>
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Dokument hochladen
+            </DialogTitle>
+            <DialogDescription>
+              {selectedRequirement?.document_type.name_de} für {invitation.project_sub.subcontractor.company_name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Drag & Drop Upload */}
+            <DragDropUpload
+              onFileSelect={(file) => setUploadData(prev => ({ ...prev, file }))}
+              selectedFile={uploadData.file}
+              uploading={uploadLoading}
+              uploadProgress={uploadProgress}
+              onCancel={() => setUploadData(prev => ({ ...prev, file: null }))}
+            />
+
+            {/* Validity Dates */}
+            {uploadData.file && !uploadLoading && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valid_from">Gültig von (optional)</Label>
+                    <Input
+                      id="valid_from"
+                      type="date"
+                      value={uploadData.validFrom}
+                      onChange={(e) => setUploadData(prev => ({ ...prev, validFrom: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="valid_to">Gültig bis (optional)</Label>
+                    <Input
+                      id="valid_to"
+                      type="date"
+                      value={uploadData.validTo}
+                      onChange={(e) => setUploadData(prev => ({ ...prev, validTo: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="document_number">Dokumentennummer (optional)</Label>
+                  <Input
+                    id="document_number"
+                    placeholder="z.B. Zertifikatsnummer, Bescheinigungsnummer"
+                    value={uploadData.documentNumber}
+                    onChange={(e) => setUploadData(prev => ({ ...prev, documentNumber: e.target.value }))}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Processing Info */}
+            {uploadProgress === 100 && (
+              <Card className="border-success bg-success/5">
+                <CardContent className="p-4 text-center">
+                  <CheckCircle className="h-8 w-8 text-success mx-auto mb-2" />
+                  <h3 className="font-medium text-success">Upload erfolgreich!</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Ihr Dokument wird in der Regel binnen 2-3 Werktagen geprüft.
+                    Sie erhalten eine E-Mail-Benachrichtigung über das Ergebnis.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setUploadDialogOpen(false);
+                setUploadData({ file: null, validFrom: '', validTo: '', documentNumber: '' });
+              }} 
+              disabled={uploadLoading}
+            >
+              {uploadProgress === 100 ? 'Schließen' : 'Abbrechen'}
+            </Button>
+            {uploadData.file && uploadProgress !== 100 && (
+              <Button 
+                onClick={handleFileUpload}
+                disabled={uploadLoading}
+              >
+                {uploadLoading ? 'Wird hochgeladen...' : 'Hochladen'}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
