@@ -42,7 +42,7 @@ serve(async (req) => {
     // Get user's tenant and current plan
     const { data: userProfile } = await supabaseClient
       .from("users")
-      .select("tenant_id, tenants(id, name, stripe_customer_id, plan, subscription_status)")
+      .select("tenant_id, tenants!inner(id, name, stripe_customer_id, plan, subscription_status)")
       .eq("id", user.id)
       .single();
 

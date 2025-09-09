@@ -6,9 +6,9 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { BRAND } from "@/config/brand";
 
 const PRICE_IDS = {
-  starter: "price_PLACEHOLDER_STARTER", // TODO: Replace with actual Price ID
-  growth: "price_PLACEHOLDER_GROWTH",   // TODO: Replace with actual Price ID  
-  pro: "price_PLACEHOLDER_PRO"         // TODO: Replace with actual Price ID
+  starter: "price_1XXXXXXXXXXXXXXXXXXXXXXXX", // TODO: Replace with real Stripe Price ID
+  growth: "price_1XXXXXXXXXXXXXXXXXXXXXXXX",   // TODO: Replace with real Stripe Price ID  
+  pro: "price_1XXXXXXXXXXXXXXXXXXXXXXXX"         // TODO: Replace with real Stripe Price ID
 };
 
 const plans = [

@@ -74,7 +74,7 @@ export function useSubscription() {
         .select('subcontractor_id, projects!inner(tenant_id)')
         .eq('projects.tenant_id', profile.tenant_id)
         .eq('status', 'active')
-        .or('end_at.is.null,end_at.gt.now()', { foreignTable: 'project_subs' });
+        .or('end_at.is.null,end_at.gt.now()');
 
       // Combine and deduplicate
       const activeSubIds = new Set([
