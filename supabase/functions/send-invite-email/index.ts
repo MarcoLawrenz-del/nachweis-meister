@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,15 +20,26 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('Starting send-invite-email function...');
+    
     const apiKey = Deno.env.get("RESEND_API_KEY");
     console.log('RESEND_API_KEY exists:', !!apiKey);
     console.log('RESEND_API_KEY length:', apiKey ? apiKey.length : 0);
     
     if (!apiKey) {
+      console.error('RESEND_API_KEY not found in environment variables');
       throw new Error('RESEND_API_KEY not found in environment variables');
     }
     
+    console.log('Loading Resend module...');
+    const { Resend } = await import("npm:resend@2.0.0");
+    console.log('Resend module loaded successfully');
+    
     const resend = new Resend(apiKey);
+    console.log('Resend client initialized');
+    
+    const requestData = await req.json();
+    console.log('Request data received:', JSON.stringify(requestData, null, 2));
     
     const {
       to,
@@ -37,12 +47,13 @@ const handler = async (req: Request): Promise<Response> => {
       message,
       subcontractorName,
       projectName
-    }: SendInviteEmailRequest = await req.json();
+    }: SendInviteEmailRequest = requestData;
 
     console.log('Sending invite email to:', to);
     console.log('Subject:', subject);
     console.log('Subcontractor name:', subcontractorName);
 
+    console.log('Calling resend.emails.send...');
     const emailResponse = await resend.emails.send({
       from: "Nachweis-Meister <onboarding@resend.dev>",
       to: [to],
@@ -96,9 +107,19 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error('Error sending invite email:', error);
+    console.error('=== ERROR IN SEND-INVITE-EMAIL ===');
+    console.error('Error type:', typeof error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error object:', JSON.stringify(error, null, 2));
+    console.error('================================');
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        errorType: typeof error,
+        errorDetails: error.stack 
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
