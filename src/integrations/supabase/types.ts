@@ -100,6 +100,80 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          created_at: string
+          id: string
+          preview_snippet: string | null
+          project_sub_id: string | null
+          requirement_id: string | null
+          sent_at: string | null
+          status: string
+          subcontractor_id: string
+          subject: string
+          template_key: string
+          tenant_id: string
+          to_email: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preview_snippet?: string | null
+          project_sub_id?: string | null
+          requirement_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subcontractor_id: string
+          subject: string
+          template_key: string
+          tenant_id: string
+          to_email: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preview_snippet?: string | null
+          project_sub_id?: string | null
+          requirement_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subcontractor_id?: string
+          subject?: string
+          template_key?: string
+          tenant_id?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_project_sub_id_fkey"
+            columns: ["project_sub_id"]
+            isOneToOne: false
+            referencedRelation: "project_subs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           created_at: string
@@ -284,6 +358,97 @@ export type Database = {
           },
         ]
       }
+      reminder_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          escalated: boolean
+          id: string
+          max_attempts: number
+          next_run_at: string
+          requirement_id: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          escalated?: boolean
+          id?: string
+          max_attempts?: number
+          next_run_at: string
+          requirement_id: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          escalated?: boolean
+          id?: string
+          max_attempts?: number
+          next_run_at?: string
+          requirement_id?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_jobs_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requirement_rules: {
+        Row: {
+          active: boolean
+          company_type: string
+          created_at: string
+          document_type_id: string
+          employees_not_employed_in_germany: boolean | null
+          frequency: string
+          has_non_eu_workers: boolean | null
+          id: string
+          requires_employees: boolean | null
+          validity_months: number | null
+        }
+        Insert: {
+          active?: boolean
+          company_type: string
+          created_at?: string
+          document_type_id: string
+          employees_not_employed_in_germany?: boolean | null
+          frequency?: string
+          has_non_eu_workers?: boolean | null
+          id?: string
+          requires_employees?: boolean | null
+          validity_months?: number | null
+        }
+        Update: {
+          active?: boolean
+          company_type?: string
+          created_at?: string
+          document_type_id?: string
+          employees_not_employed_in_germany?: boolean | null
+          frequency?: string
+          has_non_eu_workers?: boolean | null
+          id?: string
+          requires_employees?: boolean | null
+          validity_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requirement_rules_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requirements: {
         Row: {
           assigned_reviewer_id: string | null
@@ -416,11 +581,14 @@ export type Database = {
           contact_name: string | null
           country_code: string
           created_at: string
+          employees_not_employed_in_germany: boolean | null
+          has_non_eu_workers: boolean | null
           id: string
           last_compliance_check: string | null
           next_reminder_date: string | null
           notes: string | null
           phone: string | null
+          requires_employees: boolean | null
           status: string | null
           tenant_id: string
           updated_at: string
@@ -435,11 +603,14 @@ export type Database = {
           contact_name?: string | null
           country_code?: string
           created_at?: string
+          employees_not_employed_in_germany?: boolean | null
+          has_non_eu_workers?: boolean | null
           id?: string
           last_compliance_check?: string | null
           next_reminder_date?: string | null
           notes?: string | null
           phone?: string | null
+          requires_employees?: boolean | null
           status?: string | null
           tenant_id: string
           updated_at?: string
@@ -454,11 +625,14 @@ export type Database = {
           contact_name?: string | null
           country_code?: string
           created_at?: string
+          employees_not_employed_in_germany?: boolean | null
+          has_non_eu_workers?: boolean | null
           id?: string
           last_compliance_check?: string | null
           next_reminder_date?: string | null
           notes?: string | null
           phone?: string | null
+          requires_employees?: boolean | null
           status?: string | null
           tenant_id?: string
           updated_at?: string
