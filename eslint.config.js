@@ -21,7 +21,20 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      "no-console": import.meta.env.NODE_ENV === "production" ? "error" : "warn",
+      
+      // Strict production rules - build fails on violations
+      "no-console": "error", // Always error, use debug.ts for development logging
+      "no-debugger": "error",
+      "no-alert": "error",
+      
+      // React Hooks exhaustive dependencies
+      "react-hooks/exhaustive-deps": "error",
+      
+      // TypeScript strict rules
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/prefer-nullish-coalescing": "warn",
+      "@typescript-eslint/prefer-optional-chain": "warn",
     },
   },
 );
