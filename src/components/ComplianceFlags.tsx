@@ -5,18 +5,14 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, AlertTriangle, CheckCircle, Users, Globe, FileText } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useComplianceEngine } from '@/hooks/useComplianceEngine';
+import { SubcontractorFlags, ComputeRequirementsResponse } from '@/types/compliance';
 
 interface ComplianceFlagsProps {
   subcontractorId: string;
-  currentFlags: {
-    requires_employees?: boolean | null;
-    has_non_eu_workers?: boolean | null;
-    employees_not_employed_in_germany?: boolean | null;
-  };
-  onFlagsUpdate?: (flags: any) => void;
+  currentFlags: SubcontractorFlags;
+  onFlagsUpdate?: (flags: SubcontractorFlags) => void;
   onCompute?: () => void;
 }
 
@@ -26,11 +22,15 @@ export function ComplianceFlags({
   onFlagsUpdate,
   onCompute 
 }: ComplianceFlagsProps) {
-  const [flags, setFlags] = useState(currentFlags);
-  const [loading, setLoading] = useState(false);
-  const [computing, setComputing] = useState(false);
-  const [computeResult, setComputeResult] = useState<any>(null);
-  const { toast } = useToast();
+  const [flags, setFlags] = useState<SubcontractorFlags>(currentFlags);
+  const [computeResult, setComputeResult] = useState<ComputeRequirementsResponse | null>(null);
+  
+  const { updateSubcontractorFlags, computeRequirements, isLoading } = useComplianceEngine({
+    onSuccess: () => {
+      onFlagsUpdate?.(flags);
+      onCompute?.();
+    }
+  });
 
   const handleFlagChange = (flagName: string, value: boolean) => {
     const newFlags = { ...flags, [flagName]: value };
@@ -38,64 +38,16 @@ export function ComplianceFlags({
   };
 
   const handleSave = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('subcontractors')
-        .update(flags)
-        .eq('id', subcontractorId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Compliance-Flags aktualisiert',
-        description: 'Die Einstellungen wurden erfolgreich gespeichert.',
-      });
-
+    const success = await updateSubcontractorFlags(subcontractorId, flags);
+    if (success) {
       onFlagsUpdate?.(flags);
-    } catch (error: any) {
-      console.error('Error updating flags:', error);
-      toast({
-        title: 'Fehler',
-        description: 'Die Flags konnten nicht gespeichert werden.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleComputeRequirements = async () => {
-    setComputing(true);
-    setComputeResult(null);
-    
-    try {
-      // First save current flags
-      await handleSave();
-      
-      // Then compute requirements
-      const { data, error } = await supabase.functions.invoke('compute-requirements', {
-        body: { subcontractor_id: subcontractorId }
-      });
-
-      if (error) throw error;
-
-      setComputeResult(data);
-      onCompute?.();
-
-      toast({
-        title: 'Pflichtdokumente berechnet',
-        description: `${data.created_requirements} neue Requirements erstellt, ${data.warning_count} Warnungen gefunden.`,
-      });
-    } catch (error: any) {
-      console.error('Error computing requirements:', error);
-      toast({
-        title: 'Fehler',
-        description: 'Die Pflichtdokumente konnten nicht berechnet werden.',
-        variant: 'destructive',
-      });
-    } finally {
-      setComputing(false);
+    const result = await computeRequirements(subcontractorId);
+    if (result) {
+      setComputeResult(result);
     }
   };
 
@@ -169,18 +121,18 @@ export function ComplianceFlags({
         <div className="flex gap-3">
           <Button 
             onClick={handleSave} 
-            disabled={loading}
+            disabled={isLoading}
             variant="outline"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Einstellungen speichern
           </Button>
           
           <Button 
             onClick={handleComputeRequirements} 
-            disabled={computing}
+            disabled={isLoading}
           >
-            {computing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Pflichtdokumente neu berechnen
           </Button>
         </div>
@@ -195,7 +147,7 @@ export function ComplianceFlags({
                   <li>• {computeResult.created_requirements} neue Requirements erstellt</li>
                   <li>• {computeResult.updated_requirements} bestehende Requirements aktualisiert</li>
                   <li>• {computeResult.warning_count} aktive Warnungen</li>
-                  <li>• Status: {computeResult.subcontractor_active ? 'Aktiv' : 'Inaktiv'}</li>
+                  <li>• Status: {computeResult.subcontractor_global_active ? 'Aktiv' : 'Inaktiv'}</li>
                   <li>• Rechtsform: {computeResult.company_type}</li>
                 </ul>
                 
