@@ -31,6 +31,8 @@ const Register = lazy(() => import("./pages/Register"));
 const MagicLinkWizard = lazy(() => import("./pages/MagicLinkWizard"));
 const Setup = lazy(() => import("./pages/Setup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Demo = lazy(() => import("./pages/Demo"));
+const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -221,76 +223,18 @@ const App = () => (
                         </div>
                       } />
                       
-                      {/* ULTRAEINFACHE PUBLIC DEMO */}
+                      {/* Public Demo Route */}
                       <Route path="/public-demo" element={
-                        <div style={{ 
-                          minHeight: '100vh', 
-                          backgroundColor: '#22c55e', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontFamily: 'system-ui'
-                        }}>
-                          <div style={{
-                            textAlign: 'center',
-                            backgroundColor: 'white',
-                            color: 'black',
-                            padding: '40px',
-                            borderRadius: '12px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                            maxWidth: '600px'
-                          }}>
-                            <h1 style={{ fontSize: '2.5rem', marginBottom: '20px' }}>
-                              ✅ ÖFFENTLICHE DEMO FUNKTIONIERT!
-                            </h1>
-                             <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>
-                               subfix App - Vollständige Demo ohne Login
-                             </p>
-                            <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                              <h2>📊 Demo-Statistiken:</h2>
-                              <p>👥 <strong>12 Nachunternehmer</strong></p>
-                              <p>📁 <strong>8 Projekte</strong></p>
-                              <p>⚠️ <strong>3 kritische Nachweise</strong></p>
-                              <p>❌ <strong>1 abgelaufener Nachweis</strong></p>
-                            </div>
-                            <div style={{ backgroundColor: '#e0f2fe', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                              <h3>🏗️ Beispiel-Projekte:</h3>
-                              <p>• Neubau Bürogebäude München (Aktiv)</p>
-                              <p>• Sanierung Industriehalle Hamburg (Läuft ab)</p>
-                              <p>• Wohnanlage Köln-Süd (Nicht konform)</p>
-                            </div>
-                            <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '8px' }}>
-                              <h3>👷 Beispiel-Nachunternehmer:</h3>
-                              <p>• Bau & Montage GmbH (Konform)</p>
-                              <p>• ElektroTech Solutions (Läuft ab)</p>
-                              <p>• Sanitär Pro (Nicht konform)</p>
-                            </div>
-                            <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666' }}>
-                              <strong>URL:</strong> {typeof window !== 'undefined' ? window.location.href : '/public-demo'}<br/>
-                              <strong>Zeit:</strong> {new Date().toLocaleString('de-DE')}
-                            </p>
-                          </div>
-                        </div>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicDemo />
+                        </Suspense>
                       } />
                       
-                      {/* Simple Demo Route */}
-                      <Route path="/demo" element={
-                        <div className="min-h-screen bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                          <div className="bg-white rounded-lg shadow-xl p-8 max-w-md text-center">
-                            <div className="text-6xl mb-4">✅</div>
-                            <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                              DEMO ERFOLGREICH!
-                            </h1>
-                            <p className="text-lg text-gray-600 mb-4">
-                              Die Demo-Seite funktioniert jetzt korrekt.
-                            </p>
-                            <div className="text-sm text-gray-500">
-                              <p>URL: {typeof window !== "undefined" ? window.location.href : "/demo"}</p>
-                              <p>Zeit: {new Date().toLocaleString("de-DE")}</p>
-                            </div>
-                          </div>
-                        </div>
+                      {/* Comprehensive Demo Route */}
+                      <Route path="/demo/*" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Demo />
+                        </Suspense>
                       } />
                       
                       {/* Protected routes */}
