@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Building2, Loader2 } from 'lucide-react';
+import { Logo } from '@/components/Brand/Logo';
+import { BRAND } from '@/config/brand';
+import { Loader2, CheckCircle } from 'lucide-react';
 
 export default function Register() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     name: '',
     tenantName: ''
   });
@@ -25,12 +26,6 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwörter stimmen nicht überein.');
-      setLoading(false);
-      return;
-    }
 
     if (formData.password.length < 6) {
       setError('Passwort muss mindestens 6 Zeichen lang sein.');
@@ -61,69 +56,65 @@ export default function Register() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-success">
-              <Building2 className="h-6 w-6 text-success-foreground" />
+          <CardHeader className="text-center space-y-6">
+            <div className="flex justify-center">
+              <Logo width={140} height={42} />
             </div>
-            <CardTitle className="text-2xl">Registrierung erfolgreich!</CardTitle>
-            <CardDescription>
-              Bitte überprüfen Sie Ihre E-Mails und bestätigen Sie Ihr Konto.
-            </CardDescription>
+            <div className="flex justify-center">
+              <div className="w-16 h-16 bg-brand-success/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-brand-success" />
+              </div>
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Registrierung erfolgreich!</CardTitle>
+              <CardDescription>
+                Bitte überprüfen Sie Ihre E-Mails und bestätigen Sie Ihr Konto.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardFooter>
-            <Link to="/login" className="w-full">
-              <Button className="w-full">Zur Anmeldung</Button>
-            </Link>
-          </CardFooter>
+          <CardContent className="text-center">
+            <Button asChild className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white">
+              <Link to="/login">Zur Anmeldung</Link>
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Building2 className="h-6 w-6 text-primary-foreground" />
+        <CardHeader className="text-center space-y-6">
+          <div className="flex justify-center">
+            <Logo width={140} height={42} />
           </div>
-          <CardTitle className="text-2xl">Registrierung</CardTitle>
-          <CardDescription>
-            Erstellen Sie Ihr Nachweis-Management-System
-          </CardDescription>
+          <div>
+            <CardTitle className="text-2xl">Registrieren</CardTitle>
+            <CardDescription>
+              Erstellen Sie Ihren {BRAND.name} Account
+            </CardDescription>
+          </div>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="tenantName">Firmenname</Label>
-              <Input
-                id="tenantName"
-                name="tenantName"
-                placeholder="Ihre Firma GmbH"
-                value={formData.tenantName}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="name">Ihr Name</Label>
+              <Label htmlFor="name">Vollständiger Name</Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="Max Mustermann"
                 value={formData.name}
                 onChange={handleChange}
                 required
+                placeholder="Max Mustermann"
                 disabled={loading}
               />
             </div>
@@ -134,10 +125,10 @@ export default function Register() {
                 id="email"
                 name="email"
                 type="email"
-                placeholder="ihre.email@firma.de"
                 value={formData.email}
                 onChange={handleChange}
                 required
+                placeholder="ihr@unternehmen.de"
                 disabled={loading}
               />
             </div>
@@ -151,38 +142,47 @@ export default function Register() {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                placeholder="••••••••"
+                minLength={6}
                 disabled={loading}
               />
             </div>
-
+            
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+              <Label htmlFor="tenantName">Unternehmen</Label>
               <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
+                id="tenantName"
+                name="tenantName"
+                value={formData.tenantName}
                 onChange={handleChange}
                 required
+                placeholder="Ihre Firma GmbH"
                 disabled={loading}
               />
             </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Registrieren
-            </Button>
             
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Bereits ein Konto? </span>
-              <Link to="/login" className="text-primary hover:underline">
-                Anmelden
+            <Button 
+              type="submit" 
+              className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white" 
+              disabled={loading}
+            >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Account erstellen
+            </Button>
+          </form>
+          
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Bereits registriert?{' '}
+              <Link to="/login" className="text-brand-primary hover:underline">
+                Jetzt anmelden
               </Link>
-            </div>
-          </CardFooter>
-        </form>
+            </p>
+            <Link to="/" className="text-sm text-muted-foreground hover:underline">
+              ← Zurück zur Startseite
+            </Link>
+          </div>
+        </CardContent>
       </Card>
     </div>
   );
