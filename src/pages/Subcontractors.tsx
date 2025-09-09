@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
+import { debug } from '@/lib/debug';
 import { 
   Plus, 
   Search, 
@@ -92,7 +93,7 @@ export default function Subcontractors() {
 
   useEffect(() => {
     if (isDemo) {
-      console.log('🎯 Subcontractors: Using demo data');
+      debug.log('🎯 Subcontractors: Using demo data');
       setSubcontractors(demoSubcontractors);
       setLoading(false);
       return;

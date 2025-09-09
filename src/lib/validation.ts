@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { debug } from './debug';
 
 // Input validation schemas
 export const emailSchema = z.string().email('Ungültige E-Mail-Adresse').min(1, 'E-Mail ist erforderlich');
@@ -115,7 +116,7 @@ class AuditLogger {
     };
 
     this.logs.push(auditEntry);
-    console.log('AUDIT:', auditEntry);
+    debug.log('AUDIT:', auditEntry);
 
     // TODO: Send to backend logging service
     // this.sendToBackend(auditEntry);

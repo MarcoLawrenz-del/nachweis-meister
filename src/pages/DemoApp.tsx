@@ -1,5 +1,7 @@
+import { debug } from '@/lib/debug';
+
 export default function DemoApp() {
-  console.log('🎯 DEMO APP COMPONENT LOADED');
+  debug.log('🎯 DEMO APP COMPONENT LOADED');
   
   return (
     <div className="min-h-screen bg-green-100 p-8">

@@ -24,6 +24,7 @@ import Setup from "./pages/Setup";
 import NotFound from "./pages/NotFound";
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { debug } from "@/lib/debug";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ const queryClient = new QueryClient();
 function RootRoute() {
   const { user, profile, loading } = useAuthContext();
   
-  console.log('🔍 RootRoute Debug:', { user: !!user, profile: !!profile, loading, timestamp: Date.now() });
+  debug.log('🔍 RootRoute Debug:', { user: !!user, profile: !!profile, loading, timestamp: Date.now() });
   
   // If loading takes more than 1 second, show content anyway
   const [showContent, setShowContent] = useState(false);
@@ -41,7 +42,7 @@ function RootRoute() {
   }, []);
   
   if (loading && !showContent) {
-    console.log('🕒 SHOWING LOADING...');
+    debug.log('🕒 SHOWING LOADING...');
     return (
       <div className="min-h-screen bg-red-100 flex items-center justify-center">
         <div className="text-center">
@@ -54,7 +55,7 @@ function RootRoute() {
   
   // Not authenticated - show NEW landing page directly here
   if (!user) {
-    console.log('🚀 SHOWING NEW LANDING PAGE - TIMESTAMP:', Date.now());
+    debug.log('🚀 SHOWING NEW LANDING PAGE - TIMESTAMP:', Date.now());
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         {/* NEUE LANDING PAGE - CACHE BREAK */}
@@ -129,7 +130,7 @@ function RootRoute() {
   
   // Authenticated but no profile - show setup  
   if (user && !profile) {
-    console.log('🔧 SHOWING SETUP PAGE - User exists but no profile');
+    debug.log('🔧 SHOWING SETUP PAGE - User exists but no profile');
     return (
       <div className="min-h-screen bg-yellow-100 p-8">
         <div className="max-w-md mx-auto bg-yellow-200 p-6 rounded-lg">

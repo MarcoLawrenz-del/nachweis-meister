@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
+import { debug } from '@/lib/debug';
 import { Link } from 'react-router-dom';
 import { 
   AlertTriangle, 
@@ -54,11 +55,11 @@ export default function Dashboard() {
   const { isDemo, demoStats, demoCriticalItems } = useDemoData();
 
   useEffect(() => {
-    console.log('🔍 Dashboard useEffect - profile:', profile, 'isDemo:', isDemo);
+    debug.log('🔍 Dashboard useEffect - profile:', profile, 'isDemo:', isDemo);
     
     if (isDemo) {
       // Use demo data
-      console.log('🎯 Using demo data');
+      debug.log('🎯 Using demo data');
       setStats(demoStats);
       setCriticalItems(demoCriticalItems);
       setLoading(false);
@@ -66,25 +67,25 @@ export default function Dashboard() {
     }
     
     if (profile) {
-      console.log('📊 Fetching dashboard data for tenant:', profile.tenant_id);
+      debug.log('📊 Fetching dashboard data for tenant:', profile.tenant_id);
       fetchDashboardData();
     }
   }, [profile, isDemo]);
 
   const fetchDashboardData = async () => {
-    console.log('🚀 fetchDashboardData started, profile:', profile);
+    debug.log('🚀 fetchDashboardData started, profile:', profile);
     if (!profile) {
-      console.log('❌ No profile found');
+      debug.log('❌ No profile found');
       return;
     }
 
     try {
       setLoading(true);
-      console.log('📈 Loading dashboard data...');
+      debug.log('📈 Loading dashboard data...');
 
       // If no tenant_id, set stats to zero to show onboarding
       if (!profile.tenant_id) {
-        console.log('⚠️ No tenant_id found, showing empty stats');
+        debug.log('⚠️ No tenant_id found, showing empty stats');
         setStats({
           totalSubcontractors: 0,
           totalProjects: 0,
@@ -98,10 +99,10 @@ export default function Dashboard() {
         return;
       }
 
-      console.log('🏢 Fetching data for tenant:', profile.tenant_id);
+      debug.log('🏢 Fetching data for tenant:', profile.tenant_id);
 
       // Fetch basic stats
-      console.log('📊 Fetching subcontractors and projects...');
+      debug.log('📊 Fetching subcontractors and projects...');
       const [subcontractorsResult, projectsResult] = await Promise.all([
         supabase
           .from('subcontractors')
@@ -113,8 +114,8 @@ export default function Dashboard() {
           .eq('tenant_id', profile.tenant_id)
       ]);
 
-      console.log('📊 Subcontractors result:', subcontractorsResult);
-      console.log('📊 Projects result:', projectsResult);
+      debug.log('📊 Subcontractors result:', subcontractorsResult);
+      debug.log('📊 Projects result:', projectsResult);
 
       if (subcontractorsResult.error) {
         console.error('❌ Subcontractors error:', subcontractorsResult.error);
@@ -124,7 +125,7 @@ export default function Dashboard() {
       }
 
       // Fetch requirements with status counts
-      console.log('📋 Fetching requirements...');
+      debug.log('📋 Fetching requirements...');
       const { data: requirements, error: requirementsError } = await supabase
         .from('requirements')
         .select(`
@@ -137,7 +138,7 @@ export default function Dashboard() {
         `)
         .eq('project_subs.projects.tenant_id', profile.tenant_id);
 
-      console.log('📋 Requirements result:', { data: requirements, error: requirementsError });
+      debug.log('📋 Requirements result:', { data: requirements, error: requirementsError });
 
       if (requirements) {
         const expiringSoon = requirements.filter(req => req.status === 'expiring').length;
@@ -154,7 +155,7 @@ export default function Dashboard() {
           approved
         });
 
-        console.log('✅ Stats calculated:', {
+        debug.log('✅ Stats calculated:', {
           totalSubcontractors: subcontractorsResult.data?.length || 0,
           totalProjects: projectsResult.data?.length || 0,
           expiringSoon,
@@ -164,7 +165,7 @@ export default function Dashboard() {
         });
 
         // Fetch critical items (expiring or expired)
-        console.log('⚠️ Fetching critical requirements...');
+        debug.log('⚠️ Fetching critical requirements...');
         const { data: criticalRequirements, error: criticalError } = await supabase
           .from('requirements')
           .select(`
@@ -182,7 +183,7 @@ export default function Dashboard() {
           .order('due_date', { ascending: true })
           .limit(10);
 
-        console.log('⚠️ Critical requirements result:', { data: criticalRequirements, error: criticalError });
+        debug.log('⚠️ Critical requirements result:', { data: criticalRequirements, error: criticalError });
 
         if (criticalRequirements) {
           const critical = criticalRequirements.map((req: any) => ({
@@ -197,13 +198,13 @@ export default function Dashboard() {
               : 0
           }));
           setCriticalItems(critical);
-          console.log('⚠️ Critical items set:', critical);
+          debug.log('⚠️ Critical items set:', critical);
         }
       }
     } catch (error) {
       console.error('❌ Error fetching dashboard data:', error);
     } finally {
-      console.log('🏁 Dashboard data fetch completed');
+      debug.log('🏁 Dashboard data fetch completed');
       setLoading(false);
     }
   };

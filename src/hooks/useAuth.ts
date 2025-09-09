@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeEmail, authRateLimiter, auditLogger } from '@/lib/validation';
+import { debug } from '@/lib/debug';
+import { edgeFunctions } from '@/lib/edgeFunctions';
 
 // User Profile Interface
 interface UserProfile {
@@ -64,13 +66,13 @@ export function useAuth() {
       
       if (data) {
         if (!data.tenant_id) {
-          console.log('User has no tenant_id - needs setup:', userId);
+          debug.log('User has no tenant_id - needs setup:', userId);
           setProfile(null);
         } else {
           setProfile(data as UserProfile);
         }
       } else {
-        console.log('No profile found for user:', userId);
+        debug.log('No profile found for user:', userId);
         setProfile(null);
       }
     } catch (error) {
@@ -86,22 +88,20 @@ export function useAuth() {
     }
 
     try {
-      console.log('Starting setup for user:', user.id);
+      debug.log('Starting setup for user:', user.id);
       
       // Call the Edge Function to complete setup (bypasses RLS)
-      const { data, error: setupError } = await supabase.functions.invoke('complete-setup', {
-        body: {
-          name: userData.name,
-          companyName: userData.companyName
-        }
+      const { data, error: setupError } = await edgeFunctions.completeSetup({
+        name: userData.name,
+        companyName: userData.companyName
       });
 
       if (setupError) {
-        console.error('Error in setup function:', setupError);
+        debug.error('Error in setup function:', setupError);
         return { error: setupError };
       }
 
-      console.log('Setup completed successfully via Edge Function');
+      debug.log('Setup completed successfully via Edge Function');
 
       // Refresh the profile
       await fetchProfile(user.id);
@@ -207,7 +207,7 @@ export function useAuth() {
       // If signup is successful and user is confirmed, create their profile
       if (data.user && !data.user.email_confirmed_at) {
         // User needs to confirm email first
-        console.log('User registered but needs email confirmation');
+        debug.log('User registered but needs email confirmation');
       } else if (data.user) {
         // User is immediately confirmed, create profile
         try {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { debug } from '@/lib/debug';
 
 // Demo data for dashboard
 const demoStats = {
@@ -145,7 +146,7 @@ export function useDemoData() {
   
   useEffect(() => {
     if (demoMode) {
-      console.log('🎯 Demo mode activated - using sample data');
+      debug.log('🎯 Demo mode activated - using sample data');
     }
   }, [demoMode]);
   

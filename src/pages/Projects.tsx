@@ -27,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
+import { debug } from '@/lib/debug';
 import { 
   Plus, 
   Search, 
@@ -68,7 +69,7 @@ export default function Projects() {
 
   useEffect(() => {
     if (isDemo) {
-      console.log('🎯 Projects: Using demo data');
+      debug.log('🎯 Projects: Using demo data');
       setProjects(demoProjects);
       setLoading(false);
       return;
