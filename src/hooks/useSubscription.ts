@@ -5,9 +5,9 @@ import { toast } from 'sonner';
 
 // Stripe Payment Links - funktionieren ohne Backend
 const STRIPE_PAYMENT_LINKS = {
-  starter: "https://buy.stripe.com/test_PLACEHOLDER_STARTER", // TODO: Erstelle Payment Link in Stripe
-  growth: "https://buy.stripe.com/test_PLACEHOLDER_GROWTH",   // TODO: Erstelle Payment Link in Stripe  
-  pro: "https://buy.stripe.com/test_PLACEHOLDER_PRO"         // TODO: Erstelle Payment Link in Stripe
+  starter: "https://buy.stripe.com/test_00wdR2cN8b2GePU7NKcMM02",
+  growth: "https://buy.stripe.com/test_7sY6oAbJ46Mq37c8ROcMM01",   
+  pro: "https://buy.stripe.com/test_00w6oA28u1s60Z42tqcMM00"
 };
 
 const PRICE_TO_PAYMENT_LINK = {
