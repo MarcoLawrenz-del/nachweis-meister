@@ -19,17 +19,21 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+    console.log("DEBUG: Function started with request");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    console.log("DEBUG: Stripe key found");
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
+    console.log("DEBUG: Supabase client created");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
+    console.log("DEBUG: Auth header found");
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
@@ -38,26 +42,31 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
+    console.log("DEBUG: User authenticated", { userId: user.id, email: user.email });
 
     // Get user's profile first
+    console.log("DEBUG: Starting user profile lookup");
     const { data: userProfile, error: profileError } = await supabaseClient
       .from("users")
       .select("tenant_id")
       .eq("id", user.id)
       .single();
 
+    console.log("DEBUG: User profile result", { userProfile, profileError });
     if (profileError || !userProfile?.tenant_id) {
       logStep("ERROR: User profile lookup failed", { profileError, userProfile });
       throw new Error("User has no tenant");
     }
 
     // Get tenant info separately
+    console.log("DEBUG: Starting tenant lookup");
     const { data: tenant, error: tenantError } = await supabaseClient
       .from("tenants")
       .select("id, name, stripe_customer_id, plan, subscription_status")
       .eq("id", userProfile.tenant_id)
       .single();
 
+    console.log("DEBUG: Tenant result", { tenant, tenantError });
     if (tenantError || !tenant) {
       logStep("ERROR: Tenant lookup failed", { tenantError, tenant });
       throw new Error("Tenant not found");
