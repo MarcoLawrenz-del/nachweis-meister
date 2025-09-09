@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -37,9 +38,12 @@ import {
   Download,
   AlertTriangle,
   Clock,
-  Plus
+  Plus,
+  History as HistoryIcon
 } from 'lucide-react';
 import { InviteSubcontractor } from '@/components/InviteSubcontractor';
+import { ReviewHistory } from '@/components/ReviewHistory';
+import { ReviewActions } from '@/components/ReviewActions';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -352,8 +356,22 @@ export default function RequirementsDetail() {
         </div>
       </div>
 
-      {/* Requirements Table */}
-      <Card>
+      {/* Tabs for Requirements and History */}
+      <Tabs defaultValue="requirements" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="requirements">
+            <FileText className="h-4 w-4 mr-2" />
+            Anforderungen ({requirements.length})
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <HistoryIcon className="h-4 w-4 mr-2" />
+            Review-Historie
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="requirements" className="space-y-6">
+          {/* Requirements Table */}
+          <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -382,6 +400,7 @@ export default function RequirementsDetail() {
                 <TableHead>Dokumente</TableHead>
                 <TableHead>Gültigkeit</TableHead>
                 <TableHead>Aktionen</TableHead>
+                <TableHead>Review</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -457,12 +476,28 @@ export default function RequirementsDetail() {
                       </Button>
                     </div>
                   </TableCell>
+                  <TableCell>
+                    {requirement.status === 'in_review' && profile?.role && ['owner', 'admin', 'staff'].includes(profile.role) ? (
+                      <ReviewActions 
+                        requirementId={requirement.id}
+                        onActionComplete={fetchRequirements}
+                      />
+                    ) : (
+                      getStatusBadge(requirement.status, requirement.documents)
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+        </Card>
+        </TabsContent>
+
+        <TabsContent value="history">
+          <ReviewHistory projectSubId={projectSubId || ''} />
+        </TabsContent>
+      </Tabs>
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
