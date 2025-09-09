@@ -240,13 +240,10 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="all">Alle</SelectItem>
                 <SelectItem value="missing">Fehlend</SelectItem>
-                <SelectItem value="submitted">Eingereicht</SelectItem>
                 <SelectItem value="in_review">In Prüfung</SelectItem>
                 <SelectItem value="valid">Gültig</SelectItem>
-                <SelectItem value="rejected">Abgelehnt</SelectItem>
-                <SelectItem value="expiring">Läuft ab</SelectItem>
                 <SelectItem value="expired">Abgelaufen</SelectItem>
               </SelectContent>
             </Select>
@@ -279,12 +276,11 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Dokumenttyp</TableHead>
-                <TableHead>Typ</TableHead>
+                <TableHead>Nachweis</TableHead>
+                <TableHead>Pflicht/Optional</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Gültig bis</TableHead>
-                <TableHead>Hochgeladen</TableHead>
-                <TableHead>Aktionen</TableHead>
+                <TableHead>Aktion</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -335,49 +331,36 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
                       )}
                     </TableCell>
                     
-                    <TableCell>
-                      {latestDocument ? (
-                        <div className="text-sm">
-                          <div>{format(new Date(latestDocument.uploaded_at), 'dd.MM.yyyy', { locale: de })}</div>
-                          <div className="text-muted-foreground truncate max-w-[150px]">
-                            {latestDocument.file_name}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
-                    </TableCell>
-                    
                      <TableCell>
-                       <div className="flex gap-2">
-                         {actions.map((action, index) => {
-                           const Icon = action.icon;
-                           return (
-                             <Button
-                               key={index}
-                               variant={action.variant}
-                               size="sm"
-                               onClick={action.action}
-                               className="flex items-center gap-1"
-                             >
-                               <Icon className="h-3 w-3" />
-                               {action.label}
-                             </Button>
-                           );
-                         })}
-                       </div>
-                     </TableCell>
+                        <div className="flex gap-2">
+                          {actions.map((action, index) => {
+                            const Icon = action.icon;
+                            return (
+                              <Button
+                                key={index}
+                                variant={action.variant}
+                                size="sm"
+                                onClick={action.action}
+                                className="flex items-center gap-1"
+                              >
+                                <Icon className="h-3 w-3" />
+                                {action.label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </TableCell>
                   </TableRow>
                 );
               })}
               
-              {filteredRequirements.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Keine Dokumente gefunden.
-                  </TableCell>
-                </TableRow>
-              )}
+               {filteredRequirements.length === 0 && (
+                 <TableRow>
+                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                     Keine Dokumente gefunden.
+                   </TableCell>
+                 </TableRow>
+               )}
             </TableBody>
           </Table>
         </CardContent>

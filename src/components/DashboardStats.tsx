@@ -4,12 +4,15 @@ import { Subcontractor } from '@/types';
 import { useRealtimeKPIs } from '@/hooks/useRealtimeKPIs';
 import { telemetry } from '@/lib/telemetry';
 import { useAppAuth } from '@/hooks/useAppAuth';
+import { WORDING } from '@/content/wording';
 import { 
   Users, 
   AlertTriangle, 
   CheckCircle, 
   Clock, 
-  XCircle 
+  XCircle,
+  FileX,
+  Eye
 } from 'lucide-react';
 
 interface DashboardStatsProps {
@@ -32,87 +35,88 @@ export function DashboardStats({ subcontractors }: DashboardStatsProps) {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card 
-        className="cursor-pointer hover:bg-accent/50 transition-colors"
-        onClick={() => handleKPIClick('total_subcontractors', stats.total_subcontractors || stats.total || 0)}
-        data-testid="subcontractor-total-card"
-      >
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('total_subcontractors', stats.total_subcontractors || stats.total || 0)}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Nachunternehmer
+            Aktive {WORDING.terms.subcontractor}
           </CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold" data-testid="total-subcontractors">
-            {isLoading ? '...' : (stats.total_subcontractors || stats.total || 0)}
+          <div className="text-2xl font-bold">
+            {isLoading ? '...' : (stats.active_subcontractors || stats.total || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Aktive Subunternehmer
+            {stats.inactive_subcontractors || 0} inaktiv
           </p>
         </CardContent>
       </Card>
 
-      <Card 
-        className="cursor-pointer hover:bg-accent/50 transition-colors"
-        onClick={() => handleKPIClick('expired_requirements', stats.expired_requirements || stats.expired || 0)}
-        data-testid="expired-card"
-      >
+      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('missing_requirements', stats.missing_requirements || 0)}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Kritische Nachweise
+            Fehlende Nachweise
           </CardTitle>
-          <XCircle className="h-4 w-4 text-danger" />
+          <FileX className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-danger" data-testid="expired-count">
+          <div className="text-2xl font-bold text-destructive">
+            {isLoading ? '...' : (stats.missing_requirements || 0)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Upload erforderlich
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('expired_requirements', stats.expired_requirements || stats.expired || 0)}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Abgelaufen
+          </CardTitle>
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-destructive">
             {isLoading ? '...' : (stats.expired_requirements || stats.expired || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Abgelaufene Dokumente
+            Sofort handeln
           </p>
         </CardContent>
       </Card>
 
-      <Card 
-        className="cursor-pointer hover:bg-accent/50 transition-colors"
-        onClick={() => handleKPIClick('expiring_requirements', stats.expiring_requirements || stats.expiring || 0)}
-        data-testid="expiring-card"
-      >
+      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('expiring_requirements', stats.expiring_requirements || stats.expiring || 0)}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Läuft bald ab
+            ≤ 30 Tage
           </CardTitle>
-          <AlertTriangle className="h-4 w-4 text-warning" />
+          <Clock className="h-4 w-4 text-warning" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-warning" data-testid="expiring-count">
+          <div className="text-2xl font-bold text-warning">
             {isLoading ? '...' : (stats.expiring_requirements || stats.expiring || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            In den nächsten 30 Tagen
+            Läuft bald ab
           </p>
         </CardContent>
       </Card>
 
-      <Card 
-        className="cursor-pointer hover:bg-accent/50 transition-colors"
-        onClick={() => handleKPIClick('compliance_rate', stats.compliance_rate || stats.complianceRate || 0)}
-        data-testid="compliance-card"
-      >
+      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('in_review_requirements', stats.in_review_requirements || 0)}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Compliance Rate
+            {WORDING.terms.inReview}
           </CardTitle>
-          <CheckCircle className="h-4 w-4 text-success" />
+          <Eye className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-success" data-testid="compliance-rate">
-            {isLoading ? '...' : (stats.compliance_rate || stats.complianceRate || 0)}%
+          <div className="text-2xl font-bold text-primary">
+            {isLoading ? '...' : (stats.in_review_requirements || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
-            Vollständige Nachweise
+            Prüfung läuft
           </p>
         </CardContent>
       </Card>

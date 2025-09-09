@@ -326,8 +326,12 @@ export default function PublicUpload() {
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-xl font-bold">{invitation.project_sub.project.tenant.name}</h1>
-              <p className="text-sm text-muted-foreground">Dokumenten-Upload</p>
+              <h1 className="text-xl font-bold">
+                Nachweise für {invitation.project_sub.project.name} hochladen
+              </h1>
+              <p className="text-sm text-muted-foreground font-medium text-primary">
+                Es werden ausschließlich Pflichtnachweise angefordert.
+              </p>
             </div>
           </div>
         </div>
@@ -387,10 +391,10 @@ export default function PublicUpload() {
                 <div>
                   <CardTitle className="text-lg flex items-center">
                     <Upload className="mr-2 h-5 w-5 text-destructive" />
-                    Offene Pflichtdokumente ({missingRequirements.length})
+                    Offene Pflichtnachweise ({missingRequirements.length})
                   </CardTitle>
                   <CardDescription>
-                    Bitte laden Sie alle erforderlichen Dokumente hoch
+                    Nur Pflichtnachweise werden angefordert. Jetzt hochladen:
                   </CardDescription>
                 </div>
                 {completedRequirements.length > 0 && (
