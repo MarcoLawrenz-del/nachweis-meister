@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DragDropUpload from '@/components/DragDropUpload';
 import HelpTooltip from '@/components/HelpTooltip';
+import { DocumentTypeTooltip } from '@/components/DocumentTypeTooltip';
 import { 
   Upload,
   FileText,
@@ -156,6 +157,7 @@ export default function PublicUpload() {
       setUploadProgress(60);
 
       // Create document record via Edge Function (bypasses RLS)
+      // This will transition the requirement from 'missing' to 'submitted'
       const { error: docError } = await supabase.functions.invoke('create-public-document', {
         body: {
           requirement_id: selectedRequirement.id,
@@ -166,7 +168,9 @@ export default function PublicUpload() {
           valid_from: uploadData.validFrom || null,
           valid_to: uploadData.validTo || null,
           document_number: uploadData.documentNumber || null,
-          invitation_token: token
+          invitation_token: token,
+          // Explicit state transition: missing -> submitted
+          new_status: 'submitted'
         }
       });
 
@@ -408,7 +412,7 @@ export default function PublicUpload() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">{requirement.document_type.name_de}</h3>
-                          <HelpTooltip documentTypeCode={requirement.document_type.code} />
+                          <DocumentTypeTooltip code={requirement.document_type.code} />
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {requirement.document_type.description_de}
@@ -472,7 +476,7 @@ export default function PublicUpload() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">{requirement.document_type.name_de}</h3>
-                          <HelpTooltip documentTypeCode={requirement.document_type.code} />
+                          <DocumentTypeTooltip code={requirement.document_type.code} />
                         </div>
                         {requirement.documents.length > 0 && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">

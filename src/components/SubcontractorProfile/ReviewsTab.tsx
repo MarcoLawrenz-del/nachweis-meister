@@ -48,6 +48,7 @@ export function ReviewsTab({ requirements, onReview }: ReviewsTabProps) {
 
     setIsSubmitting(true);
     try {
+      // Transition: in_review -> valid
       const success = await onReview(selectedRequirement, 'approve', {
         valid_from: reviewData.valid_from || new Date().toISOString().split('T')[0],
         valid_to: reviewData.valid_to
@@ -66,6 +67,7 @@ export function ReviewsTab({ requirements, onReview }: ReviewsTabProps) {
 
     setIsSubmitting(true);
     try {
+      // Transition: in_review -> rejected -> missing (automatic)
       const success = await onReview(selectedRequirement, 'reject', {
         rejection_reason: reviewData.rejection_reason
       });

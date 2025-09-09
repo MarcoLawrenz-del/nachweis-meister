@@ -106,66 +106,104 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
     return configs[status];
   };
 
-  // Get available actions for each requirement
+  // Get available actions for each requirement with proper state transitions
   const getActions = (requirement: RequirementWithDocument) => {
     const actions = [];
     
     switch (requirement.status) {
       case 'missing':
+        // Only allow upload request - no review option for missing documents
         actions.push({
           label: 'Upload anfordern',
           action: () => onAction('request_upload', requirement.id),
-          variant: 'default' as const
+          variant: 'default' as const,
+          icon: Upload
         });
         break;
         
       case 'submitted':
-      case 'in_review':
+        // Document submitted - can be reviewed or viewed
         actions.push({
-          label: 'Prüfen',
+          label: 'Prüfen & Details',
           action: () => onAction('review', requirement.id),
-          variant: 'outline' as const
+          variant: 'outline' as const,
+          icon: Eye
         });
-        break;
-        
-      case 'valid':
         if (requirement.documents.length > 0) {
           actions.push({
             label: 'Anzeigen',
             action: () => onAction('view_document', requirement.id),
-            variant: 'ghost' as const
+            variant: 'ghost' as const,
+            icon: FileText
+          });
+        }
+        break;
+        
+      case 'in_review':
+        // Currently in review - can be reviewed or viewed
+        actions.push({
+          label: 'Prüfen & Details',
+          action: () => onAction('review', requirement.id),
+          variant: 'default' as const,
+          icon: Eye
+        });
+        if (requirement.documents.length > 0) {
+          actions.push({
+            label: 'Anzeigen',
+            action: () => onAction('view_document', requirement.id),
+            variant: 'ghost' as const,
+            icon: FileText
+          });
+        }
+        break;
+        
+      case 'valid':
+        // Valid document - can only be viewed
+        if (requirement.documents.length > 0) {
+          actions.push({
+            label: 'Anzeigen',
+            action: () => onAction('view_document', requirement.id),
+            variant: 'outline' as const,
+            icon: FileText
           });
         }
         break;
         
       case 'rejected':
+        // Rejected - transitions back to missing, request new upload
         actions.push({
           label: 'Korrektur anfordern',
           action: () => onAction('request_correction', requirement.id),
-          variant: 'outline' as const
+          variant: 'destructive' as const,
+          icon: XCircle
         });
         break;
         
       case 'expiring':
+        // Expiring - request renewal
         actions.push({
           label: 'Verlängerung anfordern',
           action: () => onAction('request_renewal', requirement.id),
-          variant: 'outline' as const
+          variant: 'outline' as const,
+          icon: Clock
         });
         if (requirement.documents.length > 0) {
           actions.push({
             label: 'Anzeigen',
             action: () => onAction('view_document', requirement.id),
-            variant: 'ghost' as const
+            variant: 'ghost' as const,
+            icon: FileText
           });
         }
         break;
         
       case 'expired':
+        // Expired - request new upload (transitions to missing)
         actions.push({
           label: 'Neu anfordern',
           action: () => onAction('request_upload', requirement.id),
-          variant: 'default' as const
+          variant: 'default' as const,
+          icon: Upload
         });
         break;
     }
@@ -310,20 +348,25 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
                       )}
                     </TableCell>
                     
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {actions.map((action, index) => (
-                          <Button
-                            key={index}
-                            variant={action.variant}
-                            size="sm"
-                            onClick={action.action}
-                          >
-                            {action.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex gap-2">
+                         {actions.map((action, index) => {
+                           const Icon = action.icon;
+                           return (
+                             <Button
+                               key={index}
+                               variant={action.variant}
+                               size="sm"
+                               onClick={action.action}
+                               className="flex items-center gap-1"
+                             >
+                               <Icon className="h-3 w-3" />
+                               {action.label}
+                             </Button>
+                           );
+                         })}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 );
               })}

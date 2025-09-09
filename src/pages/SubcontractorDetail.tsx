@@ -134,7 +134,9 @@ export default function SubcontractorDetail() {
               if (action === 'request_upload' && requirementId) {
                 sendReminder([requirementId]);
               } else if (action === 'review' && requirementId) {
-                // Navigate to reviews tab with selected requirement
+                // Switch to reviews tab
+                const tabTrigger = document.querySelector('[value="reviews"]') as HTMLButtonElement;
+                tabTrigger?.click();
               } else if (action === 'renew' && requirementId) {
                 sendReminder([requirementId]);
               }
@@ -146,11 +148,18 @@ export default function SubcontractorDetail() {
           <DocumentsTab 
             requirements={requirements}
             onAction={(action, requirementId) => {
-              if (action === 'upload_request') {
+              if (action === 'request_upload' || action === 'request_correction' || action === 'request_renewal') {
                 sendReminder([requirementId]);
-              } else if (action === 'download') {
-                // Handle document download
-                console.log('Download document for requirement:', requirementId);
+              } else if (action === 'review') {
+                // Switch to reviews tab and select requirement
+                const tabTrigger = document.querySelector('[value="reviews"]') as HTMLButtonElement;
+                tabTrigger?.click();
+              } else if (action === 'view_document') {
+                // Find and open document
+                const requirement = requirements.find(r => r.id === requirementId);
+                if (requirement?.documents?.[0]?.file_url) {
+                  window.open(requirement.documents[0].file_url, '_blank');
+                }
               }
             }}
           />

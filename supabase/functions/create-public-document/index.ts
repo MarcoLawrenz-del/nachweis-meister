@@ -16,6 +16,7 @@ interface CreateDocumentRequest {
   valid_to: string | null;
   document_number: string | null;
   invitation_token: string;
+  new_status?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -45,7 +46,8 @@ const handler = async (req: Request): Promise<Response> => {
       valid_from,
       valid_to,
       document_number,
-      invitation_token
+      invitation_token,
+      new_status = 'submitted' // Default to submitted as per state transition rules
     }: CreateDocumentRequest = await req.json();
 
     console.log('Creating document for requirement:', requirement_id);
@@ -102,11 +104,14 @@ const handler = async (req: Request): Promise<Response> => {
       throw docError;
     }
 
-    // Update requirement status to 'in_review'
+    // Update requirement status according to state transition rules
+    // missing -> submitted (public upload) -> in_review (when reviewer opens)
+    const targetStatus = new_status === 'submitted' ? 'submitted' : 'in_review';
+    
     const { error: updateError } = await supabaseClient
       .from('requirements')
       .update({ 
-        status: 'in_review',
+        status: targetStatus,
         updated_at: new Date().toISOString()
       })
       .eq('id', requirement_id);
@@ -122,7 +127,8 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         document_id: document.id,
-        message: 'Document uploaded successfully and is now under review'
+        new_status: targetStatus,
+        message: `Document uploaded successfully and status changed to ${targetStatus}`
       }),
       {
         status: 200,
