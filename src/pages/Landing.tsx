@@ -236,7 +236,7 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto text-center">
             <Badge variant="secondary" className="mb-6">
               <Zap className="w-4 h-4 mr-2" />
-              Neu: Automatische Bausicht-Compliance
+              Neu: Automatische Rechtssicherheit
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">

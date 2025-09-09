@@ -23,7 +23,7 @@ import {
   Building2
 } from 'lucide-react';
 
-interface BausichtFlowStep {
+interface ComplianceFlowStep {
   id: string;
   title: string;
   description: string;
@@ -41,17 +41,17 @@ interface SubcontractorData {
   contact_email: string;
 }
 
-interface BausichtComplianceFlowProps {
+interface ComplianceFlowProps {
   subcontractorId: string;
   onFlowComplete?: () => void;
 }
 
-export function BausichtComplianceFlow({ 
+export function ComplianceFlow({ 
   subcontractorId, 
   onFlowComplete 
-}: BausichtComplianceFlowProps) {
+}: ComplianceFlowProps) {
   const [subcontractor, setSubcontractor] = useState<SubcontractorData | null>(null);
-  const [steps, setSteps] = useState<BausichtFlowStep[]>([]);
+  const [steps, setSteps] = useState<ComplianceFlowStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState(false);
   const { profile } = useAuthContext();
@@ -82,8 +82,8 @@ export function BausichtComplianceFlow({
         compliance_status: subData.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon'
       });
 
-      // Define Bausicht workflow steps
-      const flowSteps: Omit<BausichtFlowStep, 'completed' | 'current'>[] = [
+      // Define compliance workflow steps
+      const flowSteps: Omit<ComplianceFlowStep, 'completed' | 'current'>[] = [
         {
           id: 'subcontractor_setup',
           title: 'Nachunternehmer anlegen',
@@ -93,7 +93,7 @@ export function BausichtComplianceFlow({
         {
           id: 'documents_upload',
           title: 'Chargenpflichtige Dokumente hochladen',
-          description: 'Alle 8 Pflichtdokumente nach Bausicht-Standards bereitstellen',
+          description: 'Alle 8 Pflichtdokumente nach deutschen Baurechts-Standards bereitstellen',
           icon: FileText
         },
         {
@@ -111,7 +111,7 @@ export function BausichtComplianceFlow({
       ];
 
       // Check completion status for each step
-      const completedSteps: BausichtFlowStep[] = await Promise.all(
+      const completedSteps: ComplianceFlowStep[] = await Promise.all(
         flowSteps.map(async (step, index) => {
           let completed = false;
 
@@ -183,7 +183,7 @@ export function BausichtComplianceFlow({
       setActivating(true);
 
       // Run compliance calculation with new function
-      const { error: calcError } = await supabase.rpc('calculate_subcontractor_compliance_bausicht', {
+      const { error: calcError } = await supabase.rpc('calculate_subcontractor_compliance', {
         subcontractor_id_param: subcontractorId
       });
 
@@ -214,7 +214,7 @@ export function BausichtComplianceFlow({
     }
   };
 
-  const getStepIcon = (step: BausichtFlowStep) => {
+  const getStepIcon = (step: ComplianceFlowStep) => {
     const IconComponent = step.icon;
     if (step.completed) {
       return <CheckCircle className="h-6 w-6 text-success" />;
@@ -245,17 +245,17 @@ export function BausichtComplianceFlow({
 
   return (
     <div className="space-y-6">
-      {/* Bausicht Flow Header */}
+      {/* Compliance Flow Header */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center">
                 <Building2 className="mr-2 h-5 w-5" />
-                Bausicht-Compliance Flow: {subcontractor.company_name}
+                Rechtssicherheits-Flow: {subcontractor.company_name}
               </CardTitle>
               <CardDescription>
-                Rechtskonforme Nachunternehmer-Aufnahme nach Bausicht-Standards
+                Rechtskonforme Nachunternehmer-Aufnahme nach deutschen Baurechts-Standards
               </CardDescription>
             </div>
             <ComplianceStatusBadge 
@@ -298,10 +298,10 @@ export function BausichtComplianceFlow({
         </CardContent>
       </Card>
 
-      {/* Bausicht Workflow Steps */}
+      {/* Compliance Workflow Steps */}
       <Card>
         <CardHeader>
-          <CardTitle>UX-Flow: Bausicht-konforme Aufnahme</CardTitle>
+          <CardTitle>UX-Flow: Rechtssichere Aufnahme</CardTitle>
           <CardDescription>
             „Subunternehmer anlegen" → „Dokumente hochladen" → „Status aktivieren" → „Bei Projektzuweisung prüfen"
           </CardDescription>
@@ -358,7 +358,7 @@ export function BausichtComplianceFlow({
               Chargenpflichtige Dokumente hochladen
             </CardTitle>
             <CardDescription>
-              Alle 8 Pflichtdokumente nach Bausicht-Standards für rechtskonforme Compliance.
+              Alle 8 Pflichtdokumente nach deutschen Baurechts-Standards für rechtskonforme Compliance.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -369,11 +369,11 @@ export function BausichtComplianceFlow({
         </Card>
       )}
 
-      {/* Bausicht Legal Notice */}
+      {/* Rechtssicherheits-Hinweis */}
       <Alert className="border-primary/50 bg-primary/5">
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Bausicht-konforme Rechtssicherheit:</strong> Dieser Workflow gewährleistet die Einhaltung aller 
+          <strong>Rechtssichere Compliance:</strong> Dieser Workflow gewährleistet die Einhaltung aller 
           gesetzlichen Anforderungen nach deutschem Baurecht. Ohne vollständige Compliance ist eine Projektzuweisung blockiert.
           Das Ampelsystem zeigt den Status: <strong className="text-success">Grün = aktiv</strong>, 
           <strong className="text-destructive"> Rot = fehlt etwas/abgelaufen</strong>.
