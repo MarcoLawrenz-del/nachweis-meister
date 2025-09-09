@@ -54,12 +54,12 @@ serve(async (req) => {
       .from("users")
       .select("tenant_id")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     console.log("DEBUG: User profile result", { userProfile, profileError });
     if (profileError || !userProfile?.tenant_id) {
       logStep("ERROR: User profile lookup failed", { profileError, userProfile });
-      throw new Error("User has no tenant");
+      throw new Error(`User has no tenant: ${profileError?.message || 'No profile found'}`);
     }
 
     // Get tenant info separately
@@ -68,12 +68,12 @@ serve(async (req) => {
       .from("tenants")
       .select("id, name, stripe_customer_id, plan, subscription_status")
       .eq("id", userProfile.tenant_id)
-      .single();
+      .maybeSingle();
 
     console.log("DEBUG: Tenant result", { tenant, tenantError });
     if (tenantError || !tenant) {
       logStep("ERROR: Tenant lookup failed", { tenantError, tenant });
-      throw new Error("Tenant not found");
+      throw new Error(`Tenant not found: ${tenantError?.message || 'No tenant found'}`);
     }
 
     logStep("Retrieved tenant info", { tenantId: tenant.id, currentPlan: tenant.plan });
