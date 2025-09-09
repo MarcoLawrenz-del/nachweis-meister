@@ -241,6 +241,9 @@ const App = () => (
               </PublicRoute>
             } />
             
+            {/* Public pricing page */}
+            <Route path="/pricing" element={<Pricing />} />
+            
             {/* Magic link wizard (no auth required) */}
             <Route path="/invite/:token" element={<MagicLinkWizard />} />
             
@@ -353,7 +356,6 @@ const App = () => (
                <Route path="documents/:documentId" element={<DocumentDetail />} />
                <Route path="review" element={<ReviewQueue />} />
                <Route path="settings" element={<Settings />} />
-               <Route path="pricing" element={<Pricing />} />
             </Route>
             
             {/* Catch all */}
