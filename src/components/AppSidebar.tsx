@@ -23,6 +23,7 @@ import {
 import { useAppAuth } from "@/hooks/useAppAuth";
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/config/brand";
+import { Logo } from "@/components/Brand/Logo";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
@@ -73,13 +74,7 @@ export function AppSidebar() {
         {/* Logo/Brand */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold">{BRAND.name}</h2>
-              <p className="text-xs text-muted-foreground">{BRAND.tagline}</p>
-            </div>
+            <Logo width={100} height={30} />
           </div>
         </div>
 

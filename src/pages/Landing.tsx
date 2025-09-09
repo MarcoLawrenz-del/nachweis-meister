@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { Logo } from '@/components/Brand/Logo';
 import { 
   Shield, 
   CheckCircle, 
@@ -197,8 +198,7 @@ export default function Landing() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center gap-3">
-                <Shield className="h-8 w-8 text-primary" />
-                <span className="font-bold text-xl">subfix</span>
+                <Logo width={120} height={36} />
               </div>
               <div className="hidden md:flex items-center space-x-8">
                 <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
