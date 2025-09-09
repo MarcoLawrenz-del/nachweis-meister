@@ -49,11 +49,14 @@ import {
   Eye,
   Users,
   TrendingUp,
-  Activity
+  Activity,
+  Send,
+  ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { ComplianceFlags } from '@/components/ComplianceFlags';
+import { InviteSubcontractor } from '@/components/InviteSubcontractor';
 
 interface Subcontractor {
   id: string;
@@ -126,6 +129,12 @@ export default function SubcontractorDetail() {
     country_code: 'DE',
     notes: ''
   });
+  const [isGlobalInviteDialogOpen, setIsGlobalInviteDialogOpen] = useState(false);
+  const [globalInviteData, setGlobalInviteData] = useState({
+    subject: '',
+    message: ''
+  });
+  const [sendingInvite, setSendingInvite] = useState(false);
   const { profile } = useAuthContext();
   const { toast } = useToast();
 
@@ -308,6 +317,66 @@ export default function SubcontractorDetail() {
     }
   };
 
+  const sendGlobalInvite = async () => {
+    if (!subcontractor || !profile) return;
+
+    try {
+      setSendingInvite(true);
+
+      // Generate unique token
+      const token = crypto.randomUUID();
+      
+      // Create global invitation via Edge Function
+      const { error: inviteError } = await supabase.functions.invoke('create-invitation', {
+        body: {
+          subcontractor_id: subcontractor.id,
+          email: subcontractor.contact_email,
+          token: token,
+          subject: globalInviteData.subject,
+          message: globalInviteData.message,
+          invited_by: profile.id,
+          invitation_type: 'global'
+        }
+      });
+
+      if (inviteError) throw inviteError;
+
+      // Send email via Edge Function
+      const uploadUrl = `${window.location.origin}/public/upload/${token}`;
+      const { error: emailError } = await supabase.functions.invoke('send-invite-email', {
+        body: {
+          to: subcontractor.contact_email,
+          subject: globalInviteData.subject,
+          message: globalInviteData.message.replace('{UPLOAD_LINK}', uploadUrl),
+          subcontractorName: subcontractor.company_name,
+          projectName: null // Global invitation
+        }
+      });
+
+      if (emailError) {
+        console.error('Email error:', emailError);
+        // Don't fail completely if email fails
+      }
+
+      toast({
+        title: "Globale Einladung gesendet",
+        description: `Einladung wurde an ${subcontractor.contact_email} gesendet.`
+      });
+
+      setIsGlobalInviteDialogOpen(false);
+      setGlobalInviteData({ subject: '', message: '' });
+    } catch (error: any) {
+      console.error('Error sending global invite:', error);
+      toast({
+        title: "Fehler beim Senden",
+        description: error.message || "Einladung konnte nicht gesendet werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -418,13 +487,88 @@ export default function SubcontractorDetail() {
             </Badge>
           </div>
         </div>
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Bearbeiten
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={isGlobalInviteDialogOpen} onOpenChange={setIsGlobalInviteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => {
+                  setGlobalInviteData({
+                    subject: `Dokumenten-Upload für ${subcontractor.company_name}`,
+                    message: `Hallo ${subcontractor.company_name},
+
+wir benötigen von Ihnen verschiedene Compliance-Dokumente für unsere Zusammenarbeit.
+
+Bitte laden Sie die erforderlichen Dokumente über folgenden Link hoch:
+{UPLOAD_LINK}
+
+Bei Fragen stehen wir Ihnen gerne zur Verfügung.
+
+Mit freundlichen Grüßen`
+                  });
+                }}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Globale Einladung
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center">
+                  <Mail className="h-5 w-5 mr-2" />
+                  Globale Einladung senden
+                </DialogTitle>
+                <DialogDescription>
+                  Senden Sie eine allgemeine Einladung an {subcontractor.company_name} 
+                  zum Hochladen aller erforderlichen Compliance-Dokumente.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="global_subject">E-Mail Betreff</Label>
+                  <Input
+                    id="global_subject"
+                    value={globalInviteData.subject}
+                    onChange={(e) => setGlobalInviteData(prev => ({ ...prev, subject: e.target.value }))}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="global_message">Nachricht</Label>
+                  <Textarea
+                    id="global_message"
+                    rows={8}
+                    value={globalInviteData.message}
+                    onChange={(e) => setGlobalInviteData(prev => ({ ...prev, message: e.target.value }))}
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {'{UPLOAD_LINK}'} wird automatisch durch den Upload-Link ersetzt.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsGlobalInviteDialogOpen(false)}>
+                  Abbrechen
+                </Button>
+                <Button 
+                  onClick={sendGlobalInvite} 
+                  disabled={sendingInvite || !globalInviteData.subject || !globalInviteData.message}
+                >
+                  {sendingInvite ? "Sende..." : "Einladung senden"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Edit className="h-4 w-4 mr-2" />
+                Bearbeiten
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Nachunternehmer bearbeiten</DialogTitle>
@@ -517,6 +661,7 @@ export default function SubcontractorDetail() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -699,6 +844,12 @@ export default function SubcontractorDetail() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
+                      <InviteSubcontractor
+                        projectSubId={assignment.id}
+                        subcontractorEmail={subcontractor.contact_email}
+                        subcontractorName={subcontractor.company_name}
+                        projectName={assignment.project.name}
+                      />
                       <Button variant="outline" size="sm" asChild>
                         <Link to={`/app/requirements/${assignment.id}`}>
                           <FileText className="h-4 w-4 mr-2" />

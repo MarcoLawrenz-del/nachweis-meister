@@ -7,12 +7,14 @@ const corsHeaders = {
 };
 
 interface CreateInvitationRequest {
-  project_sub_id: string;
+  project_sub_id?: string; // Optional for global invitations
+  subcontractor_id?: string; // For global invitations
   email: string;
   token: string;
   subject: string;
   message: string;
   invited_by: string;
+  invitation_type?: 'project' | 'global'; // New field
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -35,19 +37,30 @@ const handler = async (req: Request): Promise<Response> => {
 
     const {
       project_sub_id,
+      subcontractor_id,
       email,
       token,
       subject,
       message,
-      invited_by
+      invited_by,
+      invitation_type = 'project'
     }: CreateInvitationRequest = await req.json();
 
-    console.log('Creating invitation for:', { project_sub_id, email, token });
+    console.log('Creating invitation:', { project_sub_id, subcontractor_id, email, token, invitation_type });
 
-    // Insert invitation record using Service Role (bypasses RLS)
-    const { data, error } = await supabaseClient
-      .from('invitations')
-      .insert({
+    // Validate required fields based on invitation type
+    if (invitation_type === 'project' && !project_sub_id) {
+      throw new Error('project_sub_id is required for project invitations');
+    }
+    if (invitation_type === 'global' && !subcontractor_id) {
+      throw new Error('subcontractor_id is required for global invitations');
+    }
+
+    // Prepare invitation data based on type
+    let invitationData;
+    
+    if (invitation_type === 'project') {
+      invitationData = {
         project_sub_id,
         email,
         token,
@@ -55,9 +68,29 @@ const handler = async (req: Request): Promise<Response> => {
         message,
         status: 'sent',
         invited_by,
+        invitation_type,
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-      })
+      };
+    } else {
+      invitationData = {
+        subcontractor_id,
+        email,
+        token,
+        subject,
+        message,
+        status: 'sent',
+        invited_by,
+        invitation_type,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+      };
+    }
+
+    // Insert invitation record using Service Role (bypasses RLS)
+    const { data, error } = await supabaseClient
+      .from('invitations')
+      .insert(invitationData)
       .select()
       .single();
 
