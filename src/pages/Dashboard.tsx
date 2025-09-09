@@ -17,6 +17,14 @@ import {
 import { format, isBefore, addDays } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { BRAND } from '@/config/brand';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
 
 interface DashboardStats {
   totalSubcontractors: number;
@@ -455,6 +463,36 @@ export default function Dashboard() {
           <p className="text-muted-foreground">
             Aktuelle Rechtslage und Handlungsempfehlungen für Ihr Bauunternehmen
           </p>
+        </div>
+        
+        {/* Filter Toggle */}
+        <div className="flex items-center gap-2">
+          <Label htmlFor="engagement-filter" className="text-sm font-medium">
+            Anzeigen:
+          </Label>
+          <Select value={filter} onValueChange={(value: FilterType) => setFilter(value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  Nur aktive Engagements
+                </div>
+              </SelectItem>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Alle Nachunternehmer
+                </div>
+              </SelectItem>
+              <SelectItem value="missing">Fehlende Nachweise</SelectItem>
+              <SelectItem value="expired">Abgelaufene Dokumente</SelectItem>
+              <SelectItem value="expiring">Auslaufende Dokumente</SelectItem>
+              <SelectItem value="review">In Prüfung</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
