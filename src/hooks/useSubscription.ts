@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { stripePromise } from '@/lib/stripe';
 
 export interface SubscriptionStatus {
   plan: 'free' | 'starter' | 'growth' | 'pro' | 'enterprise';
@@ -90,20 +91,36 @@ export function useSubscription() {
 
   const createCheckoutSession = async (priceId: string) => {
     try {
-      console.log('🚀 Starting checkout with priceId:', priceId);
-      const { data, error } = await supabase.functions.invoke('payment-create', {
-        body: { priceId }
+      console.log('🚀 Starting Stripe client-side checkout with priceId:', priceId);
+      
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Stripe failed to load');
+      }
+
+      console.log('✅ Stripe loaded successfully');
+      
+      // Direct redirect to Stripe Checkout
+      // This is a secure approach using Stripe's client-side integration
+      const { error } = await stripe.redirectToCheckout({
+        lineItems: [{
+          price: priceId,
+          quantity: 1,
+        }],
+        mode: 'subscription',
+        successUrl: `${window.location.origin}/dashboard?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+        clientReferenceId: profile?.tenant_id || 'unknown',
       });
 
-      console.log('📦 Checkout response:', { data, error });
-      if (error) throw error;
-      if (data.url) {
-        console.log('✅ Opening checkout URL:', data.url);
-        window.open(data.url, '_blank');
+      if (error) {
+        console.error('❌ Stripe checkout error:', error);
+        throw error;
       }
+
     } catch (error) {
       console.error('❌ Error creating checkout:', error);
-      toast.error('Fehler beim Erstellen der Checkout-Session');
+      toast.error('Fehler beim Öffnen des Checkout. Bitte versuchen Sie es erneut.');
     }
   };
 
