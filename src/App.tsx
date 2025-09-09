@@ -216,174 +216,55 @@ const App = () => (
             {/* Public document upload (no auth required) */}
             <Route path="/upload/:token" element={<PublicUpload />} />
             
-            {/* Public Demo Route - Complete inline implementation */}
+            {/* ULTRAEINFACHE PUBLIC DEMO */}
             <Route path="/public-demo" element={
-              <div className="min-h-screen bg-background">
-                {/* Header */}
-                <div className="bg-blue-600 text-white p-4">
-                  <div className="container mx-auto text-center">
-                    <h1 className="text-2xl font-bold">🎯 Nachweis-Meister - Vollständige öffentliche Demo</h1>
-                    <p className="text-sm mt-1">Komplette App-Funktionalität ohne Login • Alle Daten sind Beispieldaten</p>
+              <div style={{ 
+                minHeight: '100vh', 
+                backgroundColor: '#22c55e', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                color: 'white',
+                fontFamily: 'system-ui'
+              }}>
+                <div style={{
+                  textAlign: 'center',
+                  backgroundColor: 'white',
+                  color: 'black',
+                  padding: '40px',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                  maxWidth: '600px'
+                }}>
+                  <h1 style={{ fontSize: '2.5rem', marginBottom: '20px' }}>
+                    ✅ ÖFFENTLICHE DEMO FUNKTIONIERT!
+                  </h1>
+                  <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>
+                    Nachweis-Meister App - Vollständige Demo ohne Login
+                  </p>
+                  <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <h2>📊 Demo-Statistiken:</h2>
+                    <p>👥 <strong>12 Nachunternehmer</strong></p>
+                    <p>📁 <strong>8 Projekte</strong></p>
+                    <p>⚠️ <strong>3 kritische Nachweise</strong></p>
+                    <p>❌ <strong>1 abgelaufener Nachweis</strong></p>
                   </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="container mx-auto px-4 py-8">
-                  {/* Stats Cards */}
-                  <div className="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-                    <div className="bg-card p-6 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Nachunternehmer</p>
-                          <p className="text-3xl font-bold">12</p>
-                        </div>
-                        <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <span className="text-blue-600 text-lg">👥</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card p-6 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Projekte</p>
-                          <p className="text-3xl font-bold">8</p>
-                        </div>
-                        <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                          <span className="text-green-600 text-lg">📁</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card p-6 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Kritische Nachweise</p>
-                          <p className="text-3xl font-bold text-orange-600">3</p>
-                        </div>
-                        <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <span className="text-orange-600 text-lg">⚠️</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-card p-6 rounded-lg border">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Abgelaufene Nachweise</p>
-                          <p className="text-3xl font-bold text-red-600">1</p>
-                        </div>
-                        <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                          <span className="text-red-600 text-lg">❌</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div style={{ backgroundColor: '#e0f2fe', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                    <h3>🏗️ Beispiel-Projekte:</h3>
+                    <p>• Neubau Bürogebäude München (Aktiv)</p>
+                    <p>• Sanierung Industriehalle Hamburg (Läuft ab)</p>
+                    <p>• Wohnanlage Köln-Süd (Nicht konform)</p>
                   </div>
-
-                  {/* Projects Section */}
-                  <div className="bg-card p-6 rounded-lg border mb-8">
-                    <h2 className="text-xl font-bold mb-4">📁 Aktuelle Projekte</h2>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Neubau Bürogebäude München</h3>
-                          <p className="text-sm text-muted-foreground">München, Bayern • 01/2024 - 12/2024</p>
-                        </div>
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">✅ Konform</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Sanierung Industriehalle</h3>
-                          <p className="text-sm text-muted-foreground">Hamburg • 03/2024 - 09/2024</p>
-                        </div>
-                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">⚠️ Läuft ab</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Wohnanlage Köln-Süd</h3>
-                          <p className="text-sm text-muted-foreground">Köln, NRW • 02/2024 - 01/2025</p>
-                        </div>
-                        <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">❌ Nicht konform</span>
-                      </div>
-                    </div>
+                  <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '8px' }}>
+                    <h3>👷 Beispiel-Nachunternehmer:</h3>
+                    <p>• Bau & Montage GmbH (Konform)</p>
+                    <p>• ElektroTech Solutions (Läuft ab)</p>
+                    <p>• Sanitär Pro (Nicht konform)</p>
                   </div>
-
-                  {/* Subcontractors Section */}
-                  <div className="bg-card p-6 rounded-lg border mb-8">
-                    <h2 className="text-xl font-bold mb-4">👥 Nachunternehmer</h2>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Bau & Montage GmbH</h3>
-                          <p className="text-sm text-muted-foreground">Hans Mueller • h.mueller@bau-montage.de</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Generalunternehmer</span>
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">✅ Konform</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">ElektroTech Solutions</h3>
-                          <p className="text-sm text-muted-foreground">Sarah Schmidt • s.schmidt@elektrotech.de</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Elektro</span>
-                          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">⚠️ Läuft ab</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <h3 className="font-semibold">Sanitär Pro</h3>
-                          <p className="text-sm text-muted-foreground">Michael Weber • m.weber@sanitaer-pro.de</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Sanitär</span>
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">❌ Nicht konform</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Critical Documents */}
-                  <div className="bg-card p-6 rounded-lg border">
-                    <h2 className="text-xl font-bold mb-4">🚨 Kritische Nachweise</h2>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 border-l-4 border-orange-500 bg-orange-50">
-                        <div>
-                          <p className="font-medium">A1-Bescheinigung</p>
-                          <p className="text-sm text-muted-foreground">ElektroTech Solutions • Bürogebäude München</p>
-                        </div>
-                        <span className="text-sm font-medium text-orange-600">Läuft ab: 31.12.2024</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 border-l-4 border-red-500 bg-red-50">
-                        <div>
-                          <p className="font-medium">Arbeitgeberhaftpflicht</p>
-                          <p className="text-sm text-muted-foreground">Sanitär Pro • Industriehalle Hamburg</p>
-                        </div>
-                        <span className="text-sm font-medium text-red-600">Abgelaufen: 15.11.2024</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer Info */}
-                  <div className="mt-12 p-6 bg-muted/30 rounded-lg text-center">
-                    <h3 className="font-semibold mb-2">🎯 Vollständige Demo der Nachweis-Meister App</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Dashboard • Projekte • Nachunternehmer • Compliance-Management • Dokumentenverwaltung
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      URL: <code className="bg-background px-2 py-1 rounded">{typeof window !== "undefined" ? window.location.href : "/public-demo"}</code>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Geladen: {new Date().toLocaleString("de-DE")}
-                    </p>
-                  </div>
+                  <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#666' }}>
+                    <strong>URL:</strong> {typeof window !== 'undefined' ? window.location.href : '/public-demo'}<br/>
+                    <strong>Zeit:</strong> {new Date().toLocaleString('de-DE')}
+                  </p>
                 </div>
               </div>
             } />
