@@ -21,7 +21,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+    const apiKey = Deno.env.get("RESEND_API_KEY");
+    console.log('RESEND_API_KEY exists:', !!apiKey);
+    console.log('RESEND_API_KEY length:', apiKey ? apiKey.length : 0);
+    
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY not found in environment variables');
+    }
+    
+    const resend = new Resend(apiKey);
     
     const {
       to,
@@ -32,6 +40,8 @@ const handler = async (req: Request): Promise<Response> => {
     }: SendInviteEmailRequest = await req.json();
 
     console.log('Sending invite email to:', to);
+    console.log('Subject:', subject);
+    console.log('Subcontractor name:', subcontractorName);
 
     const emailResponse = await resend.emails.send({
       from: "Nachweis-Meister <onboarding@resend.dev>",
@@ -65,6 +75,13 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `,
     });
+
+    console.log('Resend API Response:', JSON.stringify(emailResponse, null, 2));
+    
+    if (emailResponse.error) {
+      console.error('Resend API Error:', emailResponse.error);
+      throw new Error(`Resend API Error: ${JSON.stringify(emailResponse.error)}`);
+    }
 
     console.log('Email sent successfully:', emailResponse.data?.id);
 
