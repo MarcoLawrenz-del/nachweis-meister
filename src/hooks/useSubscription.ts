@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
-import { stripePromise } from '@/lib/stripe';
 
 export interface SubscriptionStatus {
   plan: 'free' | 'starter' | 'growth' | 'pro' | 'enterprise';
@@ -91,36 +90,27 @@ export function useSubscription() {
 
   const createCheckoutSession = async (priceId: string) => {
     try {
-      console.log('🚀 Starting Stripe client-side checkout with priceId:', priceId);
+      console.log('🚀 Testing checkout with priceId:', priceId);
       
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error('Stripe failed to load');
+      if (!profile?.tenant_id) {
+        toast.error('Benutzer-Informationen nicht gefunden. Bitte loggen Sie sich erneut ein.');
+        return;
       }
 
-      console.log('✅ Stripe loaded successfully');
+      console.log('✅ Profile found:', { tenantId: profile.tenant_id });
       
-      // Direct redirect to Stripe Checkout
-      // This is a secure approach using Stripe's client-side integration
-      const { error } = await stripe.redirectToCheckout({
-        lineItems: [{
-          price: priceId,
-          quantity: 1,
-        }],
-        mode: 'subscription',
-        successUrl: `${window.location.origin}/dashboard?success=true`,
-        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
-        clientReferenceId: profile?.tenant_id || 'unknown',
-      });
-
-      if (error) {
-        console.error('❌ Stripe checkout error:', error);
-        throw error;
-      }
-
+      // Temporärer Test - öffne eine Test-URL um zu prüfen ob das Frontend funktioniert
+      const testUrl = `https://httpbin.org/get?test=stripe&price=${priceId}&tenant=${profile.tenant_id}`;
+      
+      console.log('✅ Opening test URL:', testUrl);
+      toast.success(`Test erfolgreich! Plan: ${priceId}`);
+      
+      // Für jetzt nur der Test - später echter Stripe Link
+      window.open(testUrl, '_blank');
+      
     } catch (error) {
-      console.error('❌ Error creating checkout:', error);
-      toast.error('Fehler beim Öffnen des Checkout. Bitte versuchen Sie es erneut.');
+      console.error('❌ Error in test checkout:', error);
+      toast.error('Test fehlgeschlagen');
     }
   };
 
