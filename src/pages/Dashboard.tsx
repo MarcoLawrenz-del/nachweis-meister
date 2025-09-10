@@ -460,13 +460,14 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{WORDING.productName} Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Pflichtnachweise automatisch einsammeln.</h1>
           <p className="text-muted-foreground">
-            {WORDING.pitchOneLiner}
+            Nur erforderliche Nachweise. Automatische Erinnerungen. Klarer Status.
           </p>
           <div className="flex flex-wrap gap-2 mt-2">
             <Badge variant="outline" className="text-xs">
-              {WORDING.info.onlyRequiredWarn}
+              <Info className="w-3 h-3 mr-1" />
+              Nur Pflichtnachweise werden angefordert und als fehlend gewarnt
             </Badge>
           </div>
         </div>
@@ -502,24 +503,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Compliance-Hinweise */}
-      <div className="flex flex-wrap gap-6 text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-primary" />
-          <span>Automatische Überwachung aller Pflichtdokumente nach deutschem Baurecht</span>
-        </div>
-        <span className="text-muted-foreground/50">•</span>
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-primary" />
-          <span>Projekt-spezifische und globale Nachweise werden zentral verwaltet</span>
-        </div>
-        <span className="text-muted-foreground/50">•</span>
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-primary" />
-          <span>Wiederkehrende Pflichten werden automatisch terminiert</span>
-        </div>
-      </div>
-
       {/* KPI-Kacheln (klickbar) */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card 
@@ -529,19 +512,19 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Arbeitsfähige Nachunternehmer</p>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="w-4 h-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Nachunternehmer mit vollständiger Compliance, die sofort eingesetzt werden können</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                 <div className="flex items-center gap-2">
+                   <p className="text-sm font-medium text-muted-foreground">Aktive beauftragte Firmen</p>
+                   <TooltipProvider>
+                     <Tooltip>
+                       <TooltipTrigger>
+                         <Info className="w-4 h-4 text-muted-foreground" />
+                       </TooltipTrigger>
+                       <TooltipContent>
+                         <p>Nachunternehmer mit vollständiger Compliance, die sofort eingesetzt werden können</p>
+                       </TooltipContent>
+                     </Tooltip>
+                   </TooltipProvider>
+                 </div>
                 <p className="text-2xl font-bold">{stats.activeSubcontractors}</p>
               </div>
               <Users className="h-8 w-8 text-primary" />
@@ -584,7 +567,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Abgelaufene Nachweise</p>
+                  <p className="text-sm font-medium text-muted-foreground">Abgelaufen</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
@@ -611,7 +594,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Laufen bald ab</p>
+                  <p className="text-sm font-medium text-muted-foreground">≤ 30 Tage</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
@@ -638,7 +621,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-muted-foreground">Zur Prüfung</p>
+                  <p className="text-sm font-medium text-muted-foreground">In Prüfung</p>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>

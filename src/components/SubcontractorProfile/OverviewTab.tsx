@@ -240,7 +240,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
           <CardContent className="p-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-green-800 mb-2">Alles vollständig!</h3>
-            <p className="text-green-700">{WORDING.empty.noDuties}</p>
+            <p className="text-green-700">Für diese beauftragte Firma sind aktuell keine Pflichtnachweise erforderlich.</p>
           </CardContent>
         </Card>
       )}
