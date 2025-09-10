@@ -9,6 +9,9 @@
 /* Import screenshot specific styles */
 @import './styles/screenshot.css';
 
+/* Import button fixes for sharp rendering */
+@import './styles/button-fixes.css';
+
 @layer base {
   /* Use semantic tokens from tokens.css */
   

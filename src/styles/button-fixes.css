@@ -1,0 +1,31 @@
+/* Sharp button rendering - no blur, no fractional pixels */
+
+/* Sicheres Font-Rendering, besonders auf dunklen Flächen */
+button, .btn, [data-role="button"] {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Verhindere Rendering-Blur durch Transform/Filter auf Buttons */
+button, .btn, [data-role="button"] {
+  transform: none !important;      /* keine Skalierung im Idle-Zustand */
+  filter: none !important;         /* kein drop-shadow/blur auf dem Element selbst */
+}
+
+/* Hover/Active nur über Shadow/Farbe – keine Scale */
+button:hover { transform: none !important; }
+button:active { transform: none !important; }
+
+/* Pillenform einheitlich, integer Radii */
+.btn-pill, button {
+  border-radius: 9999px;
+}
+
+/* Falls ein übergeordnetes Layout fractional transforms nutzt – verhindern */
+button * { transform: none; }
+
+/* Verhindere geerbte Transforms */
+.no-transform, .no-transform * {
+  transform: none !important;
+}

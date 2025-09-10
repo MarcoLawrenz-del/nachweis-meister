@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Building2
 } from 'lucide-react';
+import { PlayIcon } from '@/components/ui/PlayIcon';
 
 interface Step {
   title: string;
@@ -144,7 +145,7 @@ export function UseCasePage({
                   >
                     <Link to={cta.href}>
                       {cta.variant === 'default' ? (
-                        <CheckCircle className="w-5 h-5 mr-2" />
+                        <PlayIcon />
                       ) : (
                         <Play className="w-5 h-5 mr-2" />
                       )}
@@ -253,13 +254,13 @@ export function UseCasePage({
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 bg-primary text-primary-foreground">
-          <div className="container mx-auto px-4 text-center">
+        <section className="py-16 bg-brand-primary text-brand-on-primary">
+          <div className="container mx-auto px-4 text-center no-transform">
             <div className="max-w-2xl mx-auto">
               <h2 className="text-3xl font-bold mb-4">
                 Jetzt kostenlos testen
               </h2>
-              <p className="text-xl mb-8 text-primary-foreground/90">
+              <p className="text-xl mb-8 opacity-90">
                 14 Tage kostenlos. Danach read-only bis Aktivierung.
               </p>
               
@@ -268,15 +269,11 @@ export function UseCasePage({
                   <Button 
                     key={index}
                     size="lg" 
-                    variant={cta.variant === 'default' ? 'secondary' : 'outline'}
+                    variant={cta.variant === 'default' ? 'secondary' : 'ghost'}
                     asChild
                   >
                     <Link to={cta.href}>
-                      {cta.variant === 'default' ? (
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                      ) : (
-                        <Play className="w-5 h-5 mr-2" />
-                      )}
+                      {cta.variant === 'default' && <PlayIcon />}
                       {cta.label}
                     </Link>
                   </Button>

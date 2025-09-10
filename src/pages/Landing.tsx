@@ -10,7 +10,8 @@ import { Logo } from '@/components/Brand/Logo';
 import { Footer } from '@/components/Footer';
 import { WORDING } from '@/content/wording';
 import { SCREENSHOTS } from '@/content/screenshots';
-import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Play, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
+import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
+import { PlayIcon } from "@/components/ui/PlayIcon";
 import { ScreenshotRow } from "@/components/marketing/ScreenshotRow";
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -239,14 +240,14 @@ export default function Landing() {
               </Badge>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="text-lg px-8" onClick={handleStartTrial}>
-                <Play className="w-5 h-5 mr-2" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 no-transform">
+              <Button size="lg" onClick={handleStartTrial}>
+                <PlayIcon />
                 14 Tage kostenlos testen
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <Button size="lg" variant="outline" asChild>
                 <a href="#demo">
-                  <Eye className="w-5 h-5 mr-2" />
+                  <Eye className="w-4 h-4" />
                   Live-Demo ansehen
                 </a>
               </Button>
@@ -597,14 +598,14 @@ export default function Landing() {
               14 Tage kostenlos testen. Keine Kreditkarte erforderlich. 
               Setup in unter 5 Minuten.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8" onClick={handleStartTrial}>
-                <Play className="w-5 h-5 mr-2" />
+            <div className="flex flex-col sm:flex-row gap-4 justify-center no-transform">
+              <Button size="lg" onClick={handleStartTrial}>
+                <PlayIcon />
                 Jetzt kostenlos testen
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <Button size="lg" variant="outline" asChild>
                 <Link to="/demo">
-                  <Eye className="w-5 h-5 mr-2" />
+                  <Eye className="w-4 h-4" />
                   Demo ansehen
                 </Link>
               </Button>

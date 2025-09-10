@@ -44,12 +44,12 @@ export function TrialBanner() {
           </AlertDescription>
         </div>
         
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 no-transform">
           <Button 
             size="sm" 
             variant={isExpired ? "destructive" : "default"}
             onClick={handleUpgrade}
-            className="touch-target focus-ring"
+            className="focus-ring"
             aria-label={isExpired ? 'Plan aktivieren um fortzufahren' : 'Jetzt upgraden um unbegrenzt zu nutzen'}
             data-testid="btn-plan-aktivieren"
           >
@@ -61,7 +61,7 @@ export function TrialBanner() {
               variant="ghost"
               size="sm"
               onClick={() => setDismissed(true)}
-              className="touch-target focus-ring"
+              className="focus-ring"
               aria-label="Banner schließen"
             >
               <X className="h-4 w-4" />
