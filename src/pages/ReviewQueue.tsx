@@ -272,6 +272,7 @@ export default function ReviewQueue() {
                     variant="outline"
                     size="sm"
                     data-testid="btn-pruefen"
+                    disabled={requirement.status === 'missing'}
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Prüfen & Details

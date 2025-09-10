@@ -19,16 +19,23 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
   const handleSubmit = async () => {
     if (!action) return;
     
-    await submitReview({
+    // Validation for required fields
+    if (action === 'reject' && !reason.trim()) {
+      return; // Button should be disabled, but double-check
+    }
+    
+    const success = await submitReview({
       requirementId,
       action,
       reason: action === 'reject' ? reason : undefined,
       escalationReason: action === 'escalate' ? reason : undefined,
     });
     
-    setAction(null);
-    setReason('');
-    onActionComplete?.();
+    if (success) {
+      setAction(null);
+      setReason('');
+      onActionComplete?.();
+    }
   };
 
   const handleCancel = () => {
