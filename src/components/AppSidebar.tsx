@@ -7,7 +7,8 @@ import {
   Settings,
   FolderOpen,
   Shield,
-  LogOut
+  LogOut,
+  Bell
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,10 +28,9 @@ import { Logo } from "@/components/Brand/Logo";
 
 const mainItems = [
   { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
-  
-  { title: "Projekte", url: "/app/projects", icon: FolderOpen },
-  { title: "Nachunternehmer", url: "/app/subcontractors", icon: Users },
-  { title: "Prüfungen", url: "/app/review", icon: FileCheck },
+  { title: "Beauftragte Firmen", url: "/app/subcontractors", icon: Users },
+  { title: "Prüfen", url: "/app/review", icon: FileCheck },
+  { title: "Erinnerungen", url: "/app/reminders", icon: Bell },
 ];
 
 const settingsItems = [

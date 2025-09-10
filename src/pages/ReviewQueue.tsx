@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileText, Calendar, User, Building2, AlertTriangle, Eye } from 'lucide-react';
-import { StatusBadge } from '@/components/StatusBadge';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
+import { useAppAuth } from '@/hooks/useAppAuth';
+import { useToast } from '@/hooks/use-toast';
+import { Eye, FileCheck, AlertCircle, Clock, User, FileText, Calendar, Building2, AlertTriangle } from 'lucide-react';
+import { format, isBefore } from 'date-fns';
+import { StatusBadge } from '@/components/StatusBadge';
 
 interface Requirement {
   id: string;
@@ -45,7 +49,7 @@ interface Requirement {
   };
 }
 
-export function ReviewQueue() {
+export default function ReviewQueue() {
   const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'escalated' | 'my_reviews'>('pending');
@@ -210,7 +214,7 @@ export function ReviewQueue() {
                     {requirement.review_priority === 'high' && (
                       <Badge variant="secondary">Hohe Priorität</Badge>
                     )}
-                    <StatusBadge status={requirement.status as any} />
+                    <StatusBadge status={requirement.status} />
                   </div>
                 </div>
               </CardHeader>

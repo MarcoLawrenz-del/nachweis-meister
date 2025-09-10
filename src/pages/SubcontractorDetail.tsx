@@ -1,17 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Building2, Mail, Phone, MapPin, Calendar, FileText, Eye, Send, Activity, Settings } from 'lucide-react';
 import { useSubcontractorProfile } from '@/hooks/useSubcontractorProfile';
-import { 
-  ArrowLeft,
-  Calendar,
-  Building2,
-  FileText,
-  Eye,
-  Send,
-  Settings,
-  Activity
-} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 

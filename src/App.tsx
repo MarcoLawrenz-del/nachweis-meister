@@ -25,7 +25,7 @@ const Freistellungsbescheinigung = lazy(() => import("./pages/lp/Freistellungsbe
 const SHK = lazy(() => import("./pages/lp/SHK"));
 const Elektro = lazy(() => import("./pages/lp/Elektro"));
 
-const ReviewQueue = lazy(() => import("./pages/ReviewQueue").then(module => ({ default: module.ReviewQueue })));
+const ReviewQueue = lazy(() => import("./pages/ReviewQueue"));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));

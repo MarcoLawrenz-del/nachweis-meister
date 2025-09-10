@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { RequirementStatus } from "@/types/compliance";
 
-export type StatusType = RequirementStatus | 'escalated';
+export type StatusType = RequirementStatus | 'escalated' | 'uploaded';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -17,6 +17,10 @@ const statusConfig = {
   },
   submitted: {
     label: 'Eingereicht',
+    className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+  },
+  uploaded: {
+    label: 'Hochgeladen',
     className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
   },
   in_review: {
