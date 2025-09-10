@@ -1,0 +1,93 @@
+{
+  "commit": "unknown",
+  "timestamp": "2025-01-09T10:30:00.000Z",
+  "verdict": "FAIL",
+  "totals": { 
+    "e2e_passed": 0, 
+    "e2e_failed": 6 
+  },
+  "lighthouse": {
+    "home": { 
+      "performance": 85, 
+      "accessibility": 92, 
+      "best": 88, 
+      "seo": 95 
+    },
+    "dashboard": { 
+      "performance": 78, 
+      "accessibility": 89, 
+      "best": 85, 
+      "seo": 90 
+    }
+  },
+  "functional": {
+    "trial_gate": "FAIL",
+    "stripe_webhook": "OK",
+    "allowlist": "OK",
+    "engine_only_required": "OK",
+    "upload_review_routing": "FAIL",
+    "reminder_escalation": "FAIL",
+    "kpi_coherence": "OK",
+    "screenshots_200": "FAIL"
+  },
+  "blockers": [
+    {
+      "id": "QA-001",
+      "title": "Missing /app/reminders route causing 404 errors",
+      "severity": "P1",
+      "repro": [
+        "Navigate to dashboard",
+        "Click 'Erinnerungen' in sidebar",
+        "Observe 404 error"
+      ],
+      "expected": "Reminders page should load",
+      "actual": "404 NotFound page displayed"
+    },
+    {
+      "id": "QA-002", 
+      "title": "Missing screenshot assets causing broken images",
+      "severity": "P1",
+      "repro": [
+        "Visit homepage",
+        "Scroll to 'Die App im Überblick' section",
+        "Observe broken image placeholders"
+      ],
+      "expected": "Real app screenshots should be displayed", 
+      "actual": "Missing /public/screenshots/ directory and all screenshot files"
+    },
+    {
+      "id": "QA-003",
+      "title": "Playwright tests reference non-existent testids",
+      "severity": "P2", 
+      "repro": [
+        "Run npm run test:e2e",
+        "Tests fail on missing data-testid attributes"
+      ],
+      "expected": "All E2E tests should pass",
+      "actual": "Tests fail due to missing test IDs on components"
+    },
+    {
+      "id": "QA-004",
+      "title": "Review queue and reminders functionality incomplete", 
+      "severity": "P2",
+      "repro": [
+        "Navigate to /app/review",
+        "Attempt to review submitted documents"
+      ],
+      "expected": "Functional review interface",
+      "actual": "Basic UI without full functionality"
+    },
+    {
+      "id": "QA-005",
+      "title": "Missing build validation for screenshot assets",
+      "severity": "P2", 
+      "repro": [
+        "Run npm run build",
+        "Build succeeds despite missing screenshot files"
+      ],
+      "expected": "Build should fail when required assets are missing",
+      "actual": "Build passes with missing screenshot files"
+    }
+  ],
+  "notes": "Critical routing fix applied during QA. Missing screenshot infrastructure is highest priority. E2E tests need data-testid attributes added to components. Overall architecture is sound but key user flows are incomplete."
+}
