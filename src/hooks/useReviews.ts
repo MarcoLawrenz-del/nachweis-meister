@@ -27,7 +27,7 @@ export const useReviews = () => {
     }
   };
 
-  const submitReview = async ({ requirementId, action, reason, escalationReason }: ReviewAction) => {
+  const submitReview = async ({ requirementId, action, reason, escalationReason }: ReviewAction): Promise<boolean> => {
     setIsLoading(true);
     
     try {
