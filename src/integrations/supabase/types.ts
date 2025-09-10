@@ -529,6 +529,7 @@ export type Database = {
           review_priority: string | null
           status: string
           updated_at: string
+          valid_to: string | null
         }
         Insert: {
           assigned_reviewer_id?: string | null
@@ -545,6 +546,7 @@ export type Database = {
           review_priority?: string | null
           status?: string
           updated_at?: string
+          valid_to?: string | null
         }
         Update: {
           assigned_reviewer_id?: string | null
@@ -561,6 +563,7 @@ export type Database = {
           review_priority?: string | null
           status?: string
           updated_at?: string
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -915,6 +918,21 @@ export type Database = {
         Args: { project_sub_id_param?: string; subcontractor_id_param: string }
         Returns: Json
       }
+      get_active_required_warnings: {
+        Args: { tenant_id_param?: string }
+        Returns: {
+          company_name: string
+          document_name: string
+          document_type_id: string
+          due_date: string
+          is_required: boolean
+          project_sub_id: string
+          requirement_id: string
+          status: string
+          subcontractor_active: boolean
+          subcontractor_id: string
+        }[]
+      }
       get_tenant_kpis: {
         Args: { tenant_id: string }
         Returns: {
@@ -938,6 +956,10 @@ export type Database = {
         Returns: boolean
       }
       send_compliance_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_requirement_status_by_date: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

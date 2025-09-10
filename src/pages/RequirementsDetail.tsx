@@ -480,6 +480,7 @@ export default function RequirementsDetail() {
                     {requirement.status === 'in_review' && profile?.role && ['owner', 'admin', 'staff'].includes(profile.role) ? (
                       <ReviewActions 
                         requirementId={requirement.id}
+                        currentStatus={requirement.status}
                         onActionComplete={fetchRequirements}
                       />
                     ) : (

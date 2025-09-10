@@ -356,6 +356,7 @@ export function DocumentDetail() {
         {canReview() && requirement.status === 'uploaded' && (
           <ReviewActions 
             requirementId={requirement.id}
+            currentStatus={requirement.status}
             onActionComplete={fetchRequirement}
           />
         )}

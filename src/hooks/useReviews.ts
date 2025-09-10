@@ -127,6 +127,8 @@ export const useReviews = () => {
         description: `Dokument wurde ${action === 'approve' ? 'genehmigt' : action === 'reject' ? 'abgelehnt' : 'eskaliert'}.`,
       });
 
+      return true;
+
     } catch (error: any) {
       console.error('Review submission error:', error);
       toast({
@@ -134,6 +136,8 @@ export const useReviews = () => {
         description: "Die Prüfung konnte nicht abgeschlossen werden.",
         variant: "destructive",
       });
+      
+      return false;
     } finally {
       setIsLoading(false);
     }

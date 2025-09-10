@@ -7,11 +7,12 @@ import { useReviews } from '@/hooks/useReviews';
 
 interface ReviewActionsProps {
   requirementId: string;
+  currentStatus: string;
   onActionComplete?: () => void;
   disabled?: boolean;
 }
 
-export const ReviewActions = ({ requirementId, onActionComplete, disabled }: ReviewActionsProps) => {
+export const ReviewActions = ({ requirementId, currentStatus, onActionComplete, disabled }: ReviewActionsProps) => {
   const [action, setAction] = useState<'approve' | 'reject' | 'escalate' | null>(null);
   const [reason, setReason] = useState('');
   const { submitReview, isLoading } = useReviews();
@@ -43,6 +44,11 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
     setReason('');
   };
 
+  // Don't show review actions if status doesn't allow review
+  if (!['submitted', 'in_review'].includes(currentStatus)) {
+    return null;
+  }
+
   if (action) {
     return (
       <Card className="w-full">
@@ -61,6 +67,7 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
             <div>
               <label className="text-sm font-medium mb-2 block">
                 {action === 'reject' ? 'Ablehnungsgrund' : 'Eskalationsgrund'}
+                <span className="text-destructive ml-1">*</span>
               </label>
               <Textarea
                 value={reason}
@@ -71,6 +78,7 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
                     : 'Bitte geben Sie den Grund für die Eskalation an...'
                 }
                 rows={3}
+                required
               />
             </div>
           )}
