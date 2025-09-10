@@ -90,8 +90,8 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
               </div>
               <p className="text-sm text-muted-foreground">
                 {profile.status === 'active' 
-                  ? 'Der Nachunternehmer ist global aktiv. Warnungen und Erinnerungen werden versendet.'
-                  : 'Der Nachunternehmer ist inaktiv. Warnungen und Erinnerungen sind pausiert.'
+                  ? 'Der Nachunternehmer ist aktiv. Warnungen und Erinnerungen werden versendet.'
+                  : 'Warnungen und Erinnerungen sind pausiert.'
                 }
               </p>
             </div>

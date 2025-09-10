@@ -1,4 +1,28 @@
 import { cn } from "@/lib/utils";
+
+interface SimpleStatusBadgeProps {
+  status: 'active' | 'inactive';
+  className?: string;
+}
+
+export function SimpleStatusBadge({ status, className }: SimpleStatusBadgeProps) {
+  const isActive = status === 'active';
+  
+  return (
+    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+      isActive 
+        ? 'bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200' 
+        : 'bg-surface-muted text-text-muted border border-border-muted'
+    } ${className}`}>
+      <div className={`w-2 h-2 rounded-full mr-2 ${
+        isActive ? 'bg-brand-primary' : 'bg-text-muted'
+      }`} />
+      {isActive ? 'Aktiv' : 'Inaktiv'}
+    </div>
+  );
+}
+
+// Original StatusBadge for requirement statuses
 import { Badge } from "@/components/ui/badge";
 import { RequirementStatus } from "@/types/compliance";
 
@@ -13,39 +37,39 @@ interface StatusBadgeProps {
 const statusConfig = {
   missing: {
     label: 'Fehlend',
-    className: 'bg-muted text-muted-foreground hover:bg-muted/80',
+    className: 'bg-surface-muted text-text-muted border border-border-muted',
   },
   submitted: {
-    label: 'Eingereicht',
-    className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+    label: 'Eingereicht', 
+    className: 'bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200',
   },
   uploaded: {
     label: 'Hochgeladen',
-    className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+    className: 'bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200',
   },
   in_review: {
     label: 'In Prüfung',
-    className: 'bg-blue-200 text-blue-900 hover:bg-blue-300',
+    className: 'bg-brand-accent-100 text-brand-accent-700 border border-brand-accent-200',
   },
   valid: {
     label: 'Gültig',
-    className: 'bg-success text-success-foreground hover:bg-success/80',
+    className: 'bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200',
   },
   rejected: {
     label: 'Abgelehnt',
-    className: 'bg-danger text-danger-foreground hover:bg-danger/80',
+    className: 'bg-brand-primary-800 text-white border border-brand-primary-800',
   },
   expiring: {
     label: 'Läuft ab',
-    className: 'bg-warning text-warning-foreground hover:bg-warning/80',
+    className: 'bg-brand-accent-100 text-brand-accent-700 border border-brand-accent-200',
   },
   expired: {
     label: 'Abgelaufen',
-    className: 'bg-danger text-danger-foreground hover:bg-danger/80',
+    className: 'bg-brand-primary-800 text-white border border-brand-primary-800',
   },
   escalated: {
     label: 'Eskaliert',
-    className: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+    className: 'bg-brand-accent-200 text-brand-accent-800 border border-brand-accent-300',
   },
 };
 

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ComplianceStatusBadge, ComplianceIndicator } from '@/components/ComplianceStatusBadge';
+import { SimpleStatusBadge } from '@/components/StatusBadge';
 import { 
   Table, 
   TableBody, 
@@ -119,7 +120,6 @@ export default function Subcontractors() {
     try {
       setLoading(true);
       
-      // If no tenant_id, show empty state to allow user to add first subcontractor  
       if (!profile.tenant_id) {
         setSubcontractors([]);
         setLoading(false);
@@ -194,7 +194,7 @@ export default function Subcontractors() {
 
     try {
       const subData = {
-        tenant_id: profile.tenant_id || null, // Allow null tenant_id
+        tenant_id: profile.tenant_id || null,
         company_name: newSubcontractor.company_name,
         contact_name: newSubcontractor.contact_name || null,
         contact_email: newSubcontractor.contact_email,
@@ -328,9 +328,9 @@ export default function Subcontractors() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-professional">Nachunternehmer</h1>
+          <h1 className="text-3xl font-bold">Beauftragte Firmen</h1>
           <p className="text-muted-foreground">
-            Verwalten Sie Ihre Nachunternehmer und deren rechtlichen Compliance-Status
+            Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
           </p>
         </div>
         
@@ -427,9 +427,6 @@ export default function Subcontractors() {
                        <SelectItem value="einzelunternehmen">Einzelunternehmen (Solo)</SelectItem>
                      </SelectContent>
                    </Select>
-                   <p className="text-xs text-muted-foreground">
-                     Die Unternehmensform bestimmt welche Dokumente rechtlich erforderlich sind
-                   </p>
                  </div>
                  <div className="space-y-2">
                    <Label htmlFor="address">Adresse</Label>
@@ -495,176 +492,123 @@ export default function Subcontractors() {
           {filteredSubcontractors.length === 0 ? (
             <div className="text-center py-16">
               {subcontractors.length === 0 ? (
-                // Empty state - no subcontractors at all
-                <div className="max-w-md mx-auto">
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Users className="w-10 h-10 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-3">Ihr erster Nachunternehmer</h3>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
-                    Fügen Sie Nachunternehmer hinzu, um deren Nachweise und Compliance-Status zu verwalten. 
-                    Behalten Sie alle wichtigen Dokumente im Blick und verpassen Sie keine Fristen.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    <Button 
-                      size="lg" 
-                      className="w-full" 
-                      onClick={() => setIsDialogOpen(true)}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      Ersten Nachunternehmer hinzufügen
-                    </Button>
-                    
-                    <div className="grid gap-3 text-sm">
-                      <div className="flex items-center text-muted-foreground">
-                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
-                        Automatische Fristüberwachung
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
-                        Dokumenten-Management
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <CheckCircle className="w-4 h-4 mr-2 text-success" />
-                        Compliance-Tracking
-                      </div>
-                    </div>
+                <div className="space-y-4">
+                  <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <div>
+                    <h3 className="text-lg font-medium">Noch keine Nachunternehmer</h3>
+                    <p className="text-muted-foreground">
+                      Fügen Sie Ihren ersten Nachunternehmer hinzu, um mit der Compliance-Überwachung zu starten.
+                    </p>
                   </div>
                 </div>
               ) : (
-                // No search results
-                <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-muted-foreground" />
+                <div className="space-y-4">
+                  <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <div>
+                    <h3 className="text-lg font-medium">Keine Ergebnisse</h3>
+                    <p className="text-muted-foreground">
+                      Keine Nachunternehmer gefunden für "{searchTerm}".
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">Keine Suchergebnisse</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Ihre Suche nach "{searchTerm}" ergab keine Treffer. Versuchen Sie andere Suchbegriffe.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSearchTerm('')}
-                    className="w-full"
-                  >
-                    Suche zurücksetzen
-                  </Button>
                 </div>
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                   <TableHead>Unternehmen</TableHead>
-                   <TableHead>Kontakt</TableHead>
-                   <TableHead>Land</TableHead>
-                   <TableHead>Rechtsstatus</TableHead>
-                   <TableHead className="text-center">Projekte</TableHead>
-                   <TableHead className="text-center">Status</TableHead>
-                   <TableHead>Erstellt</TableHead>
-                   <TableHead>Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                 {filteredSubcontractors.map((subcontractor) => (
-                   <TableRow key={subcontractor.id} data-testid="row-firma" data-firma-id={subcontractor.id}>
-                     <TableCell>
-                       <div>
-                         <Link 
-                           to={`/app/subcontractors/${subcontractor.id}`}
-                           className="font-medium text-primary hover:underline cursor-pointer"
-                         >
-                           {subcontractor.company_name}
-                         </Link>
-                         {subcontractor.contact_name && (
-                           <p className="text-sm text-muted-foreground">{subcontractor.contact_name}</p>
-                         )}
-                       </div>
-                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center text-sm">
-                          <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {subcontractor.contact_email}
-                        </div>
-                        {subcontractor.phone && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Phone className="h-4 w-4 mr-2" />
-                            {subcontractor.phone}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                     <TableCell>
-                       <Badge variant="outline">
-                         {subcontractor.country_code}
-                       </Badge>
-                     </TableCell>
-                     <TableCell>
-                       <ComplianceStatusBadge 
-                         complianceStatus={subcontractor.compliance_status}
-                         subcontractorStatus={subcontractor.status}
-                         size="sm"
-                       />
-                     </TableCell>
-                     <TableCell className="text-center">
-                       <div className="flex items-center justify-center gap-2">
-                         <Users className="h-4 w-4 text-muted-foreground" />
-                         <span>{subcontractor.project_count}</span>
-                       </div>
-                     </TableCell>
-                     <TableCell className="text-center">
-                       {subcontractor.critical_issues > 0 ? (
-                         <Badge variant="destructive" className="text-xs">
-                           <AlertTriangle className="h-3 w-3 mr-1" />
-                           {subcontractor.critical_issues} Probleme
-                         </Badge>
-                       ) : (
-                         <Badge variant="secondary" className="text-xs">
-                           Alles aktuell
-                         </Badge>
-                       )}
-                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(subcontractor.created_at), 'dd.MM.yyyy', { locale: de })}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                       <div className="flex space-x-2">
-                         <Button 
-                           variant="outline" 
-                           size="sm"
-                           asChild
-                         >
-                           <Link to={`/app/subcontractors/${subcontractor.id}`}>
-                             <Eye className="h-4 w-4 mr-2" />
-                             Details
-                           </Link>
-                         </Button>
-                         <Button 
-                           variant="outline" 
-                           size="sm"
-                           onClick={() => handleEdit(subcontractor)}
-                         >
-                           <Edit className="h-4 w-4 mr-2" />
-                           Bearbeiten
-                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDelete(subcontractor)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Firma</TableHead>
+                    <TableHead>Kontakt</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Projekte</TableHead>
+                    <TableHead>Compliance</TableHead>
+                    <TableHead className="text-right">Aktionen</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredSubcontractors.map((subcontractor) => (
+                    <TableRow key={subcontractor.id} className="hover:bg-muted/50">
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{subcontractor.company_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {subcontractor.company_type === 'gbr' && 'GbR'}
+                            {subcontractor.company_type === 'baubetrieb' && 'Baubetrieb'}
+                            {subcontractor.company_type === 'einzelunternehmen' && 'Einzelunternehmen'}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {subcontractor.contact_name && (
+                            <div className="flex items-center text-sm">
+                              <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                              {subcontractor.contact_name}
+                            </div>
+                          )}
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Mail className="mr-2 h-4 w-4" />
+                            {subcontractor.contact_email}
+                          </div>
+                          {subcontractor.phone && (
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Phone className="mr-2 h-4 w-4" />
+                              {subcontractor.phone}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <SimpleStatusBadge status={subcontractor.status} />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {subcontractor.project_count} Projekt{subcontractor.project_count !== 1 ? 'e' : ''}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <ComplianceIndicator complianceStatus={subcontractor.compliance_status} />
+                          {subcontractor.critical_issues > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              <AlertTriangle className="mr-1 h-3 w-3" />
+                              {subcontractor.critical_issues}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link to={`/app/subcontractors/${subcontractor.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEdit(subcontractor)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          {!isDemo && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDelete(subcontractor)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
