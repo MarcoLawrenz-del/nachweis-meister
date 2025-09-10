@@ -735,13 +735,14 @@ export default function Landing() {
             <div className="grid lg:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-0">
-                  <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/30 rounded-t-lg flex items-center justify-center">
-                    <img 
-                      src="/screenshots/dashboard.png" 
-                      alt="Dashboard Screenshot"
-                      className="w-full h-full object-cover rounded-t-lg"
-                    />
-                  </div>
+                   <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/30 rounded-t-lg flex items-center justify-center text-primary/60">
+                     <div className="text-center">
+                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-primary/20 flex items-center justify-center">
+                         <span className="text-primary font-semibold">📊</span>
+                       </div>
+                       <p className="text-sm">Dashboard Preview</p>
+                     </div>
+                   </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-lg mb-2">Alles auf einen Blick.</h3>
                   </div>
@@ -750,13 +751,14 @@ export default function Landing() {
 
               <Card>
                 <CardContent className="p-0">
-                  <div className="aspect-video bg-gradient-to-br from-success/10 to-success/30 rounded-t-lg flex items-center justify-center">
-                    <img 
-                      src="/screenshots/sub-profile.png" 
-                      alt="Subcontractor Profile Screenshot"
-                      className="w-full h-full object-cover rounded-t-lg"
-                    />
-                  </div>
+                   <div className="aspect-video bg-gradient-to-br from-success/10 to-success/30 rounded-t-lg flex items-center justify-center text-success/60">
+                     <div className="text-center">
+                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-success/20 flex items-center justify-center">
+                         <span className="text-success font-semibold">📋</span>
+                       </div>
+                       <p className="text-sm">Profil Preview</p>
+                     </div>
+                   </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-lg mb-2">Pflichtnachweise mit nächstem Schritt.</h3>
                   </div>
@@ -765,13 +767,14 @@ export default function Landing() {
 
               <Card>
                 <CardContent className="p-0">
-                  <div className="aspect-video bg-gradient-to-br from-warning/10 to-warning/30 rounded-t-lg flex items-center justify-center">
-                    <img 
-                      src="/screenshots/upload-mobile.png" 
-                      alt="Mobile Upload Screenshot"
-                      className="w-full h-full object-cover rounded-t-lg"
-                    />
-                  </div>
+                   <div className="aspect-video bg-gradient-to-br from-warning/10 to-warning/30 rounded-t-lg flex items-center justify-center text-warning/60">
+                     <div className="text-center">
+                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-warning/20 flex items-center justify-center">
+                         <span className="text-warning font-semibold">📱</span>
+                       </div>
+                       <p className="text-sm">Mobile Upload</p>
+                     </div>
+                   </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-lg mb-2">Hochladen per Kamera.</h3>
                   </div>
