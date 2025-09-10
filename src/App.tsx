@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import { useState, useEffect, lazy, Suspense } from "react";
+import * as React from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuthContext } from "./contexts/AuthContext";
 import { A11yProvider, SkipLink } from "./components/A11yProvider";
@@ -24,6 +25,12 @@ const SokaBau = lazy(() => import("./pages/lp/SokaBau"));
 const Freistellungsbescheinigung = lazy(() => import("./pages/lp/Freistellungsbescheinigung"));
 const SHK = lazy(() => import("./pages/lp/SHK"));
 const Elektro = lazy(() => import("./pages/lp/Elektro"));
+
+// Legal Pages
+const Impressum = lazy(() => import("./pages/Impressum"));
+const Datenschutz = lazy(() => import("./pages/Datenschutz"));
+const AGB = lazy(() => import("./pages/AGB"));
+const Kontakt = lazy(() => import("./pages/Kontakt"));
 
 const ReviewQueue = lazy(() => import("./pages/ReviewQueue"));
 const Reminders = lazy(() => import("./pages/Reminders"));
@@ -337,8 +344,30 @@ const App = () => (
                            <Suspense fallback={<LoadingSpinner />}>
                              <RolesAccess />
                            </Suspense>
-                         } />
-                      </Route>
+                       } />
+                       </Route>
+                       
+                       {/* Legal pages */}
+                       <Route path="/impressum" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <Impressum />
+                         </Suspense>
+                       } />
+                       <Route path="/datenschutz" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <Datenschutz />
+                         </Suspense>
+                       } />
+                       <Route path="/agb" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <AGB />
+                         </Suspense>
+                       } />
+                       <Route path="/kontakt" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <Kontakt />
+                         </Suspense>
+                       } />
                       
                       {/* Catch all */}
                       <Route path="*" element={

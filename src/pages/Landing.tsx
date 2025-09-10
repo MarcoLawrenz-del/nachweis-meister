@@ -571,9 +571,25 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
+        {/* CTA Section with Testimonial */}
         <section className="py-24 bg-surface">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            {/* Testimonial */}
+            <div className="mb-16">
+              <blockquote className="text-2xl md:text-3xl font-light italic mb-8 leading-relaxed">
+                „Seit subfix laufen die Nachweise geordnet ein. Wir sparen jede Woche Stunden."
+              </blockquote>
+              <div className="flex flex-col items-center">
+                <div className="text-lg font-semibold text-foreground mb-1">
+                  Meyer & Sohn GmbH
+                </div>
+                <div className="text-muted-foreground">
+                  SHK-Betrieb (12 MA)
+                </div>
+              </div>
+            </div>
+            
+            {/* CTA */}
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Starten Sie heute mit subfix
             </h2>

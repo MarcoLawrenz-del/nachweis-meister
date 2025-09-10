@@ -122,6 +122,10 @@ export default {
           DEFAULT: "hsl(var(--brand-danger))",
           foreground: "hsl(var(--danger-foreground))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          muted: "hsl(var(--surface-muted))",
+        },
         professional: {
           DEFAULT: "hsl(var(--professional))",
           foreground: "hsl(var(--professional-foreground))",
