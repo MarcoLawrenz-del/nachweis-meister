@@ -25,7 +25,8 @@ import {
   Check,
   Building2,
   Scale,
-  Briefcase
+  Briefcase,
+  Camera
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -735,12 +736,12 @@ export default function Landing() {
             <div className="grid lg:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/30 rounded-t-lg flex items-center justify-center text-primary/60">
+                   <div className="aspect-video bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 rounded-t-lg flex items-center justify-center border border-primary/10">
                      <div className="text-center">
-                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-primary/20 flex items-center justify-center">
-                         <span className="text-primary font-semibold">📊</span>
+                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                         <Eye className="w-8 h-8 text-primary" />
                        </div>
-                       <p className="text-sm">Dashboard Preview</p>
+                       <p className="text-sm font-medium text-primary">Dashboard Übersicht</p>
                      </div>
                    </div>
                   <div className="p-6">
@@ -751,12 +752,12 @@ export default function Landing() {
 
               <Card>
                 <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-success/10 to-success/30 rounded-t-lg flex items-center justify-center text-success/60">
+                   <div className="aspect-video bg-gradient-to-br from-success/5 via-success/10 to-success/20 rounded-t-lg flex items-center justify-center border border-success/10">
                      <div className="text-center">
-                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-success/20 flex items-center justify-center">
-                         <span className="text-success font-semibold">📋</span>
+                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-success/10 flex items-center justify-center border border-success/20">
+                         <FileText className="w-8 h-8 text-success" />
                        </div>
-                       <p className="text-sm">Profil Preview</p>
+                       <p className="text-sm font-medium text-success">Subcontractor Profil</p>
                      </div>
                    </div>
                   <div className="p-6">
@@ -767,12 +768,12 @@ export default function Landing() {
 
               <Card>
                 <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-warning/10 to-warning/30 rounded-t-lg flex items-center justify-center text-warning/60">
+                   <div className="aspect-video bg-gradient-to-br from-warning/5 via-warning/10 to-warning/20 rounded-t-lg flex items-center justify-center border border-warning/10">
                      <div className="text-center">
-                       <div className="w-12 h-12 mx-auto mb-2 rounded-lg bg-warning/20 flex items-center justify-center">
-                         <span className="text-warning font-semibold">📱</span>
+                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-warning/10 flex items-center justify-center border border-warning/20">
+                         <Camera className="w-8 h-8 text-warning" />
                        </div>
-                       <p className="text-sm">Mobile Upload</p>
+                       <p className="text-sm font-medium text-warning">Mobile Upload</p>
                      </div>
                    </div>
                   <div className="p-6">
