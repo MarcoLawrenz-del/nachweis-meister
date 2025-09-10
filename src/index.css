@@ -1,362 +1,82 @@
+@import './styles/tokens.css';
+
 @tailwind base;
-@tailwind components;
+@tailwind components; 
 @tailwind utilities;
-@import url("./styles/screenshot.css");
 
-/* Subfix Design System - WCAG AA Compliant */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-@layer base {
-  :root {
-    /* Brand Tokens - Primary Brand Colors */
-    --brand-primary: 25 100% 50%; /* Orange #FF7A00 */
-    --brand-on-primary: 0 0% 100%; /* White text on brand primary */
-    --brand-accent: 183 36% 24%; /* Dark Teal #2C5F5D */
-    --brand-on-accent: 0 0% 100%; /* White text on accent */
-    
-    /* Status Colors - WCAG AA Compliant */
-    --brand-success: 142 76% 36%; /* Green with AA contrast */
-    --brand-warning: 38 92% 40%; /* Amber with AA contrast - darker for better contrast */
-    --brand-danger: 0 84% 50%; /* Red with AA contrast - darker for better contrast */
-    
-    /* Brand Shades for Primary */
-    --brand-primary-50: 25 100% 95%;
-    --brand-primary-100: 25 100% 90%;
-    --brand-primary-200: 25 100% 80%;
-    --brand-primary-300: 25 100% 70%;
-    --brand-primary-400: 25 100% 60%;
-    --brand-primary-500: 25 100% 50%;
-    --brand-primary-600: 25 100% 45%;
-    --brand-primary-700: 25 100% 40%;
-    --brand-primary-800: 25 100% 35%;
-    --brand-primary-900: 25 100% 30%;
-    
-    /* Brand Shades for Accent */
-    --brand-accent-50: 183 36% 95%;
-    --brand-accent-100: 183 36% 90%;
-    --brand-accent-200: 183 36% 80%;
-    --brand-accent-300: 183 36% 70%;
-    --brand-accent-400: 183 36% 60%;
-    --brand-accent-500: 183 36% 24%;
-    --brand-accent-600: 183 36% 20%;
-    --brand-accent-700: 183 36% 16%;
-    --brand-accent-800: 183 36% 12%;
-    --brand-accent-900: 183 36% 8%;
-    
-    /* Typography Scale */
-    --font-size-h1: 2rem; /* 32px */
-    --line-height-h1: 1.4;
-    --font-size-h2: 1.5rem; /* 24px */
-    --line-height-h2: 1.4;
-    --font-size-h3: 1.25rem; /* 20px */
-    --line-height-h3: 1.4;
-    --font-size-body: 1rem; /* 16px */
-    --line-height-body: 1.5;
-    --font-size-caption: 0.875rem; /* 14px */
-    --line-height-caption: 1.4;
-    --font-size-small: 0.75rem; /* 12px */
-    --line-height-small: 1.4;
-
-    /* Base Colors */
-    --background: 0 0% 100%;
-    --foreground: 222 20% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222 20% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 20% 15%;
-
-    --primary: 25 100% 50%; /* Use brand primary */
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 210 15% 96%;
-    --secondary-foreground: 222 20% 15%;
-
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 15% 45%;
-
-    --accent: 183 36% 24%; /* Use brand accent */
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 50%; /* Use brand danger */
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 214 13% 91%;
-    --input: 214 13% 91%;
-    --ring: 25 100% 50%; /* Use brand primary for focus rings */
-
-    --radius: 0.5rem;
-
-    /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 25 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 25 100% 50%;
-
-    /* Status Colors */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 40%;
-    --warning-foreground: 0 0% 100%;
-    --danger: 0 84% 50%;
-    --danger-foreground: 0 0% 100%;
-    --professional: 183 36% 24%;
-    --professional-foreground: 0 0% 100%;
-    --trust: 214 95% 51%;
-    --neutral: 215 15% 50%;
-    
-    /* Accessibility - Focus and Interaction */
-    --focus-ring-width: 2px;
-    --focus-ring-offset: 2px;
-    --touch-target-min: 2.75rem; /* 44px minimum touch target */
-  }
-
-  .dark {
-    /* Dark theme brand colors */
-    --brand-primary: 25 100% 55%; /* Slightly lighter for dark mode */
-    --brand-on-primary: 0 0% 100%;
-    --brand-accent: 183 36% 70%; /* Lighter teal for dark mode */
-    --brand-on-accent: 222 20% 15%;
-    
-    /* Status colors adjusted for dark mode */
-    --brand-success: 142 76% 45%;
-    --brand-warning: 38 92% 55%;
-    --brand-danger: 0 84% 60%;
-    
-    --background: 222 84% 5%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 84% 8%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 84% 8%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 25 100% 55%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 183 36% 70%;
-    --accent-foreground: 222 20% 15%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 25 100% 55%;
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 25 100% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 25 100% 55%;
-
-    --success: 142 76% 45%;
-    --warning: 38 92% 55%;
-    --danger: 0 84% 60%;
-  }
-}
+/* Import screenshot specific styles */
+@import './styles/screenshot.css';
 
 @layer base {
+  /* Use semantic tokens from tokens.css */
+  
+  /* Base element styles */
   * {
     @apply border-border;
   }
   
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: var(--font-size-body);
-    line-height: var(--line-height-body);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
-  
-  /* Typography Scale - WCAG AA Compliant */
+
+  /* Typography using design tokens */
   h1 {
-    font-size: var(--font-size-h1);
-    line-height: var(--line-height-h1);
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    @apply text-h1 font-bold;
   }
   
   h2 {
-    font-size: var(--font-size-h2);
-    line-height: var(--line-height-h2);
-    font-weight: 600;
-    letter-spacing: -0.025em;
+    @apply text-h2 font-semibold;
   }
   
   h3 {
-    font-size: var(--font-size-h3);
-    line-height: var(--line-height-h3);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    @apply text-h3 font-medium;
   }
   
-  p, body {
-    font-size: var(--font-size-body);
-    line-height: var(--line-height-body);
-    font-weight: 400;
-  }
-  
-  .text-caption {
-    font-size: var(--font-size-caption);
-    line-height: var(--line-height-caption);
-  }
-  
-  .text-small {
-    font-size: var(--font-size-small);
-    line-height: var(--line-height-small);
+  p {
+    @apply text-body;
   }
 }
 
 @layer components {
-  /* Accessibility - Focus States */
-  .focus-visible:focus-visible,
-  .focus-ring:focus-visible {
-    outline: var(--focus-ring-width) solid hsl(var(--ring));
-    outline-offset: var(--focus-ring-offset);
-  }
-  
-  /* Touch Targets - Minimum 44px */
-  .touch-target {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-  }
-  
-  /* Interactive Elements with Proper Focus */
-  .interactive {
-    @apply touch-target focus-ring transition-all duration-200 ease-in-out;
-  }
-  
-  .interactive:hover {
-    @apply scale-105;
-  }
-  
-  .interactive:active {
-    @apply scale-95;
-  }
-  
-  /* Consistent Button Styles */
+  /* Button variants using brand colors */
   .btn-primary {
-    @apply interactive bg-brand-primary text-brand-on-primary hover:bg-brand-primary/90 focus:ring-2 focus:ring-brand-primary focus:ring-offset-2;
+    @apply bg-brand-primary text-brand-on-primary hover:bg-brand-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
   }
   
   .btn-secondary {
-    @apply interactive bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-2 focus:ring-secondary focus:ring-offset-2;
+    @apply bg-brand-accent text-brand-on-accent hover:bg-brand-accent/90;
   }
-  
-  /* Status Indicators */
+
+  /* Status indicators using monochrome brand colors */
   .status-success {
-    @apply bg-brand-success/10 text-brand-success border border-brand-success/20;
+    @apply bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200;
   }
   
   .status-warning {
-    @apply bg-brand-warning/10 text-brand-warning border border-brand-warning/20;
+    @apply bg-brand-accent-100 text-brand-accent-700 border border-brand-accent-200;
   }
   
-  .status-danger {
-    @apply bg-brand-danger/10 text-brand-danger border border-brand-danger/20;
+  .status-error {
+    @apply bg-brand-primary-800 text-white border border-brand-primary-800;
   }
   
-  /* Card Components */
-  .card-elevated {
-    @apply bg-card text-card-foreground rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200;
+  /* Card styles */
+  .card {
+    @apply bg-surface border border-border rounded-lg shadow-sm;
   }
   
-  .card-interactive {
-    @apply card-elevated hover:border-brand-primary/20 focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/20;
+  /* Focus styles */
+  .focus-visible-only:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
   }
-  
-  /* Empty States */
-  .empty-state {
-    @apply text-center py-12 px-6 text-muted-foreground;
-  }
-  
-  .empty-state-icon {
-    @apply w-16 h-16 mx-auto mb-4 text-muted-foreground/50;
-  }
-  
-  /* Loading States */
-  .skeleton {
-    @apply animate-pulse bg-muted rounded;
-  }
-  
-  .skeleton-text {
-    @apply skeleton h-4 w-full mb-2;
-  }
-  
-  .skeleton-title {
-    @apply skeleton h-6 w-3/4 mb-4;
-  }
-  
-  .skeleton-avatar {
-    @apply skeleton w-10 h-10 rounded-full;
-  }
-  
-  /* Error States */
-  .error-state {
-    @apply text-center py-8 px-6;
-  }
-  
-  .error-icon {
-    @apply w-12 h-12 mx-auto mb-4 text-brand-danger;
-  }
-  
-  /* Improved Banner Contrast - WCAG AA */
-  .banner-warning {
-    @apply bg-brand-warning/15 border-l-4 border-l-brand-warning text-foreground;
-  }
-  
-  .banner-danger {
-    @apply bg-brand-danger/15 border-l-4 border-l-brand-danger text-foreground;
-  }
-  
-  .banner-success {
-    @apply bg-brand-success/15 border-l-4 border-l-brand-success text-foreground;
-  }
-  
-  /* Grid System - 8pt Grid */
-  .grid-8pt {
-    padding: 0.5rem; /* 8px */
-  }
-  
-  .grid-16pt {
-    padding: 1rem; /* 16px */
-  }
-  
-  .grid-24pt {
-    padding: 1.5rem; /* 24px */
-  }
-  
-  .grid-32pt {
-    padding: 2rem; /* 32px */
-  }
-  
-  /* Spacing Scale - 8pt Grid */
-  .space-xs { gap: 0.5rem; } /* 8px */
-  .space-sm { gap: 0.75rem; } /* 12px */
-  .space-md { gap: 1rem; } /* 16px */
-  .space-lg { gap: 1.5rem; } /* 24px */
-  .space-xl { gap: 2rem; } /* 32px */
-  .space-2xl { gap: 3rem; } /* 48px */
 }
 
 @layer utilities {
-  /* Screen Reader Only */
+  /* Screen reader only content */
   .sr-only {
     position: absolute;
     width: 1px;
@@ -369,25 +89,17 @@
     border: 0;
   }
   
-  /* High Contrast Mode Support */
-  @media (prefers-contrast: high) {
-    .high-contrast {
-      border-width: 2px;
-      font-weight: 600;
-    }
+  /* High contrast mode support */
+  .high-contrast {
+    @apply contrast-125;
   }
   
-  /* Reduced Motion Support */
+  /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    .motion-reduce {
+    .motion-reduce * {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
-  }
-  
-  /* Focus Visible Only */
-  .focus-visible-only:not(:focus-visible) {
-    outline: none;
   }
 }

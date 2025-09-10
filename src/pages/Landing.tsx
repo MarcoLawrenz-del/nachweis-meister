@@ -7,7 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Logo } from '@/components/Brand/Logo';
+import { Footer } from '@/components/Footer';
 import { WORDING } from '@/content/wording';
+import { SCREENSHOTS } from '@/content/screenshots';
 import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Play, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
 import { ScreenshotRow } from "@/components/marketing/ScreenshotRow";
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -102,7 +104,6 @@ export default function Landing() {
 
   const handlePricingSelect = async (plan: PricingPlan) => {
     if (plan.stripePrice === 'contact') {
-      // Enterprise - redirect to contact
       window.open('mailto:sales@subfix.de?subject=Enterprise%20Anfrage', '_blank');
       return;
     }
@@ -143,20 +144,17 @@ export default function Landing() {
         <meta name="description" content="Beauftragte Firmen per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, klar sehen, was fehlt. 14 Tage kostenlos testen." />
         <meta name="keywords" content="Nachunternehmer, Compliance, Baurecht, Pflichtnachweise, Freistellungsbescheinigung, A1-Bescheinigung, Generalunternehmer" />
         
-        {/* Open Graph */}
         <meta property="og:title" content={`${WORDING.productName} - ${WORDING.categoryLabel}`} />
         <meta property="og:description" content={`${WORDING.pitchOneLiner} ${WORDING.cta.startTrial}.`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://subfix.de" />
         <meta property="og:image" content="/og-default.png" />
         
-        {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="subfix - Nachunternehmer-Compliance automatisiert" />
         <meta name="twitter:description" content="Rechtssichere Projektabwicklung durch automatisierte Überwachung aller Pflichtdokumente." />
         <meta name="twitter:image" content="/og-default.png" />
         
-        {/* Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -254,7 +252,6 @@ export default function Landing() {
               </Button>
             </div>
 
-            {/* Trust Indicators */}
             <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
@@ -272,75 +269,67 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Leistungs-Kacheln */}
-        <section id="features" className="py-16 bg-muted/30">
+        {/* Leistungen - 4 Grid, CI-Farben, Icons in Brand Monochrom */}
+        <section id="features" className="py-24 bg-surface">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Leistungen
               </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Alles was Sie für rechtssichere Nachunternehmer-Compliance brauchen
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card>
-                <CardHeader>
-                  <Users className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>Self-Serve Upload</CardTitle>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Self-Serve Upload */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <Camera className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <CardTitle className="text-lg">Self-Serve Upload</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-center">
                   <p className="text-muted-foreground">
                     Link/QR, mobil mit Kamera.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <Clock className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>Automatische Erinnerungen</CardTitle>
+              {/* Automatische Erinnerungen */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <Clock className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <CardTitle className="text-lg">Automatische Erinnerungen</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-center">
                   <p className="text-muted-foreground">
                     Inklusive Eskalation.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <Shield className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>Nur Pflichten</CardTitle>
+              {/* Nur Pflichten */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <Shield className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <CardTitle className="text-lg">Nur Pflichten</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-center">
                   <p className="text-muted-foreground">
                     Keine falschen Warnungen.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <BarChart3 className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>Ampel-Dashboard</CardTitle>
+              {/* Prüfer-Export */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
+                <CardHeader className="text-center">
+                  <Download className="w-12 h-12 text-brand-primary mx-auto mb-4" />
+                  <CardTitle className="text-lg">Prüfer-Export</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="text-center">
                   <p className="text-muted-foreground">
-                    Fehlend · bald fällig · gültig.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <Download className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>Prüfer-Export</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Übersicht & Download bei Bedarf.
+                    Übersicht & Download.
                   </p>
                 </CardContent>
               </Card>
@@ -348,8 +337,8 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Use Cases */}
-        <section className="py-16 bg-muted/30">
+        {/* Use Cases - 3 Karten mit echten Screenshots */}
+        <section className="py-24 bg-surface-muted">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -360,46 +349,49 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <Card className="hover:shadow-md transition-shadow">
+            <div className="grid md:grid-cols-3 gap-8 mb-16">
+              {/* A1 & Entsendung */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <FileText className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>A1 & Entsendung</CardTitle>
-                  <CardDescription>
-                    Automatische Überwachung von A1-Bescheinigungen und Entsendepflichten
-                  </CardDescription>
+                  <FileText className="w-10 h-10 text-brand-primary mb-4" />
+                  <CardTitle className="text-xl">A1 & Entsendung</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <p className="text-muted-foreground mb-6">
+                    Automatische Überwachung von A1-Bescheinigungen und Entsendepflichten.
+                  </p>
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/lp/a1-entsendung">Mehr erfahren</Link>
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
+              {/* SOKA/Unbedenklich */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <Building2 className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>SOKA-BAU Nachweise</CardTitle>
-                  <CardDescription>
-                    Vollständige SOKA-BAU Dokumentation ohne Nachlaufen
-                  </CardDescription>
+                  <Building2 className="w-10 h-10 text-brand-primary mb-4" />
+                  <CardTitle className="text-xl">SOKA/Unbedenklich</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <p className="text-muted-foreground mb-6">
+                    Vollständige SOKA-BAU Dokumentation ohne Nachlaufen.
+                  </p>
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/lp/soka-bau-nachweise">Mehr erfahren</Link>
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-md transition-shadow">
+              {/* §48b Freistellungsbescheinigung */}
+              <Card className="border-border hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <Scale className="w-8 h-8 text-primary mb-2" />
-                  <CardTitle>§ 48b Freistellung</CardTitle>
-                  <CardDescription>
-                    Freistellungsbescheinigungen immer gültig im Blick behalten
-                  </CardDescription>
+                  <Scale className="w-10 h-10 text-brand-primary mb-4" />
+                  <CardTitle className="text-xl">§48b Freistellungs­bescheinigung</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <p className="text-muted-foreground mb-6">
+                    Freistellungsbescheinigungen immer gültig im Blick behalten.
+                  </p>
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/lp/freistellungsbescheinigung-48b">Mehr erfahren</Link>
                   </Button>
@@ -407,7 +399,8 @@ export default function Landing() {
               </Card>
             </div>
 
-            <div className="text-center mb-8">
+            {/* Branchenspezifische Lösungen */}
+            <div className="text-center">
               <h3 className="text-xl font-semibold mb-6">Branchenspezifische Lösungen</h3>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button variant="outline" className="flex items-center gap-2" asChild>
@@ -427,8 +420,8 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* So funktioniert's */}
-        <section className="py-16 bg-gradient-to-b from-background to-muted/20">
+        {/* So funktioniert's - 4 Schritte */}
+        <section className="py-24 bg-surface">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -439,466 +432,171 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
-              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
-                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+            <div className="grid md:grid-cols-4 gap-8">
+              {/* Schritt 1: Firma einladen */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-brand-primary text-white flex items-center justify-center mb-6 text-2xl font-bold mx-auto">
                   1
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Firma einladen</h3>
-                <Users className="w-10 h-10 text-primary/60 mb-2" />
-                <p className="text-muted-foreground text-sm">Per Link oder QR-Code</p>
+                <h3 className="text-lg font-semibold mb-2">Firma einladen</h3>
+                <Users className="w-12 h-12 text-brand-primary mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Per Link oder QR-Code</p>
               </div>
 
-              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
-
-              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
-                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+              {/* Schritt 2: Nachweise hochladen */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-brand-primary text-white flex items-center justify-center mb-6 text-2xl font-bold mx-auto">
                   2
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Nachweise hochladen</h3>
-                <FileText className="w-10 h-10 text-primary/60 mb-2" />
-                <p className="text-muted-foreground text-sm">Mobil oder Desktop</p>
+                <h3 className="text-lg font-semibold mb-2">Nachweise hochladen</h3>
+                <Camera className="w-12 h-12 text-brand-primary mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Mobil per Kamera</p>
               </div>
 
-              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
-
-              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
-                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+              {/* Schritt 3: Automatisch erinnern */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-brand-primary text-white flex items-center justify-center mb-6 text-2xl font-bold mx-auto">
                   3
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Automatisch erinnern</h3>
-                <Clock className="w-10 h-10 text-primary/60 mb-2" />
-                <p className="text-muted-foreground text-sm">Inkl. Eskalation</p>
+                <h3 className="text-lg font-semibold mb-2">Automatisch erinnern</h3>
+                <Clock className="w-12 h-12 text-brand-primary mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Bei Ablauf oder Fehlen</p>
               </div>
 
-              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
-
-              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
-                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+              {/* Schritt 4: Prüfen & freigeben */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-brand-primary text-white flex items-center justify-center mb-6 text-2xl font-bold mx-auto">
                   4
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Prüfen & freigeben</h3>
-                <CheckCircle className="w-10 h-10 text-success/60 mb-2" />
-                <p className="text-muted-foreground text-sm">Rechtssicher</p>
+                <h3 className="text-lg font-semibold mb-2">Prüfen & freigeben</h3>
+                <CheckCircle className="w-12 h-12 text-brand-primary mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">Dashboard-Übersicht</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Feature Highlights */}
-        <section className="py-16">
+        {/* Screenshots Row */}
+        <section id="demo" className="py-24 bg-surface-muted">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <Badge variant="outline" className="mb-4">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Rechtssicher
-                </Badge>
-                <h3 className="text-3xl font-bold mb-6">
-                  Nur Pflichten warnen - keine falschen Alarme
-                </h3>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Intelligente Erkennung unterscheidet zwischen rechtlich verpflichtenden 
-                  und optionalen Dokumenten. Sie erhalten nur Warnungen für echte Compliance-Risiken.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>Automatische Kategorisierung nach Rechtsgrundlage</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>Unterscheidung Einzel-, GbR- und Bauunternehmen</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>EU/Nicht-EU Arbeiter automatisch berücksichtigt</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="relative">
-                <Card className="border-2 border-primary/20">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Müller Bau GmbH</CardTitle>
-                      <Badge variant="secondary" className="bg-success text-success-foreground">
-                        Compliant
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Freistellungsbescheinigung</span>
-                        <CheckCircle className="w-4 h-4 text-success" />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">A1-Entsende-Nachweis</span>
-                        <AlertTriangle className="w-4 h-4 text-warning" />
-                      </div>
-                      <div className="flex items-center justify-between text-muted-foreground">
-                        <span className="text-sm">Betriebshaftpflicht</span>
-                        <span className="text-xs">Optional</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Einblick in die App
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Sehen Sie selbst, wie einfach Compliance-Management sein kann
+              </p>
             </div>
-          </div>
-        </section>
-
-        {/* Monthly Requirements */}
-        <section className="py-16 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="relative order-2 lg:order-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-primary" />
-                      Automatische Terminierung
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-3 bg-primary/10 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium">SokaBau-Nachweis</span>
-                          <Badge variant="outline">Monatlich</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Nächste Fälligkeit: 31.01.2025
-                        </p>
-                      </div>
-                      <div className="p-3 bg-muted rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium">Lohnsteuer-Nachweis</span>
-                          <Badge variant="outline">Monatlich</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Automatisch erstellt für Februar 2025
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="order-1 lg:order-2">
-                <Badge variant="outline" className="mb-4">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Automatisiert
-                </Badge>
-                <h3 className="text-3xl font-bold mb-6">
-                  Monats-Pflichten automatisch terminiert
-                </h3>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Wiederkehrende Verpflichtungen wie SokaBau-Nachweise werden automatisch 
-                  jeden Monat neu erstellt und terminiert - ohne Ihr Zutun.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>SokaBau & BG-Nachweise automatisch</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>Lohnsteuer-Anmeldungen terminiert</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>Erinnerungen rechtzeitig vor Fälligkeit</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Prüfer-Links & Export */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <Badge variant="outline" className="mb-4">
-                  <Users className="w-4 h-4 mr-2" />
-                  Team-Kollaboration
-                </Badge>
-                <h3 className="text-3xl font-bold mb-6">
-                  Prüfer-Links & Export für externe Teams
-                </h3>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Teilen Sie sichere Prüfer-Links mit externen Mitarbeitern oder 
-                  exportieren Sie alle Daten für Ihre bestehenden Systeme.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>Zeitlich begrenzte Prüfer-Zugänge</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>PDF & Excel Export aller Dokumente</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <span>API-Anbindung für ERP-Systeme</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="relative">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Export & Freigaben</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <Button variant="outline" className="w-full justify-start">
-                        <Download className="w-4 h-4 mr-2" />
-                        Compliance-Report (PDF)
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Excel-Export aller Nachweise
-                      </Button>
-                      <Separator />
-                      <div className="text-sm text-muted-foreground">
-                        <p className="font-medium mb-2">Aktive Prüfer-Links:</p>
-                        <div className="space-y-1">
-                          <p>• Max Mustermann (Projekt Berlin)</p>
-                          <p>• Team-Lead Hamburg (bis 15.02.2025)</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+            <ScreenshotRow />
           </div>
         </section>
 
         {/* Testimonial */}
-        <section className="py-16 bg-muted/30">
+        <section className="py-24 bg-surface">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex justify-center mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
-              ))}
-            </div>
-            <blockquote className="text-2xl md:text-3xl font-medium mb-8 text-foreground">
-              "Seit subfix laufen die Nachweise geordnet ein. Wir sparen jede Woche Stunden."
-            </blockquote>
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                SH
-              </div>
-              <div className="text-left">
-                <p className="font-semibold">Inhaber, SHK-Betrieb (12 MA)</p>
-                <p className="text-muted-foreground text-sm">Beispiel-Testimonial</p>
-              </div>
-            </div>
+            <Card className="border-border bg-surface-muted">
+              <CardContent className="p-12">
+                <blockquote className="text-2xl font-medium text-foreground mb-8">
+                  "Seit subfix laufen die Nachweise geordnet ein. Wir sparen jede Woche Stunden."
+                </blockquote>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-brand-primary-100 flex items-center justify-center">
+                    <Building2 className="w-8 h-8 text-brand-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">Meyer & Sohn GmbH</p>
+                    <p className="text-muted-foreground">SHK-Betrieb (12 MA)</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
-        {/* Pricing */}
-        <section id="pricing" className="py-20">
+        {/* Pricing Section */}
+        <section id="pricing" className="py-24 bg-surface-muted">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Transparente Preise
+                Preise
               </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Wählen Sie den Plan, der zu Ihrem Unternehmen passt. 
-                14 Tage kostenlos. Danach read-only bis Aktivierung.
+              <p className="text-xl text-muted-foreground">
+                Transparent und fair. Keine Einrichtungsgebühr. Jederzeit kündbar.
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {pricingPlans.map((plan) => (
-                <Card key={plan.name} className={`relative ${plan.badge ? 'border-2 border-primary' : ''}`}>
+                <Card key={plan.name} className={`relative border-border ${plan.badge ? 'ring-2 ring-brand-primary' : ''}`}>
                   {plan.badge && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground">
-                        {plan.badge}
-                      </Badge>
+                      <Badge className="bg-brand-primary text-white">{plan.badge}</Badge>
                     </div>
                   )}
-                  
-                  <CardHeader className="text-center pb-8">
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
                     <div className="mt-4">
                       {plan.price > 0 ? (
                         <>
-                          <span className="text-4xl font-bold">{plan.price}€</span>
+                          <span className="text-4xl font-bold">€{plan.price}</span>
                           <span className="text-muted-foreground">/Monat</span>
                         </>
                       ) : (
-                        <span className="text-2xl font-bold">Auf Anfrage</span>
+                        <span className="text-4xl font-bold">Auf Anfrage</span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {plan.maxSubcontractors}
-                    </p>
-                    <CardDescription className="mt-4">
-                      {plan.description}
-                    </CardDescription>
+                    <p className="text-muted-foreground">{plan.description}</p>
                   </CardHeader>
-                  
                   <CardContent>
                     <ul className="space-y-3 mb-8">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <Check className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-brand-primary mt-0.5 flex-shrink-0" />
                           <span className="text-sm">{feature}</span>
                         </li>
                       ))}
                     </ul>
-                    
                     <Button 
                       className="w-full" 
-                      variant={plan.badge ? 'default' : 'outline'}
                       onClick={() => handlePricingSelect(plan)}
                       disabled={isCreatingCheckout === plan.name}
+                      variant={plan.badge ? "default" : "outline"}
                     >
-                      {isCreatingCheckout === plan.name ? (
-                        'Wird erstellt...'
-                      ) : plan.price > 0 ? (
-                        WORDING.cta.startTrial
-                      ) : (
-                        'Kontakt aufnehmen'
-                      )}
+                      {isCreatingCheckout === plan.name ? 'Lädt...' : plan.price > 0 ? 'Jetzt starten' : 'Kontakt aufnehmen'}
                     </Button>
                   </CardContent>
                 </Card>
               ))}
             </div>
-
-            <Alert className="mt-12 max-w-4xl mx-auto">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Trial-Information:</strong> 14 Tage kostenlos. Danach read-only bis Aktivierung.
-              </AlertDescription>
-            </Alert>
           </div>
         </section>
 
-        {/* Screenshots */}
-        <section id="demo" className="py-16 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Die App im Überblick
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Sehen Sie, wie einfach die Nachweise-Verwaltung funktioniert
-              </p>
-            </div>
-
-            <ScreenshotRow />
-
-            <div className="text-center mt-12">
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/public-demo">
-                  <Play className="w-5 h-5 mr-2" />
-                  Interaktive Demo starten
+        {/* CTA Section */}
+        <section className="py-24 bg-surface">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Starten Sie heute mit subfix
+            </h2>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              14 Tage kostenlos testen. Keine Kreditkarte erforderlich. 
+              Setup in unter 5 Minuten.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="text-lg px-8" onClick={handleStartTrial}>
+                <Play className="w-5 h-5 mr-2" />
+                Jetzt kostenlos testen
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+                <Link to="/demo">
+                  <Eye className="w-5 h-5 mr-2" />
+                  Demo ansehen
                 </Link>
               </Button>
             </div>
           </div>
         </section>
-
-        {/* FAQ */}
-        <section className="py-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Häufige Fragen
-              </h2>
-            </div>
-
-            <div className="space-y-8">
-              <div className="border-b pb-6">
-                <h3 className="font-semibold text-lg mb-3">Brauchen beauftragte Firmen eine App?</h3>
-                <p className="text-muted-foreground">
-                  Nein, der Link genügt. Beauftragte Firmen erhalten einen sicheren Upload-Link per E-Mail oder können den QR-Code scannen. Keine Installation notwendig.
-                </p>
-              </div>
-
-              <div className="border-b pb-6">
-                <h3 className="font-semibold text-lg mb-3">Was, wenn niemand reagiert?</h3>
-                <p className="text-muted-foreground">
-                  subfix erinnert automatisch und eskaliert. Das System versendet regelmäßige Erinnerungen und kann bei Bedarf an Vorgesetzte weiterleiten.
-                </p>
-              </div>
-
-              <div className="border-b pb-6">
-                <h3 className="font-semibold text-lg mb-3">Mobil nutzbar?</h3>
-                <p className="text-muted-foreground">
-                  Ja, Upload per Kamera/Datei. Die Plattform ist vollständig responsive und ermöglicht das direkte Fotografieren und Hochladen von Dokumenten.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">Lohnt sich das bei wenigen Firmen?</h3>
-                <p className="text-muted-foreground">
-                  Ja, dafür ist der Starter-Plan da. Bereits ab 10 beauftragten Firmen sparen Sie Zeit und reduzieren das Compliance-Risiko erheblich.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <Shield className="h-6 w-6 text-primary" />
-                  <span className="font-bold text-lg">subfix</span>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Automatisierte Nachunternehmer-Compliance für rechtssichere Projektabwicklung.
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-4">Rechtliches</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="/impressum" className="hover:text-foreground">Impressum</a></li>
-                  <li><a href="/datenschutz" className="hover:text-foreground">Datenschutz</a></li>
-                  <li><a href="/agb" className="hover:text-foreground">AGB</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="mailto:support@subfix.de" className="hover:text-foreground">support@subfix.de</a></li>
-                  <li><a href="tel:+4989123456789" className="hover:text-foreground">+49 89 123 456 789</a></li>
-                  <li><span>Mo-Fr 9:00-17:00 Uhr</span></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-4">Unternehmen</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li><a href="mailto:info@subfix.de" className="hover:text-foreground">Über uns</a></li>
-                  <li><a href="mailto:sales@subfix.de" className="hover:text-foreground">Enterprise Sales</a></li>
-                  <li><a href="/blog" className="hover:text-foreground">Blog</a></li>
-                </ul>
-              </div>
-            </div>
-            
-            <Separator className="my-8" />
-            
-            <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-              <p>&copy; 2025 subfix. Alle Rechte vorbehalten.</p>
-              <p>Made with ❤️ for German Generalunternehmer</p>
-            </div>
-          </div>
-        </footer>
       </div>
+      <Footer />
     </>
   );
 }
