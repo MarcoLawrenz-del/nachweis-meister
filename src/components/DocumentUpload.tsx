@@ -308,7 +308,7 @@ export function DocumentUpload({ requirement, subcontractorName, onUploadComplet
         {/* Upload Button */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full" variant={requirement.documents.length > 0 ? "outline" : "default"}>
+            <Button className="w-full" variant={requirement.documents.length > 0 ? "outline" : "primary"}>
               <Upload className="h-4 w-4 mr-2" />
               {requirement.documents.length > 0 ? 'Neues Dokument hochladen' : 'Dokument hochladen'}
             </Button>

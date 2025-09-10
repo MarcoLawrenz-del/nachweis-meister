@@ -47,7 +47,7 @@ export function TrialBanner() {
         <div className="flex items-center gap-2 flex-shrink-0 no-transform">
           <Button 
             size="sm" 
-            variant={isExpired ? "destructive" : "default"}
+            variant={isExpired ? "destructive" : "primary"}
             onClick={handleUpgrade}
             className="focus-ring"
             aria-label={isExpired ? 'Plan aktivieren um fortzufahren' : 'Jetzt upgraden um unbegrenzt zu nutzen'}

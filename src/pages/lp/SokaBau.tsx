@@ -71,7 +71,7 @@ export default function SokaBau() {
         {
           label: "14 Tage kostenlos testen",
           href: "/register",
-          variant: "default"
+          variant: "primary"
         },
         {
           label: "Live-Demo ansehen",

@@ -129,7 +129,7 @@ export const ReviewPanel = ({
                 (action === 'approve' && !validTo) ||
                 (action === 'reject' && !rejectionReason.trim())
               }
-              variant={action === 'approve' ? 'default' : 'destructive'}
+              variant={action === 'approve' ? 'primary' : 'destructive'}
             >
               {isSubmitting ? 'Wird verarbeitet...' : 'Bestätigen'}
             </Button>
@@ -147,7 +147,7 @@ export const ReviewPanel = ({
       <Button
         onClick={() => setAction('approve')}
         disabled={isSubmitting}
-        variant="default"
+        variant="primary"
         className="bg-success hover:bg-success/90 text-success-foreground"
         data-testid="btn-approve"
       >

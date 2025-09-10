@@ -5,6 +5,9 @@ button, .btn, [data-role="button"] {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  transform: none !important;
+  filter: none !important;
+  text-shadow: none !important;
 }
 
 /* Verhindere Rendering-Blur durch Transform/Filter auf Buttons */

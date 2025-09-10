@@ -499,7 +499,7 @@ export default function PublicUpload() {
                       {requirement.status !== 'valid' && (
                         <Button 
                           size="sm"
-                          variant={requirement.documents.length > 0 ? "outline" : "default"}
+                          variant={requirement.documents.length > 0 ? "outline" : "primary"}
                           onClick={() => {
                             setSelectedRequirement(requirement);
                             setUploadDialogOpen(true);

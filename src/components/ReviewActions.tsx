@@ -87,7 +87,7 @@ export const ReviewActions = ({ requirementId, currentStatus, onActionComplete, 
             <Button 
               onClick={handleSubmit} 
               disabled={isLoading || (action !== 'approve' && !reason.trim())}
-              variant={action === 'approve' ? 'default' : action === 'reject' ? 'destructive' : 'secondary'}
+              variant={action === 'approve' ? 'primary' : action === 'reject' ? 'destructive' : 'secondary'}
             >
               {isLoading ? 'Wird verarbeitet...' : 'Bestätigen'}
             </Button>
@@ -105,7 +105,7 @@ export const ReviewActions = ({ requirementId, currentStatus, onActionComplete, 
       <Button
         onClick={() => setAction('approve')}
         disabled={disabled || isLoading}
-        variant="default"
+        variant="primary"
         className="bg-success hover:bg-success/90 text-success-foreground"
         data-testid="btn-approve"
       >

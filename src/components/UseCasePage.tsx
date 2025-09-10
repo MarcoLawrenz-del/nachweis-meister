@@ -36,7 +36,7 @@ interface FAQ {
 interface CTA {
   label: string;
   href: string;
-  variant: 'default' | 'outline';
+  variant: 'primary' | 'outline';
 }
 
 interface UseCasePageProps {
@@ -144,7 +144,7 @@ export function UseCasePage({
                     asChild
                   >
                     <Link to={cta.href}>
-                      {cta.variant === 'default' ? (
+                      {cta.variant === 'primary' ? (
                         <PlayIcon />
                       ) : (
                         <Play className="w-5 h-5 mr-2" />
@@ -269,11 +269,11 @@ export function UseCasePage({
                   <Button 
                     key={index}
                     size="lg" 
-                    variant={cta.variant === 'default' ? 'secondary' : 'ghost'}
+                    variant={cta.variant === 'primary' ? 'secondary' : 'ghost'}
                     asChild
                   >
                     <Link to={cta.href}>
-                      {cta.variant === 'default' && <PlayIcon />}
+                      {cta.variant === 'primary' && <PlayIcon />}
                       {cta.label}
                     </Link>
                   </Button>

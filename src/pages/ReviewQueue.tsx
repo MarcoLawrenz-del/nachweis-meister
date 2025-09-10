@@ -162,25 +162,25 @@ export default function ReviewQueue() {
         
         <div className="flex gap-2">
           <Button 
-            variant={filter === 'all' ? 'default' : 'outline'}
+            variant={filter === 'all' ? 'primary' : 'outline'}
             onClick={() => setFilter('all')}
           >
             Alle ({stats.total})
           </Button>
           <Button 
-            variant={filter === 'pending' ? 'default' : 'outline'}
+            variant={filter === 'pending' ? 'primary' : 'outline'}
             onClick={() => setFilter('pending')}
           >
             Ausstehend ({stats.pending})
           </Button>
           <Button 
-            variant={filter === 'my_reviews' ? 'default' : 'outline'}
+            variant={filter === 'my_reviews' ? 'primary' : 'outline'}
             onClick={() => setFilter('my_reviews')}
           >
             Meine Prüfungen ({stats.my_reviews})
           </Button>
           <Button 
-            variant={filter === 'escalated' ? 'default' : 'outline'}
+            variant={filter === 'escalated' ? 'primary' : 'outline'}
             onClick={() => setFilter('escalated')}
           >
             Eskaliert ({stats.escalated})

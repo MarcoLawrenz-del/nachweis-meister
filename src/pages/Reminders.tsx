@@ -291,14 +291,14 @@ export default function Reminders() {
       {/* Tabs */}
       <div className="flex space-x-2 border-b">
         <Button
-          variant={activeTab === 'jobs' ? 'default' : 'ghost'}
+          variant={activeTab === 'jobs' ? 'primary' : 'ghost'}
           onClick={() => setActiveTab('jobs')}
           className="rounded-b-none"
         >
           Erinnerungszyklen
         </Button>
         <Button
-          variant={activeTab === 'logs' ? 'default' : 'ghost'}
+          variant={activeTab === 'logs' ? 'primary' : 'ghost'}
           onClick={() => setActiveTab('logs')}
           className="rounded-b-none"
         >

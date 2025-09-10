@@ -41,7 +41,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
         return {
           actionLabel: 'Upload anfordern',
           actionIcon: Upload,
-          variant: 'default' as const,
+          variant: 'primary' as const,
           color: 'text-blue-600'
         };
       case 'submitted':

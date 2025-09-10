@@ -165,7 +165,7 @@ export default function Pricing() {
               ) : (
                 <Button 
                   className="w-full" 
-                  variant={plan.recommended ? "default" : "outline"}
+                  variant={plan.recommended ? "primary" : "outline"}
                   onClick={() => handlePlanSelection(plan.priceId)}
                   disabled={!canUpgrade(plan.quota)}
                 >

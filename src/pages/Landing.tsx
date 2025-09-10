@@ -561,7 +561,7 @@ export default function Landing() {
                       className="w-full" 
                       onClick={() => handlePricingSelect(plan)}
                       disabled={isCreatingCheckout === plan.name}
-                      variant={plan.badge ? "default" : "outline"}
+                      variant={plan.badge ? "primary" : "outline"}
                     >
                       {isCreatingCheckout === plan.name ? 'Lädt...' : plan.price > 0 ? 'Jetzt starten' : 'Kontakt aufnehmen'}
                     </Button>
