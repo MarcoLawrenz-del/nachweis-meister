@@ -366,6 +366,85 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Use Cases */}
+        <section className="py-16 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Häufige Use Cases
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Branchenspezifische Lösungen für Ihre Compliance-Anforderungen
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <FileText className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>A1 & Entsendung</CardTitle>
+                  <CardDescription>
+                    Automatische Überwachung von A1-Bescheinigungen und Entsendepflichten
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/lp/a1-entsendung">Mehr erfahren</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <Building2 className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>SOKA-BAU Nachweise</CardTitle>
+                  <CardDescription>
+                    Vollständige SOKA-BAU Dokumentation ohne Nachlaufen
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/lp/soka-bau-nachweise">Mehr erfahren</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <Scale className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>§ 48b Freistellung</CardTitle>
+                  <CardDescription>
+                    Freistellungsbescheinigungen immer gültig im Blick behalten
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/lp/freistellungsbescheinigung-48b">Mehr erfahren</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-semibold mb-6">Branchenspezifische Lösungen</h3>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button variant="outline" className="flex items-center gap-2" asChild>
+                  <Link to="/lp/shk">
+                    <Briefcase className="w-4 h-4" />
+                    SHK-Betriebe
+                  </Link>
+                </Button>
+                <Button variant="outline" className="flex items-center gap-2" asChild>
+                  <Link to="/lp/elektro">
+                    <Zap className="w-4 h-4" />
+                    Elektro-Betriebe
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* So funktioniert's */}
         <section className="py-16 bg-gradient-to-b from-background to-muted/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
