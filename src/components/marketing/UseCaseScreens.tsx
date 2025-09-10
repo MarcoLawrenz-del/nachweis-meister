@@ -11,7 +11,7 @@ export function UseCaseScreens({ keys }: UseCaseScreensProps) {
         <ScreenshotCard k="dashboard" title="Dashboard" />
       )}
       {keys.includes("subProfile") && (
-        <ScreenshotCard k="subProfile" title="Nachunternehmer-Profil" />
+        <ScreenshotCard k="subProfile" title="Profil" />
       )}
       {keys.includes("uploadMobile") && (
         <ScreenshotCard k="uploadMobile" title="Upload" />

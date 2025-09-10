@@ -6,7 +6,7 @@ import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
 
 // Screenshot mode detection
-if (new URLSearchParams(window.location.search).get('screenshot') === '1') {
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screenshot') === '1') {
   document.documentElement.setAttribute('screenshot', '1');
 }
 
