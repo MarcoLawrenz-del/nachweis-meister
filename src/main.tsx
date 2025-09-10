@@ -5,6 +5,11 @@ import "./index.css";
 import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
 
+// Screenshot mode detection
+if (new URLSearchParams(window.location.search).get('screenshot') === '1') {
+  document.documentElement.setAttribute('screenshot', '1');
+}
+
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="subfix-ui-theme">
     <App />

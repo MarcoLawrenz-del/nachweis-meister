@@ -8,26 +8,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Logo } from '@/components/Brand/Logo';
 import { WORDING } from '@/content/wording';
-import { 
-  Shield, 
-  CheckCircle, 
-  Clock, 
-  Users, 
-  FileText, 
-  AlertTriangle,
-  ArrowRight,
-  Star,
-  Eye,
-  Zap,
-  BarChart3,
-  Download,
-  Play,
-  Check,
-  Building2,
-  Scale,
-  Briefcase,
-  Camera
-} from 'lucide-react';
+import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Play, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
+import { ScreenshotRow } from "@/components/marketing/ScreenshotRow";
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -812,55 +794,7 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-              <Card>
-                <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 rounded-t-lg flex items-center justify-center border border-primary/10">
-                     <div className="text-center">
-                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                         <Eye className="w-8 h-8 text-primary" />
-                       </div>
-                       <p className="text-sm font-medium text-primary">Dashboard Übersicht</p>
-                     </div>
-                   </div>
-                  <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Alles auf einen Blick.</h3>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-success/5 via-success/10 to-success/20 rounded-t-lg flex items-center justify-center border border-success/10">
-                     <div className="text-center">
-                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-success/10 flex items-center justify-center border border-success/20">
-                         <FileText className="w-8 h-8 text-success" />
-                       </div>
-                       <p className="text-sm font-medium text-success">Subcontractor Profil</p>
-                     </div>
-                   </div>
-                  <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Pflichtnachweise mit nächstem Schritt.</h3>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-0">
-                   <div className="aspect-video bg-gradient-to-br from-warning/5 via-warning/10 to-warning/20 rounded-t-lg flex items-center justify-center border border-warning/10">
-                     <div className="text-center">
-                       <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-warning/10 flex items-center justify-center border border-warning/20">
-                         <Camera className="w-8 h-8 text-warning" />
-                       </div>
-                       <p className="text-sm font-medium text-warning">Mobile Upload</p>
-                     </div>
-                   </div>
-                  <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Hochladen per Kamera.</h3>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <ScreenshotRow />
 
             <div className="text-center mt-12">
               <Button size="lg" variant="outline" asChild>

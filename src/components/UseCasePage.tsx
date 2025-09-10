@@ -5,6 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Logo } from '@/components/Brand/Logo';
+import { UseCaseScreens } from '@/components/marketing/UseCaseScreens';
 import { 
   CheckCircle, 
   ArrowRight,
@@ -44,6 +45,7 @@ interface UseCasePageProps {
   benefits: Benefit[];
   screenshot?: string;
   screenshotCaption?: string;
+  screenshots?: Array<"dashboard" | "subProfile" | "uploadMobile">;
   faq: FAQ[];
   ctas: CTA[];
   // SEO
@@ -65,6 +67,7 @@ export function UseCasePage({
   benefits,
   screenshot,
   screenshotCaption,
+  screenshots = ["subProfile", "uploadMobile"],
   faq,
   ctas,
   metaTitle,
@@ -183,29 +186,21 @@ export function UseCasePage({
         </section>
 
         {/* Screenshot Section */}
-        {screenshot && (
-          <section className="py-16 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center">
-                <h2 className="text-3xl font-bold mb-8">
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">
                   Die App im Überblick
                 </h2>
-                <Card className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
-                      <div className="text-center">
-                        <Building2 className="w-16 h-16 mx-auto mb-4 text-primary" />
-                        <p className="text-lg font-medium text-primary">
-                          {screenshotCaption || 'App Screenshot'}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <p className="text-xl text-muted-foreground">
+                  Sehen Sie, wie einfach die Nachweise-Verwaltung funktioniert
+                </p>
               </div>
+              <UseCaseScreens keys={screenshots} />
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {/* Benefits Section */}
         <section className="py-16">

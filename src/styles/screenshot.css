@@ -1,0 +1,7 @@
+/* Screenshot mode - hide UI elements that shouldn't appear in screenshots */
+:root[screenshot="1"] .trial-banner,
+:root[screenshot="1"] .toast,
+:root[screenshot="1"] [data-tooltip],
+:root[screenshot="1"] .demo-banner {
+  display: none !important;
+}
