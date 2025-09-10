@@ -45,7 +45,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Starter',
     price: 49,
-    description: 'Ideal für kleinere Bauunternehmen',
+    description: '≤ 10 beauftragte Firmen',
     maxSubcontractors: 'Bis zu 10 Nachunternehmer',
     features: [
       'Automatische Pflicht-Überwachung',
@@ -59,7 +59,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Growth',
     price: 149,
-    description: 'Für wachsende Unternehmen',
+    description: '≤ 50 beauftragte Firmen',
     maxSubcontractors: 'Bis zu 50 Nachunternehmer',
     badge: 'Beliebt',
     features: [
@@ -75,7 +75,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Pro',
     price: 399,
-    description: 'Für etablierte Generalunternehmer',
+    description: '51–200 beauftragte Firmen',
     maxSubcontractors: '51-200 Nachunternehmer',
     features: [
       'Alle Growth-Features',
@@ -90,7 +90,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Enterprise',
     price: 0,
-    description: 'Individuelle Lösung für Konzerne',
+    description: 'Auf Anfrage',
     maxSubcontractors: '200+ Nachunternehmer',
     features: [
       'Alle Pro-Features',
@@ -156,8 +156,8 @@ export default function Landing() {
   return (
     <>
       <Helmet>
-        <title>{WORDING.productName} - {WORDING.categoryLabel} | {WORDING.cta.startTrial}</title>
-        <meta name="description" content={`${WORDING.pitchSubline} Jetzt ${WORDING.cta.startTrial.toLowerCase()}.`} />
+        <title>subfix — Pflichtnachweise automatisch einsammeln</title>
+        <meta name="description" content="Beauftragte Firmen per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, klar sehen, was fehlt. 14 Tage kostenlos testen." />
         <meta name="keywords" content="Nachunternehmer, Compliance, Baurecht, Pflichtnachweise, Freistellungsbescheinigung, A1-Bescheinigung, Generalunternehmer" />
         
         {/* Open Graph */}
@@ -235,36 +235,38 @@ export default function Landing() {
         {/* Hero Section */}
         <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6">
-              <Zap className="w-4 h-4 mr-2" />
-              Neu: Automatische Rechtssicherheit
-            </Badge>
-            
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              {WORDING.pitchOneLiner}
+              Pflichtnachweise automatisch einsammeln.
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              {WORDING.pitchSubline}
+              Beauftragte Firmen per Link einladen. subfix fordert nur erforderliche Nachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-              {WORDING.valuePillars.map((pillar) => (
-                <Badge key={pillar} variant="outline" className="text-base px-4 py-1">
-                  {pillar}
-                </Badge>
-              ))}
+              <Badge variant="outline" className="text-base px-4 py-1">
+                Einfachheit
+              </Badge>
+              <Badge variant="outline" className="text-base px-4 py-1">
+                Zeitersparnis
+              </Badge>
+              <Badge variant="outline" className="text-base px-4 py-1">
+                Rechtssicherheit
+              </Badge>
+              <Badge variant="outline" className="text-base px-4 py-1">
+                Nur Pflichten
+              </Badge>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button size="lg" className="text-lg px-8" onClick={handleStartTrial}>
                 <Play className="w-5 h-5 mr-2" />
-                {WORDING.cta.startTrial}
+                14 Tage kostenlos testen
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8" asChild>
                 <a href="#demo">
                   <Eye className="w-5 h-5 mr-2" />
-                  {WORDING.cta.viewDemo}
+                  Live-Demo ansehen
                 </a>
               </Button>
             </div>
@@ -287,17 +289,89 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* So funktioniert's */}
+        {/* Leistungs-Kacheln */}
         <section id="features" className="py-16 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Leistungen
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Alles was Sie für rechtssichere Nachunternehmer-Compliance brauchen
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card>
+                <CardHeader>
+                  <Users className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>Self-Serve Upload</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Link/QR, mobil mit Kamera.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Clock className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>Automatische Erinnerungen</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Inklusive Eskalation.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Shield className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>Nur Pflichten</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Keine falschen Warnungen.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <BarChart3 className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>Ampel-Dashboard</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Fehlend · bald fällig · gültig.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Download className="w-8 h-8 text-primary mb-2" />
+                  <CardTitle>Prüfer-Export</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Übersicht & Download bei Bedarf.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* So funktioniert's */}
+        <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 So funktioniert's
               </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Vier einfache Schritte zu rechtssicherer Compliance - 
-                vollautomatisch und ohne Aufwand für Sie
-              </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -306,14 +380,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                     1
                   </div>
-                  <CardTitle>Pflichten bestimmen</CardTitle>
+                  <CardTitle>Firma einladen</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <FileText className="w-8 h-8 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    System erkennt automatisch alle rechtlich erforderlichen Dokumente 
-                    basierend auf Unternehmenstyp und Einsatzgebiet
-                  </p>
+                  <Users className="w-8 h-8 text-primary mx-auto mb-4" />
                 </CardContent>
               </Card>
 
@@ -322,14 +392,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                     2
                   </div>
-                  <CardTitle>Einladen & Upload</CardTitle>
+                  <CardTitle>Nachweise hochladen</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Users className="w-8 h-8 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Nachunternehmer erhalten sicheren Upload-Link und laden 
-                    alle Dokumente selbstständig hoch - mobil optimiert
-                  </p>
+                  <FileText className="w-8 h-8 text-primary mx-auto mb-4" />
                 </CardContent>
               </Card>
 
@@ -338,14 +404,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                     3
                   </div>
-                  <CardTitle>Erinnern & Eskalieren</CardTitle>
+                  <CardTitle>Automatisch erinnern</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
                   <Clock className="w-8 h-8 text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Automatische Erinnerungen vor Ablauf, Eskalation bei 
-                    kritischen Fristen - Sie werden nur bei Problemen informiert
-                  </p>
                 </CardContent>
               </Card>
 
@@ -354,14 +416,10 @@ export default function Landing() {
                   <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                     4
                   </div>
-                  <CardTitle>Prüfen & Freigeben</CardTitle>
+                  <CardTitle>Prüfen & freigeben</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
                   <CheckCircle className="w-8 h-8 text-success mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Übersichtliche Prüfung aller Dokumente, Freigabe mit einem Klick, 
-                    Rechtssicherheit durch automatische Dokumentation
-                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -569,17 +627,15 @@ export default function Landing() {
               ))}
             </div>
             <blockquote className="text-2xl md:text-3xl font-medium mb-8 text-foreground">
-              "subfix spart uns pro Projekt mehrere Stunden pro Woche. 
-              Die automatische Überwachung gibt uns die Sicherheit, 
-              dass wir rechtlich immer auf der sicheren Seite stehen."
+              "Seit subfix laufen die Nachweise geordnet ein. Wir sparen jede Woche Stunden."
             </blockquote>
             <div className="flex items-center justify-center gap-4">
               <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                MK
+                SH
               </div>
               <div className="text-left">
-                <p className="font-semibold">Markus Kellner</p>
-                <p className="text-muted-foreground">Leitung AV, Bauunternehmen Kellner GmbH</p>
+                <p className="font-semibold">Inhaber, SHK-Betrieb (12 MA)</p>
+                <p className="text-muted-foreground text-sm">Beispiel-Testimonial</p>
               </div>
             </div>
           </div>
@@ -594,7 +650,7 @@ export default function Landing() {
               </h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Wählen Sie den Plan, der zu Ihrem Unternehmen passt. 
-                Alle Pläne mit 14 Tagen kostenlosen Test, danach Read-Only ohne Kündigung.
+                14 Tage kostenlos. Danach read-only bis Aktivierung.
               </p>
             </div>
 
@@ -661,38 +717,33 @@ export default function Landing() {
             <Alert className="mt-12 max-w-4xl mx-auto">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Trial-Information:</strong> Nach den 14 kostenlosen Testtagen wechselt Ihr Account 
-                automatisch in den Read-Only Modus. Sie können jederzeit ein Abonnement starten - 
-                keine automatische Belastung, keine versteckten Kosten.
+                <strong>Trial-Information:</strong> 14 Tage kostenlos. Danach read-only bis Aktivierung.
               </AlertDescription>
             </Alert>
           </div>
         </section>
 
-        {/* Demo Screenshots */}
+        {/* Screenshots */}
         <section id="demo" className="py-16 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Sehen Sie subfix in Aktion
+                Screenshots
               </h2>
-              <p className="text-xl text-muted-foreground">
-                Drei Screenshots zeigen Ihnen die wichtigsten Funktionen
-              </p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8">
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/30 rounded-t-lg flex items-center justify-center">
-                    <BarChart3 className="w-16 h-16 text-primary" />
+                    <img 
+                      src="/public/screenshots/dashboard.png" 
+                      alt="Dashboard Screenshot"
+                      className="w-full h-full object-cover rounded-t-lg"
+                    />
                   </div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Compliance Dashboard</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Sofortiger Überblick über alle kritischen Nachweise und Handlungsempfehlungen. 
-                      Ampelsystem zeigt rechtliche Risiken auf einen Blick.
-                    </p>
+                    <h3 className="font-semibold text-lg mb-2">Alles auf einen Blick.</h3>
                   </div>
                 </CardContent>
               </Card>
@@ -700,14 +751,14 @@ export default function Landing() {
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-success/10 to-success/30 rounded-t-lg flex items-center justify-center">
-                    <Users className="w-16 h-16 text-success" />
+                    <img 
+                      src="/public/screenshots/sub-profile.png" 
+                      alt="Subcontractor Profile Screenshot"
+                      className="w-full h-full object-cover rounded-t-lg"
+                    />
                   </div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Subunternehmer-Profil</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Detailansicht aller Dokumente, Prüfungsstatus und Erinnerungen. 
-                      Klare Next-Best-Actions für optimalen Workflow.
-                    </p>
+                    <h3 className="font-semibold text-lg mb-2">Pflichtnachweise mit nächstem Schritt.</h3>
                   </div>
                 </CardContent>
               </Card>
@@ -715,14 +766,14 @@ export default function Landing() {
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-warning/10 to-warning/30 rounded-t-lg flex items-center justify-center">
-                    <FileText className="w-16 h-16 text-warning" />
+                    <img 
+                      src="/public/screenshots/upload-mobile.png" 
+                      alt="Mobile Upload Screenshot"
+                      className="w-full h-full object-cover rounded-t-lg"
+                    />
                   </div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2">Mobiler Upload</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Nachunternehmer laden Dokumente direkt vom Smartphone hoch. 
-                      Sichere Links, Kamera-Integration, automatische Validierung.
-                    </p>
+                    <h3 className="font-semibold text-lg mb-2">Hochladen per Kamera.</h3>
                   </div>
                 </CardContent>
               </Card>
@@ -735,6 +786,47 @@ export default function Landing() {
                   Interaktive Demo starten
                 </Link>
               </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="py-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Häufige Fragen
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold mb-3">Brauchen beauftragte Firmen eine App?</h3>
+                <p className="text-muted-foreground text-sm mb-6">
+                  Nein, der Link genügt.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">Was, wenn niemand reagiert?</h3>
+                <p className="text-muted-foreground text-sm mb-6">
+                  subfix erinnert automatisch und eskaliert.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">Mobil nutzbar?</h3>
+                <p className="text-muted-foreground text-sm mb-6">
+                  Ja, Upload per Kamera/Datei.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">Lohnt sich das bei wenigen Firmen?</h3>
+                <p className="text-muted-foreground text-sm mb-6">
+                  Ja, dafür ist der Starter-Plan da.
+                </p>
+              </div>
             </div>
           </div>
         </section>
