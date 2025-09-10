@@ -366,62 +366,59 @@ export default function Landing() {
         </section>
 
         {/* So funktioniert's */}
-        <section className="py-16">
+        <section className="py-16 bg-gradient-to-b from-background to-muted/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 So funktioniert's
               </h2>
+              <p className="text-xl text-muted-foreground">
+                In 4 einfachen Schritten zur automatisierten Compliance
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <Card className="relative">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                    1
-                  </div>
-                  <CardTitle>Firma einladen</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Users className="w-8 h-8 text-primary mx-auto mb-4" />
-                </CardContent>
-              </Card>
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
+              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
+                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+                  1
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Firma einladen</h3>
+                <Users className="w-10 h-10 text-primary/60 mb-2" />
+                <p className="text-muted-foreground text-sm">Per Link oder QR-Code</p>
+              </div>
 
-              <Card className="relative">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                    2
-                  </div>
-                  <CardTitle>Nachweise hochladen</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <FileText className="w-8 h-8 text-primary mx-auto mb-4" />
-                </CardContent>
-              </Card>
+              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
 
-              <Card className="relative">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                    3
-                  </div>
-                  <CardTitle>Automatisch erinnern</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Clock className="w-8 h-8 text-primary mx-auto mb-4" />
-                </CardContent>
-              </Card>
+              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
+                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Nachweise hochladen</h3>
+                <FileText className="w-10 h-10 text-primary/60 mb-2" />
+                <p className="text-muted-foreground text-sm">Mobil oder Desktop</p>
+              </div>
 
-              <Card className="relative">
-                <CardHeader className="text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                    4
-                  </div>
-                  <CardTitle>Prüfen & freigeben</CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <CheckCircle className="w-8 h-8 text-success mx-auto mb-4" />
-                </CardContent>
-              </Card>
+              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
+
+              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
+                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+                  3
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Automatisch erinnern</h3>
+                <Clock className="w-10 h-10 text-primary/60 mb-2" />
+                <p className="text-muted-foreground text-sm">Inkl. Eskalation</p>
+              </div>
+
+              <ArrowRight className="w-8 h-8 text-muted-foreground hidden lg:block" />
+
+              <div className="flex flex-col items-center text-center bg-background/50 backdrop-blur-sm rounded-xl p-6 border">
+                <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-4 text-2xl font-bold">
+                  4
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Prüfen & freigeben</h3>
+                <CheckCircle className="w-10 h-10 text-success/60 mb-2" />
+                <p className="text-muted-foreground text-sm">Rechtssicher</p>
+              </div>
             </div>
           </div>
         </section>
@@ -737,7 +734,7 @@ export default function Landing() {
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/30 rounded-t-lg flex items-center justify-center">
                     <img 
-                      src="/public/screenshots/dashboard.png" 
+                      src="/screenshots/dashboard.png" 
                       alt="Dashboard Screenshot"
                       className="w-full h-full object-cover rounded-t-lg"
                     />
@@ -752,7 +749,7 @@ export default function Landing() {
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-success/10 to-success/30 rounded-t-lg flex items-center justify-center">
                     <img 
-                      src="/public/screenshots/sub-profile.png" 
+                      src="/screenshots/sub-profile.png" 
                       alt="Subcontractor Profile Screenshot"
                       className="w-full h-full object-cover rounded-t-lg"
                     />
@@ -767,7 +764,7 @@ export default function Landing() {
                 <CardContent className="p-0">
                   <div className="aspect-video bg-gradient-to-br from-warning/10 to-warning/30 rounded-t-lg flex items-center justify-center">
                     <img 
-                      src="/public/screenshots/upload-mobile.png" 
+                      src="/screenshots/upload-mobile.png" 
                       alt="Mobile Upload Screenshot"
                       className="w-full h-full object-cover rounded-t-lg"
                     />
@@ -799,32 +796,32 @@ export default function Landing() {
               </h2>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-semibold mb-3">Brauchen beauftragte Firmen eine App?</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Nein, der Link genügt.
+            <div className="space-y-8">
+              <div className="border-b pb-6">
+                <h3 className="font-semibold text-lg mb-3">Brauchen beauftragte Firmen eine App?</h3>
+                <p className="text-muted-foreground">
+                  Nein, der Link genügt. Beauftragte Firmen erhalten einen sicheren Upload-Link per E-Mail oder können den QR-Code scannen. Keine Installation notwendig.
+                </p>
+              </div>
+
+              <div className="border-b pb-6">
+                <h3 className="font-semibold text-lg mb-3">Was, wenn niemand reagiert?</h3>
+                <p className="text-muted-foreground">
+                  subfix erinnert automatisch und eskaliert. Das System versendet regelmäßige Erinnerungen und kann bei Bedarf an Vorgesetzte weiterleiten.
+                </p>
+              </div>
+
+              <div className="border-b pb-6">
+                <h3 className="font-semibold text-lg mb-3">Mobil nutzbar?</h3>
+                <p className="text-muted-foreground">
+                  Ja, Upload per Kamera/Datei. Die Plattform ist vollständig responsive und ermöglicht das direkte Fotografieren und Hochladen von Dokumenten.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Was, wenn niemand reagiert?</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  subfix erinnert automatisch und eskaliert.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Mobil nutzbar?</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Ja, Upload per Kamera/Datei.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Lohnt sich das bei wenigen Firmen?</h3>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Ja, dafür ist der Starter-Plan da.
+                <h3 className="font-semibold text-lg mb-3">Lohnt sich das bei wenigen Firmen?</h3>
+                <p className="text-muted-foreground">
+                  Ja, dafür ist der Starter-Plan da. Bereits ab 10 beauftragten Firmen sparen Sie Zeit und reduzieren das Compliance-Risiko erheblich.
                 </p>
               </div>
             </div>
