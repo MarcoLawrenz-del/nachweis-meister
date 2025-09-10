@@ -18,6 +18,13 @@ const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const Subcontractors = lazy(() => import("./pages/Subcontractors"));
 const SubcontractorDetail = lazy(() => import("./pages/SubcontractorDetail"));
 
+// Landing Pages
+const A1Entsendung = lazy(() => import("./pages/lp/A1Entsendung"));
+const SokaBau = lazy(() => import("./pages/lp/SokaBau"));
+const Freistellungsbescheinigung = lazy(() => import("./pages/lp/Freistellungsbescheinigung"));
+const SHK = lazy(() => import("./pages/lp/SHK"));
+const Elektro = lazy(() => import("./pages/lp/Elektro"));
+
 const ReviewQueue = lazy(() => import("./pages/ReviewQueue").then(module => ({ default: module.ReviewQueue })));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
@@ -185,6 +192,35 @@ const App = () => (
                       <Route path="/pricing" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <Pricing />
+                        </Suspense>
+                      } />
+                      
+                      {/* Use-Case Landing Pages */}
+                      <Route path="/lp/a1-entsendung" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <A1Entsendung />
+                        </Suspense>
+                      } />
+                      <Route path="/lp/soka-bau-nachweise" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <SokaBau />
+                        </Suspense>
+                      } />
+                      <Route path="/lp/freistellungsbescheinigung-48b" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Freistellungsbescheinigung />
+                        </Suspense>
+                      } />
+                      
+                      {/* Vertical Landing Pages */}
+                      <Route path="/lp/shk" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <SHK />
+                        </Suspense>
+                      } />
+                      <Route path="/lp/elektro" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Elektro />
                         </Suspense>
                       } />
                       
