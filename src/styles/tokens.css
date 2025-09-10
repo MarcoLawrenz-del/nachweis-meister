@@ -4,79 +4,62 @@
  */
 
 :root {
-  /* === CI BRAND COLORS (Sharp Rendering) === */
-  --brand: 30 140 6;           /* #F48C06 - Primary CTA */
-  --brand-100: 44 15 0;        /* #FFF2E0 - Light brand surface */
-  --brand-700: 28 116 0;       /* #C87400 - Dark brand border */
-  --brand-on: 217 218 219;     /* #101112 - Text on brand */
+  /* === CI BRAND COLORS (Orange) === */
+  --brand: 30 94% 49%;         /* #F48C06 - Primary Orange */
+  --brand-100: 30 100% 94%;    /* #FFF2E0 - Light Orange */
+  --brand-700: 30 100% 39%;    /* #C87400 - Dark Orange */
+  --brand-on: 0 0% 100%;       /* #FFFFFF - White text on orange */
   
-  --surface: 0 0 100;          /* #FFFFFF - Main surface */
-  --surface-2: 216 219 249;    /* #F6F7F9 - Secondary surface */
-  --border: 220 223 235;       /* #E5E7EB - Borders */
-  --text: 218 224 243;         /* #0B0F13 - Primary text */
-  --text-muted: 215 220 128;   /* #6B7280 - Muted text */
+  --surface: 0 0% 100%;        /* #FFFFFF - White surface */
+  --surface-2: 216 33% 97%;    /* #F6F7F9 - Light gray */
+  --border: 220 13% 91%;       /* #E5E7EB - Gray border */
+  --text: 213 37% 7%;          /* #0B0F13 - Dark text */
+  --text-muted: 220 9% 46%;    /* #6B7280 - Muted text */
   
-  --brand-on-primary: 0 0% 100%; /* Weiß auf Brand */
+  --brand-on-primary: var(--brand-on);
   
-  --brand-accent: 219 50% 30%; /* Dunkleres Akzent-Blau */
-  --brand-accent-50: 219 50% 95%;
-  --brand-accent-100: 219 50% 85%;
-  --brand-accent-200: 219 50% 75%;
-  --brand-accent-300: 219 50% 65%;
-  --brand-accent-400: 219 50% 55%;
-  --brand-accent-500: 219 50% 45%;
-  --brand-accent-600: 219 50% 35%;
-  --brand-accent-700: 219 50% 28%;
-  --brand-accent-800: 219 50% 22%;
-  --brand-accent-900: 219 50% 15%;
-  
+  --brand-accent: 30 80% 35%;   /* Darker Orange Accent */
   --brand-on-accent: 0 0% 100%;
 
-  /* === NEUTRAL SYSTEM (Grautöne) === */
-  --text: 220 13% 9%;
-  --text-muted: 220 9% 46%;
+  /* === NEUTRAL SYSTEM === */
   --text-subtle: 220 9% 65%;
-  
-  --surface: 0 0% 100%;
-  --surface-muted: 220 14% 96%;
+  --surface-muted: var(--surface-2);
   --surface-subtle: 220 13% 91%;
-  
-  --border: 220 13% 91%;
   --border-muted: 220 9% 85%;
   
-  /* === STATUS (Monochrom mit Brand) === */
-  --status-success: var(--brand-primary); /* Erfolg = Brand */
-  --status-warning: var(--brand-accent); /* Warnung = Akzent */
-  --status-error: var(--brand-primary-800); /* Fehler = Dunkles Brand */
-  --status-neutral: var(--text-muted); /* Neutral = Grau */
+  /* === STATUS === */
+  --status-success: var(--brand); 
+  --status-warning: var(--brand-accent);
+  --status-error: var(--brand-700);
+  --status-neutral: var(--text-muted);
 
   /* === SEMANTIC MAPPINGS === */
   --background: var(--surface);
   --foreground: var(--text);
   
-  --primary: var(--brand-primary);
-  --primary-foreground: var(--brand-on-primary);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-on);
   
-  --secondary: var(--surface-muted);
+  --secondary: var(--surface-2);
   --secondary-foreground: var(--text);
   
-  --muted: var(--surface-muted);
+  --muted: var(--surface-2);
   --muted-foreground: var(--text-muted);
   
   --accent: var(--brand-accent);
   --accent-foreground: var(--brand-on-accent);
   
   --destructive: var(--status-error);
-  --destructive-foreground: var(--brand-on-primary);
+  --destructive-foreground: var(--brand-on);
   
   --success: var(--status-success);
-  --success-foreground: var(--brand-on-primary);
+  --success-foreground: var(--brand-on);
   
   --warning: var(--status-warning);
   --warning-foreground: var(--brand-on-accent);
   
   --danger: var(--status-error);
-  --danger-foreground: var(--brand-on-primary);
+  --danger-foreground: var(--brand-on);
   
   --card: var(--surface);
   --card-foreground: var(--text);
@@ -85,7 +68,7 @@
   --popover-foreground: var(--text);
   
   --input: var(--border);
-  --ring: var(--brand-primary);
+  --ring: var(--brand);
   
   --radius: 0.75rem;
   --touch-target-min: 44px;
@@ -133,14 +116,14 @@
 }
 
 /* Utility Classes für Brand Colors */
-.brand-primary { color: hsl(var(--brand-primary)); }
-.bg-brand-primary { background-color: hsl(var(--brand-primary)); }
-.border-brand-primary { border-color: hsl(var(--brand-primary)); }
+.brand-primary { color: hsl(var(--brand)); }
+.bg-brand-primary { background-color: hsl(var(--brand)); }
+.border-brand-primary { border-color: hsl(var(--brand)); }
 
 .brand-accent { color: hsl(var(--brand-accent)); }
 .bg-brand-accent { background-color: hsl(var(--brand-accent)); }
 .border-brand-accent { border-color: hsl(var(--brand-accent)); }
 
-.text-brand { color: hsl(var(--brand-primary)); }
-.bg-brand { background-color: hsl(var(--brand-primary)); }
-.border-brand { border-color: hsl(var(--brand-primary)); }
+.text-brand { color: hsl(var(--brand)); }
+.bg-brand { background-color: hsl(var(--brand)); }
+.border-brand { border-color: hsl(var(--brand)); }
