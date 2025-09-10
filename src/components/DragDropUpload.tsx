@@ -143,7 +143,7 @@ export default function DragDropUpload({
           : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5'
       }`}
     >
-      <input {...getInputProps()} />
+      <input {...getInputProps()} data-testid="upload-file-input" />
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className={`flex h-16 w-16 items-center justify-center rounded-xl transition-colors ${
@@ -188,7 +188,7 @@ export default function DragDropUpload({
                 <label className="cursor-pointer">
                   <FileText className="h-4 w-4 mr-2" />
                   Datei wählen
-                  <input {...getInputProps()} className="hidden" />
+                  <input {...getInputProps()} className="hidden" data-testid="upload-file-input" />
                 </label>
               </Button>
             </>

@@ -271,6 +271,7 @@ export default function ReviewQueue() {
                     onClick={() => handleViewDocument(requirement)}
                     variant="outline"
                     size="sm"
+                    data-testid="btn-pruefen"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Prüfen & Details

@@ -336,7 +336,7 @@ export default function Subcontractors() {
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
+            <Button onClick={() => resetForm()} data-testid="btn-einladen">
               <Plus className="mr-2 h-4 w-4" />
               Neuer Nachunternehmer
             </Button>
@@ -567,8 +567,8 @@ export default function Subcontractors() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSubcontractors.map((subcontractor) => (
-                  <TableRow key={subcontractor.id}>
+                 {filteredSubcontractors.map((subcontractor) => (
+                   <TableRow key={subcontractor.id} data-testid="row-firma" data-firma-id={subcontractor.id}>
                      <TableCell>
                        <div>
                          <Link 

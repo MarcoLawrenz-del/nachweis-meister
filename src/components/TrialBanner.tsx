@@ -22,7 +22,7 @@ export function TrialBanner() {
   };
 
   return (
-    <Alert className={`${isExpired ? 'banner-danger' : 'banner-warning'} shadow-sm`}>
+    <Alert className={`${isExpired ? 'banner-danger' : 'banner-warning'} shadow-sm`} data-testid="banner-trial">
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
           {isExpired ? (
@@ -51,6 +51,7 @@ export function TrialBanner() {
             onClick={handleUpgrade}
             className="touch-target focus-ring"
             aria-label={isExpired ? 'Plan aktivieren um fortzufahren' : 'Jetzt upgraden um unbegrenzt zu nutzen'}
+            data-testid="btn-plan-aktivieren"
           >
             {isExpired ? 'Plan aktivieren' : 'Jetzt upgraden'}
           </Button>

@@ -438,6 +438,7 @@ export default function PublicUpload() {
                             setUploadDialogOpen(true);
                           }}
                           className="bg-primary hover:bg-primary/90"
+                          data-testid="upload-start"
                         >
                           <Upload className="h-4 w-4 mr-2" />
                           Jetzt hochladen

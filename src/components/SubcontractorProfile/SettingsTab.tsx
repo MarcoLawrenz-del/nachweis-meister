@@ -99,6 +99,7 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
             <Switch
               checked={profile.status === 'active'}
               onCheckedChange={handleToggleStatus}
+              data-testid="toggle-aktiv"
             />
           </div>
           

@@ -92,6 +92,7 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
         disabled={disabled || isLoading}
         variant="default"
         className="bg-success hover:bg-success/90 text-success-foreground"
+        data-testid="btn-approve"
       >
         <CheckCircle className="h-4 w-4 mr-2" />
         Genehmigen
@@ -100,6 +101,7 @@ export const ReviewActions = ({ requirementId, onActionComplete, disabled }: Rev
         onClick={() => setAction('reject')}
         disabled={disabled || isLoading}
         variant="destructive"
+        data-testid="btn-reject"
       >
         <XCircle className="h-4 w-4 mr-2" />
         Ablehnen

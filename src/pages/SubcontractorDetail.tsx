@@ -94,27 +94,27 @@ export default function SubcontractorDetail() {
       {/* Tab Navigation */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsTrigger value="overview" className="flex items-center gap-2" data-testid="tab-uebersicht">
             <Building2 className="h-4 w-4" />
             Übersicht
           </TabsTrigger>
-          <TabsTrigger value="documents" className="flex items-center gap-2">
+          <TabsTrigger value="documents" className="flex items-center gap-2" data-testid="tab-nachweise">
             <FileText className="h-4 w-4" />
             Dokumente
           </TabsTrigger>
-          <TabsTrigger value="reviews" className="flex items-center gap-2">
+          <TabsTrigger value="reviews" className="flex items-center gap-2" data-testid="tab-pruefungen">
             <Eye className="h-4 w-4" />
             Prüfungen
           </TabsTrigger>
-          <TabsTrigger value="reminders" className="flex items-center gap-2">
+          <TabsTrigger value="reminders" className="flex items-center gap-2" data-testid="tab-erinnerungen">
             <Send className="h-4 w-4" />
             Erinnerungen
           </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center gap-2">
+          <TabsTrigger value="activity" className="flex items-center gap-2" data-testid="tab-aktivitaet">
             <Activity className="h-4 w-4" />
             Aktivität
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
+          <TabsTrigger value="settings" className="flex items-center gap-2" data-testid="tab-einstellungen">
             <Settings className="h-4 w-4" />
             Einstellungen
           </TabsTrigger>

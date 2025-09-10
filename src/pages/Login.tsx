@@ -136,6 +136,7 @@ export default function Login() {
                   className="w-full h-14 text-base font-medium border-2 hover:bg-blue-50 hover:border-blue-200"
                   onClick={() => handleOAuthSignIn('azure')}
                   disabled={loading}
+                  data-testid="btn-login-microsoft"
                 >
                   <Building className="mr-3 h-5 w-5 text-blue-600" />
                   Mit Microsoft anmelden
@@ -146,6 +147,7 @@ export default function Login() {
                   className="w-full h-14 text-base font-medium border-2 hover:bg-red-50 hover:border-red-200"
                   onClick={() => handleOAuthSignIn('google')}
                   disabled={loading}
+                  data-testid="btn-login-google"
                 >
                   <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                     <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -173,6 +175,7 @@ export default function Login() {
                     variant="outline" 
                     className="w-full h-14 text-base font-medium border-2 hover:bg-purple-50 hover:border-purple-200"
                     disabled={magicLinkLoading}
+                    data-testid="btn-login-magic"
                   >
                     {magicLinkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <Mail className="mr-3 h-5 w-5 text-purple-600" />

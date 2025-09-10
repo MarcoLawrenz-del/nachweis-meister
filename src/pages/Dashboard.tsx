@@ -280,7 +280,7 @@ export default function Dashboard() {
         );
       case 'review':
         return (
-          <Button size="sm" variant="outline" className="text-xs">
+          <Button size="sm" variant="outline" className="text-xs" data-testid="btn-pruefen">
             <Eye className="w-3 h-3 mr-1" />
             Prüfen
           </Button>
@@ -508,6 +508,7 @@ export default function Dashboard() {
         <Card 
           className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'active' ? 'ring-2 ring-primary' : ''}`}
           onClick={() => handleKPIClick('active')}
+          data-testid="kpi-firmen"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -535,6 +536,7 @@ export default function Dashboard() {
         <Card 
           className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'missing' ? 'ring-2 ring-muted-foreground' : ''}`}
           onClick={() => handleKPIClick('missing')}
+          data-testid="kpi-fehlend"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -562,6 +564,7 @@ export default function Dashboard() {
         <Card 
           className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'expired' ? 'ring-2 ring-destructive' : ''}`}
           onClick={() => handleKPIClick('expired')}
+          data-testid="kpi-abgelaufen"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -589,6 +592,7 @@ export default function Dashboard() {
         <Card 
           className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'expiring' ? 'ring-2 ring-warning' : ''}`}
           onClick={() => handleKPIClick('expiring')}
+          data-testid="kpi-30tage"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -616,6 +620,7 @@ export default function Dashboard() {
         <Card 
           className={`cursor-pointer transition-colors hover:bg-muted/50 ${filter === 'review' ? 'ring-2 ring-blue-500' : ''}`}
           onClick={() => handleKPIClick('review')}
+          data-testid="kpi-inpruefung"
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -686,7 +691,7 @@ export default function Dashboard() {
       )}
 
       {/* Critical-List (Top 10) */}
-      <Card>
+      <Card data-testid="critical-list">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>

@@ -27,15 +27,15 @@ import { BRAND } from "@/config/brand";
 import { Logo } from "@/components/Brand/Logo";
 
 const mainItems = [
-  { title: "Dashboard", url: "/app/dashboard", icon: BarChart3 },
-  { title: "Beauftragte Firmen", url: "/app/subcontractors", icon: Users },
-  { title: "Prüfen", url: "/app/review", icon: FileCheck },
-  { title: "Erinnerungen", url: "/app/reminders", icon: Bell },
+  { title: "Dashboard", url: "/app/dashboard", icon: BarChart3, testId: "nav-dashboard" },
+  { title: "Beauftragte Firmen", url: "/app/subcontractors", icon: Users, testId: "nav-firmen" },
+  { title: "Prüfen", url: "/app/review", icon: FileCheck, testId: "nav-pruefen" },
+  { title: "Erinnerungen", url: "/app/reminders", icon: Bell, testId: "nav-erinnerungen" },
 ];
 
 const settingsItems = [
-  { title: "Rollen & Zugriffe", url: "/app/roles-access", icon: Shield },
-  { title: "Einstellungen", url: "/app/settings", icon: Settings },
+  { title: "Rollen & Zugriffe", url: "/app/roles-access", icon: Shield, testId: "nav-rollen" },
+  { title: "Einstellungen", url: "/app/settings", icon: Settings, testId: "nav-einstellungen" },
 ];
 
 export function AppSidebar() {
@@ -90,6 +90,7 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       className={getNavCls(isActive(item.url))}
+                      data-testid={item.testId}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -112,6 +113,7 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       className={getNavCls(isActive(item.url))}
+                      data-testid={item.testId}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>

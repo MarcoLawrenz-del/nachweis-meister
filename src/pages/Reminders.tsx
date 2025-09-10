@@ -367,6 +367,7 @@ export default function Reminders() {
                             variant="outline"
                             onClick={() => sendImmediateReminder(job.requirement_id)}
                             disabled={job.state === 'completed'}
+                            data-testid="btn-remind-now"
                           >
                             <Bell className="w-3 h-3 mr-1" />
                             Sofort
@@ -376,6 +377,7 @@ export default function Reminders() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleJobAction(job.id, 'pause')}
+                              data-testid="btn-remind-pause"
                             >
                               <Pause className="w-3 h-3 mr-1" />
                               Pausieren
@@ -386,6 +388,7 @@ export default function Reminders() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleJobAction(job.id, 'resume')}
+                              data-testid="btn-remind-resume"
                             >
                               <Play className="w-3 h-3 mr-1" />
                               Fortsetzen
@@ -396,6 +399,7 @@ export default function Reminders() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleJobAction(job.id, 'stop')}
+                              data-testid="btn-remind-stop"
                             >
                               <StopCircle className="w-3 h-3 mr-1" />
                               Stopp
