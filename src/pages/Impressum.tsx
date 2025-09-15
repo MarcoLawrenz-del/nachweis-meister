@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Mail, Phone, MapPin } from 'lucide-react';
+import { Building2, Mail, MapPin } from 'lucide-react';
 
 export default function Impressum() {
   return (
@@ -49,7 +49,7 @@ export default function Impressum() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  <strong>MUST_FILL:</strong> Geschäftsführung
+                  Marco Lawrenz
                 </p>
               </CardContent>
             </Card>
@@ -61,8 +61,8 @@ export default function Impressum() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-muted-foreground">
-                  <p><strong>MUST_FILL:</strong> Handelsregister-Nr.</p>
-                  <p><strong>MUST_FILL:</strong> Registergericht</p>
+                  <p>Handelsregister-Nr.: HRB 239377 B</p>
+                  <p>Registergericht: Berlin Charlottenburg</p>
                 </div>
               </CardContent>
             </Card>
@@ -74,7 +74,7 @@ export default function Impressum() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  <strong>MUST_FILL:</strong> USt-IdNr. nach § 27a UStG
+                  DE351409808
                 </p>
               </CardContent>
             </Card>
@@ -88,15 +88,9 @@ export default function Impressum() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Phone className="h-4 w-4" />
-                    <span><strong>MUST_FILL:</strong> Telefonnummer</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span><strong>MUST_FILL:</strong> support@subfix.de</span>
-                  </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span>support@subfix.de</span>
                 </div>
               </CardContent>
             </Card>
@@ -108,7 +102,7 @@ export default function Impressum() {
               </CardHeader>
               <CardContent>
                 <div className="text-muted-foreground">
-                  <p><strong>MUST_FILL:</strong> Name des Verantwortlichen</p>
+                  <p>Marco Lawrenz</p>
                   <p>Lindauer Str. 4-5, 10781 Berlin</p>
                 </div>
               </CardContent>
