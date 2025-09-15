@@ -29,6 +29,7 @@ const Elektro = lazy(() => import("./pages/lp/Elektro"));
 // Legal Pages
 const Impressum = lazy(() => import("./pages/Impressum"));
 const Datenschutz = lazy(() => import("./pages/Datenschutz"));
+const Dienstleister = lazy(() => import("./pages/Dienstleister"));
 const AGB = lazy(() => import("./pages/AGB"));
 const Kontakt = lazy(() => import("./pages/Kontakt"));
 
@@ -347,27 +348,32 @@ const App = () => (
                        } />
                        </Route>
                        
-                       {/* Legal pages */}
-                       <Route path="/impressum" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <Impressum />
-                         </Suspense>
-                       } />
-                       <Route path="/datenschutz" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <Datenschutz />
-                         </Suspense>
-                       } />
-                       <Route path="/agb" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <AGB />
-                         </Suspense>
-                       } />
-                       <Route path="/kontakt" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <Kontakt />
-                         </Suspense>
-                       } />
+                        {/* Legal pages */}
+                        <Route path="/impressum" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Impressum />
+                          </Suspense>
+                        } />
+                        <Route path="/datenschutz" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Datenschutz />
+                          </Suspense>
+                        } />
+                        <Route path="/dienstleister" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Dienstleister />
+                          </Suspense>
+                        } />
+                        <Route path="/agb" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <AGB />
+                          </Suspense>
+                        } />
+                        <Route path="/kontakt" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Kontakt />
+                          </Suspense>
+                        } />
                       
                       {/* Catch all */}
                       <Route path="*" element={
