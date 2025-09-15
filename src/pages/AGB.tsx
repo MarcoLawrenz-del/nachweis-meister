@@ -8,7 +8,7 @@ export default function AGB() {
       <Helmet>
         <title>AGB - subfix</title>
         <meta name="description" content="Allgemeine Geschäftsbedingungen für subfix - Nachunternehmer-Compliance Management" />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
