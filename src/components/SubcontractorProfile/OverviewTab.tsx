@@ -55,6 +55,8 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   const reviewing = docs.filter(d => ["submitted", "in_review"].includes(d.status)).length;
   const expiring = docs.filter(d => d.status === "accepted" && d.validUntil && isExpiring(new Date(d.validUntil), 30)).length;
   const valid = docs.filter(d => d.status === "accepted" && (!d.validUntil || !isExpiring(new Date(d.validUntil), 30))).length;
+  const requiredCount = docs.filter(d => d.requirement === "required").length;
+  const showComplete = requiredCount > 0 && missing === 0 && reviewing === 0 && expiring === 0 && valid > 0;
   const agg = aggregateContractorStatus(docs);
 
   const getNextAction = (requirement: RequirementWithDocument) => {
@@ -157,11 +159,21 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
       </div>
 
       {/* Complete Banner */}
-      {agg === "complete" && (
+      {showComplete && (
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle className="h-4 w-4" />
           <AlertDescription className="text-green-800">
             🎉 Alles vollständig! Alle erforderlichen Dokumente sind eingereicht und gültig.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* No Required Documents Message */}
+      {requiredCount === 0 && (
+        <Alert className="border-blue-200 bg-blue-50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-blue-800">
+            Noch keine Pflichtdokumente angefordert.
           </AlertDescription>
         </Alert>
       )}

@@ -121,7 +121,7 @@ export function aggregateContractorStatus(docs: ContractorDocument[]): "complete
   if (!docs || docs.length === 0) return "missing";
   
   const requiredDocs = docs.filter(doc => doc.requirement === "required");
-  if (requiredDocs.length === 0) return "complete";
+  if (requiredDocs.length === 0) return "missing";
   
   const acceptedCount = requiredDocs.filter(doc => doc.status === "accepted").length;
   const attentionStatuses = ["submitted", "in_review", "expired"];
