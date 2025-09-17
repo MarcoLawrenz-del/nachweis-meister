@@ -24,7 +24,7 @@ import Projects from "./Projects";
 import ProjectDetail from "./ProjectDetail";
 import Subcontractors from "./Subcontractors";
 import SubcontractorDetail from "./SubcontractorDetail";
-import Settings from "./Settings";
+import Settings from "./settings/Settings";
 
 export default function Demo() {
   debug.log('🎯 Demo App Component Loaded');

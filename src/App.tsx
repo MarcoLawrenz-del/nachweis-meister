@@ -39,7 +39,7 @@ const Kontakt = lazy(() => import("./pages/Kontakt"));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));
-const Settings = lazy(() => import("./pages/Settings"));
+const Settings = lazy(() => import("./pages/settings/Settings"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));
