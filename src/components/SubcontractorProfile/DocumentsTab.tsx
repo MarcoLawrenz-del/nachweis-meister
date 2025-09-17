@@ -396,6 +396,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
           <DialogContent className="max-w-2xl">
             <RequestDocumentsDialog
               contractorId={contractorId}
+              contractorEmail={profile?.contact_email}
               onClose={() => setShowRequestDialog(false)}
             />
           </DialogContent>

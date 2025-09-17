@@ -385,6 +385,7 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
           <DialogContent className="max-w-2xl">
             <RequestDocumentsDialog
               contractorId={subId}
+              contractorEmail={profile?.contact_email}
               onClose={() => setShowRequestDialog(false)}
             />
           </DialogContent>
