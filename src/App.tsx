@@ -50,6 +50,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const RouteNotFound = lazy(() => import("./components/RouteNotFound"));
 const Demo = lazy(() => import("./pages/Demo"));
 const PublicDemo = lazy(() => import("./pages/PublicDemo"));
+const PublicUploadDemo = lazy(() => import("./pages/PublicUploadDemo"));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -219,6 +220,13 @@ const App = () => (
                           </Suspense>
                         } />
                       </Route>
+
+                      {/* Public routes */}
+                      <Route path="/upload" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicUploadDemo />
+                        </Suspense>
+                      } />
 
                       {/* Globaler Fallback */}
                       <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
