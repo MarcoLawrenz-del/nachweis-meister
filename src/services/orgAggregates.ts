@@ -101,7 +101,7 @@ export function getExpiringDocs(limit = 5): ExpiringDocItem[] {
 
     for (const doc of expiringDocs) {
       const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
-      const documentName = doc.customName || docType?.label || doc.documentTypeId;
+      const documentName = doc.label || doc.customName || docType?.label || doc.documentTypeId;
       
       items.push({
         contractor,

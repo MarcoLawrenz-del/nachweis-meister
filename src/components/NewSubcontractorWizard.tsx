@@ -96,6 +96,7 @@ export function NewSubcontractorWizard({
   const [customDocName, setCustomDocName] = useState("");
   const [customDocRequirement, setCustomDocRequirement] = useState<"required"|"optional"|"hidden">("required");
   const [customNameError, setCustomNameError] = useState<string | null>(null);
+  const [customDocLabels, setCustomDocLabels] = useState<Record<string, string>>({});
   
   const validateCustomName = (name: string) => {
     // Create array of existing docs for validation
@@ -116,6 +117,7 @@ export function NewSubcontractorWizard({
     
     const docId = makeCustomDocId(customDocName);
     setRequirements(prev => ({ ...prev, [docId]: customDocRequirement }));
+    setCustomDocLabels(prev => ({ ...prev, [docId]: customDocName }));
     
     // Reset form
     setCustomDocName("");
@@ -127,6 +129,8 @@ export function NewSubcontractorWizard({
   const removeCustomDocument = (docId: string) => {
     const { [docId]: removed, ...rest } = requirements;
     setRequirements(rest);
+    const { [docId]: removedLabel, ...restLabels } = customDocLabels;
+    setCustomDocLabels(restLabels);
   };
 
   // Static package options
@@ -250,7 +254,7 @@ export function NewSubcontractorWizard({
 
         // Non-blocking operations: document seeding and email sending
         try {
-          await seedDocumentsForContractor(contractorId, selectedPackageId, requirements);
+          await seedDocumentsForContractor(contractorId, selectedPackageId, requirements, customDocLabels);
           
           if (subcontractorData.contact_email && sendInvitationFlag) {
             await sendInvitation({ 
@@ -514,7 +518,7 @@ export function NewSubcontractorWizard({
               
               {/* Custom Documents */}
               {Object.entries(requirements).filter(([docId]) => isCustomDoc(docId)).map(([docId, requirement]) => {
-                const docName = displayName(docId, '', docId.replace('custom:', ''));
+                const docName = customDocLabels[docId] || docId.replace('custom:', '');
                 
                 return (
                   <div key={docId} className="grid grid-cols-2 items-center px-3 py-2 border-t bg-blue-50/50">

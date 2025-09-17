@@ -1,14 +1,9 @@
 // Utility functions for custom documents
+import { slugifyPreserveGerman } from './slug';
 
 export function makeCustomDocId(name: string): string {
-  // Create a slug from the name: lowercase, replace spaces with hyphens, remove special chars
-  const slug = name
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-  
+  // Create a German-aware slug from the name
+  const slug = slugifyPreserveGerman(name);
   return `custom:${slug}`;
 }
 
@@ -16,9 +11,10 @@ export function isCustomDoc(id: string): boolean {
   return id.startsWith('custom:');
 }
 
-export function displayName(id: string, fallbackFromConfig: string, customName?: string): string {
+export function displayName(id: string, fallbackFromConfig: string, customName?: string, label?: string): string {
   if (isCustomDoc(id)) {
-    return customName || id.replace('custom:', '');
+    // Use label first (preserves umlauts), then customName, then slug as fallback
+    return label || customName || id.replace('custom:', '');
   }
   return fallbackFromConfig;
 }
@@ -28,12 +24,13 @@ export function validateCustomDocName(name: string, existingDocs: Array<{ docume
     return "Name muss mindestens 3 Zeichen lang sein";
   }
   
-  // Check for duplicates against existing custom docs
-  const existingCustomNames = existingDocs
+  // Check for duplicates based on slug (type) within a contractor
+  const slug = slugifyPreserveGerman(name);
+  const existingCustomSlugs = existingDocs
     .filter(doc => isCustomDoc(doc.documentTypeId))
-    .map(doc => doc.customName?.toLowerCase());
+    .map(doc => doc.documentTypeId.replace('custom:', ''));
     
-  if (existingCustomNames.includes(name.toLowerCase())) {
+  if (existingCustomSlugs.includes(slug)) {
     return "Ein Dokument mit diesem Namen existiert bereits";
   }
   

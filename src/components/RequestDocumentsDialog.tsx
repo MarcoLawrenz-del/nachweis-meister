@@ -33,6 +33,7 @@ export default function RequestDocumentsDialog({
   });
   
   const [reqs, setReqs] = useState<Record<string, Requirement>>(initial);
+  const [customDocLabels, setCustomDocLabels] = useState<Record<string, string>>({});
   const [sendNow, setSendNow] = useState(false);
   const [message, setMessage] = useState("Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank.");
   const [showCustomForm, setShowCustomForm] = useState(false);
@@ -46,7 +47,7 @@ export default function RequestDocumentsDialog({
     ...DOCUMENT_TYPES,
     ...customDocs.map(doc => ({
       id: doc.documentTypeId,
-      label: displayName(doc.documentTypeId, '', doc.customName),
+      label: displayName(doc.documentTypeId, '', doc.customName, doc.label),
       defaultRequirement: doc.requirement
     }))
   ];
@@ -62,6 +63,7 @@ export default function RequestDocumentsDialog({
     
     const docId = makeCustomDocId(customDocName);
     setReqs(prev => ({ ...prev, [docId]: customDocRequirement }));
+    setCustomDocLabels(prev => ({ ...prev, [docId]: customDocName }));
     
     // Reset form
     setCustomDocName("");
@@ -73,6 +75,8 @@ export default function RequestDocumentsDialog({
   const removeCustomDocument = (docId: string) => {
     const { [docId]: removed, ...rest } = reqs;
     setReqs(rest);
+    const { [docId]: removedLabel, ...restLabels } = customDocLabels;
+    setCustomDocLabels(restLabels);
   };
   
   async function apply() {
@@ -101,10 +105,12 @@ export default function RequestDocumentsDialog({
         continue; 
       }
       
-      // Get document label
+      // Get document label - use stored label for new custom docs, existing label for existing docs
       let docLabel: string;
       if (isCustomDocument) {
-        docLabel = customDocs.find(d => d.documentTypeId === docId)?.customName || docId.replace('custom:', '');
+        const storedLabel = customDocLabels[docId];
+        const existingDoc = cur.find(c => c.documentTypeId === docId);
+        docLabel = storedLabel || existingDoc?.label || existingDoc?.customName || docId.replace('custom:', '');
       } else {
         docLabel = DOCUMENT_TYPES.find(d => d.id === docId)?.label || docId;
       }
@@ -121,7 +127,8 @@ export default function RequestDocumentsDialog({
         next.push({ 
           ...existing, 
           requirement,
-          customName: isCustomDocument ? docLabel : existing.customName
+          customName: isCustomDocument ? docLabel : existing.customName,
+          label: isCustomDocument ? docLabel : existing.label
         });
       } else {
         if (requirement === "required") becameRequired.push(docLabel);
@@ -134,7 +141,8 @@ export default function RequestDocumentsDialog({
           status: "missing", 
           validUntil: null, 
           rejectionReason: null,
-          customName: isCustomDocument ? docLabel : undefined
+          customName: isCustomDocument ? docLabel : undefined,
+          label: isCustomDocument ? docLabel : undefined
         });
       }
     }
@@ -274,7 +282,7 @@ export default function RequestDocumentsDialog({
         {/* Custom Documents */}
         {Object.entries(reqs).filter(([docId]) => isCustomDoc(docId)).map(([docId, requirement]) => {
           const customDoc = customDocs.find(d => d.documentTypeId === docId);
-          const docName = displayName(docId, '', customDoc?.customName);
+          const docName = displayName(docId, '', customDoc?.customName, customDoc?.label);
           
           return (
             <div key={docId} className="grid grid-cols-2 items-center px-3 py-2 border-t bg-blue-50/50">

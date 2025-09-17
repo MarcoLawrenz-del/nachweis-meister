@@ -13,6 +13,7 @@ export type ContractorDocument = {
   validUntil?: string | null;
   rejectionReason?: string | null;
   customName?: string; // For custom documents with docTypeId starting with 'custom:'
+  label?: string; // Display label for custom documents (preserves original with umlauts)
 };
 
 // Map der (vorläufig) konfigurierten Anforderungen je Paket:
@@ -56,7 +57,7 @@ export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
 import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
 import { isExpiring } from "@/utils/validity";
 
-export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>) {
+export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>, customLabels?: Record<string, string>) {
   const profile = customRequirements || (PACKAGE_PROFILES[packageId] ?? {});
   const created: ContractorDocument[] = [];
   const seen = ((globalThis as any).__DOC_SEED__ ??= new Set<string>()) as Set<string>;
@@ -65,13 +66,18 @@ export async function seedDocumentsForContractor(contractorId: string, packageId
     const key = `${contractorId}:${documentTypeId}`;
     if (seen.has(key)) continue;
     
+    const isCustomDocument = documentTypeId.startsWith('custom:');
+    const customLabel = isCustomDocument && customLabels ? customLabels[documentTypeId] : undefined;
+    
     created.push({ 
       contractorId, 
       documentTypeId, 
       requirement, 
       status: "missing", 
       validUntil: null, 
-      rejectionReason: null 
+      rejectionReason: null,
+      customName: isCustomDocument ? (customLabel || documentTypeId.replace('custom:', '')) : undefined,
+      label: customLabel
     });
     seen.add(key);
     

@@ -75,7 +75,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   // Filter documents
   const filteredDocs = docs.filter(doc => {
     const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
+    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
     
     // Search filter
     const matchesSearch = docName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,7 +105,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       validUntil
     });
     
-    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
+    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
     
     toast({
       title: "Dokument akzeptiert",
@@ -119,7 +119,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     
     const rejectDocType = DOCUMENT_TYPES.find(t => t.id === showRejectDialog.documentTypeId);
     const rejectedDoc = getDocs(contractorId).find(d => d.documentTypeId === showRejectDialog.documentTypeId);
-    const rejectDocName = displayName(showRejectDialog.documentTypeId, rejectDocType?.label || '', rejectedDoc?.customName);
+    const rejectDocName = displayName(showRejectDialog.documentTypeId, rejectDocType?.label || '', rejectedDoc?.customName, rejectedDoc?.label);
     
     await setDocumentStatus({
       contractorId,
@@ -162,7 +162,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       .filter(d => d.requirement === 'required' && ['missing', 'rejected', 'expired'].includes(d.status))
       .map(d => {
         const docType = DOCUMENT_TYPES.find(t => t.id === d.documentTypeId);
-        return displayName(d.documentTypeId, docType?.label || '', d.customName);
+        return displayName(d.documentTypeId, docType?.label || '', d.customName, d.label);
       });
     
     await sendReminderMissing({ 
@@ -196,7 +196,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         ["missing", "rejected", "expired"].includes(doc.status))
       .map(doc => {
         const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
-        return displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName);
+        return displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName, doc.label);
       });
 
     if (missingDocs.length === 0) {
@@ -376,7 +376,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
             <TableBody>
               {filteredDocs.map((doc) => {
                 const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-                const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
+                const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
                 
                 if (!docType && !doc.customName) return null;
                 
