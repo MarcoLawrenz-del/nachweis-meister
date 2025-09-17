@@ -15,14 +15,15 @@ import {
   Flag,
   Save,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  ChevronDown,
+  Package
 } from 'lucide-react';
 import { SubcontractorProfileData } from '@/hooks/useSubcontractorProfile';
 import { ComplianceFlags } from '@/components/ComplianceFlags';
 import { CompanyType } from '@/types/compliance';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Package } from 'lucide-react';
 
 interface SettingsTabProps {
   profile: SubcontractorProfileData;
