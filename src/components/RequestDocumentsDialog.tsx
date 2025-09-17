@@ -8,7 +8,11 @@ import { sendInvitation } from "@/services/email";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
+import { Plus, X } from "lucide-react";
 
 export default function RequestDocumentsDialog({ 
   contractorId, 
@@ -19,11 +23,57 @@ export default function RequestDocumentsDialog({
   contractorEmail?: string; 
   onClose: () => void; 
 }) {
-  const initial = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, (getDocs(contractorId).find(x => x.documentTypeId === d.id)?.requirement ?? d.defaultRequirement) as Requirement]));
+  const existingDocs = getDocs(contractorId);
+  const initial = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, (existingDocs.find(x => x.documentTypeId === d.id)?.requirement ?? d.defaultRequirement) as Requirement]));
+  
+  // Add existing custom documents to requirements
+  const customDocs = existingDocs.filter(doc => isCustomDoc(doc.documentTypeId));
+  customDocs.forEach(doc => {
+    initial[doc.documentTypeId] = doc.requirement;
+  });
+  
   const [reqs, setReqs] = useState<Record<string, Requirement>>(initial);
   const [sendNow, setSendNow] = useState(false);
   const [message, setMessage] = useState("Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank.");
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customDocName, setCustomDocName] = useState("");
+  const [customDocRequirement, setCustomDocRequirement] = useState<Requirement>("required");
+  const [customNameError, setCustomNameError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Get all document types (config + custom)
+  const allDocuments = [
+    ...DOCUMENT_TYPES,
+    ...customDocs.map(doc => ({
+      id: doc.documentTypeId,
+      label: displayName(doc.documentTypeId, '', doc.customName),
+      defaultRequirement: doc.requirement
+    }))
+  ];
+  
+  const validateCustomName = (name: string) => {
+    const error = validateCustomDocName(name, existingDocs);
+    setCustomNameError(error);
+    return error === null;
+  };
+  
+  const addCustomDocument = () => {
+    if (!validateCustomName(customDocName)) return;
+    
+    const docId = makeCustomDocId(customDocName);
+    setReqs(prev => ({ ...prev, [docId]: customDocRequirement }));
+    
+    // Reset form
+    setCustomDocName("");
+    setCustomDocRequirement("required");
+    setShowCustomForm(false);
+    setCustomNameError(null);
+  };
+  
+  const removeCustomDocument = (docId: string) => {
+    const { [docId]: removed, ...rest } = reqs;
+    setReqs(rest);
+  };
   
   async function apply() {
     const cur = getDocs(contractorId);
@@ -33,36 +83,58 @@ export default function RequestDocumentsDialog({
     const becameRequired: string[] = [];
     const becameOptional: string[] = [];
     
-    for (const dt of DOCUMENT_TYPES) {
-      const r = reqs[dt.id];
-      const existing = cur.find(c => c.documentTypeId === dt.id);
+    // Process all requirements (config + custom)
+    for (const [docId, requirement] of Object.entries(reqs)) {
+      const existing = cur.find(c => c.documentTypeId === docId);
+      const isCustomDocument = isCustomDoc(docId);
       
-      if (r === "hidden") { 
-        /* weglassen */ 
+      if (requirement === "hidden") {
+        // Remove hidden custom documents from store
+        if (isCustomDocument && existing) {
+          // Skip adding to next array - effectively removes it
+          continue;
+        }
+        // For config documents, keep them but mark as hidden
+        if (!isCustomDocument && existing) {
+          next.push({ ...existing, requirement });
+        }
         continue; 
+      }
+      
+      // Get document label
+      let docLabel: string;
+      if (isCustomDocument) {
+        docLabel = customDocs.find(d => d.documentTypeId === docId)?.customName || docId.replace('custom:', '');
+      } else {
+        docLabel = DOCUMENT_TYPES.find(d => d.id === docId)?.label || docId;
       }
       
       // Check if requirement changed to required or optional
       if (existing) {
-        if (existing.requirement === "hidden" && r === "required") {
-          becameRequired.push(dt.label);
-        } else if (existing.requirement === "hidden" && r === "optional") {
-          becameOptional.push(dt.label);
-        } else if (existing.requirement === "optional" && r === "required") {
-          becameRequired.push(dt.label);
+        if (existing.requirement === "hidden" && requirement === "required") {
+          becameRequired.push(docLabel);
+        } else if (existing.requirement === "hidden" && requirement === "optional") {
+          becameOptional.push(docLabel);
+        } else if (existing.requirement === "optional" && requirement === "required") {
+          becameRequired.push(docLabel);
         }
-        next.push({ ...existing, requirement: r, status: existing.status });
+        next.push({ 
+          ...existing, 
+          requirement,
+          customName: isCustomDocument ? docLabel : existing.customName
+        });
       } else {
-        if (r === "required") becameRequired.push(dt.label);
-        if (r === "optional") becameOptional.push(dt.label);
+        if (requirement === "required") becameRequired.push(docLabel);
+        if (requirement === "optional") becameOptional.push(docLabel);
         
         next.push({ 
           contractorId, 
-          documentTypeId: dt.id, 
-          requirement: r, 
+          documentTypeId: docId, 
+          requirement, 
           status: "missing", 
           validUntil: null, 
-          rejectionReason: null 
+          rejectionReason: null,
+          customName: isCustomDocument ? docLabel : undefined
         });
       }
     }
@@ -92,7 +164,6 @@ export default function RequestDocumentsDialog({
       
       if (email) {
         const link = `${window.location.origin}/upload?cid=${contractorId}`;
-        const requestedDocs = [...becameRequired, ...becameOptional];
         const personalizedMessage = message
           .replace("{{magic_link}}", link)
           .replace("{{name}}", contractor?.company_name || "");
@@ -118,11 +189,79 @@ export default function RequestDocumentsDialog({
   
   return (
     <div className="p-4">
-      <h2 className="text-lg font-semibold mb-2">Dokumente anfordern</h2>
+      <h2 className="text-lg font-semibold mb-4">Dokumente anfordern</h2>
+      
+      {/* Add Custom Document Button */}
+      <div className="mb-4">
+        <Button
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowCustomForm(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Eigenes Dokument hinzufügen
+        </Button>
+      </div>
+
+      {/* Custom Document Form */}
+      {showCustomForm && (
+        <div className="mb-4 p-4 border rounded-lg bg-muted/50">
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="customName">Dokumentname</Label>
+              <Input
+                id="customName"
+                value={customDocName}
+                onChange={(e) => {
+                  setCustomDocName(e.target.value);
+                  if (customNameError) validateCustomName(e.target.value);
+                }}
+                placeholder="z.B. Bankbestätigung"
+                className={customNameError ? "border-red-500" : ""}
+              />
+              {customNameError && (
+                <p className="text-sm text-red-500 mt-1">{customNameError}</p>
+              )}
+            </div>
+            <div>
+              <Label>Anforderung</Label>
+              <RequirementSelector 
+                value={customDocRequirement} 
+                onChange={setCustomDocRequirement} 
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                size="sm"
+                onClick={addCustomDocument}
+                disabled={!customDocName.trim() || !!customNameError}
+              >
+                Hinzufügen
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  setShowCustomForm(false);
+                  setCustomDocName("");
+                  setCustomNameError(null);
+                }}
+              >
+                Abbrechen
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Documents Table */}
       <div className="border rounded-xl">
         <div className="grid grid-cols-2 px-3 py-2 text-xs uppercase text-muted-foreground">
           <div>Dokument</div><div>Anforderung</div>
         </div>
+        
+        {/* Standard Documents */}
         {DOCUMENT_TYPES.map(dt => (
           <div key={dt.id} className="grid grid-cols-2 items-center px-3 py-2 border-t">
             <div className="text-sm">{dt.label}</div>
@@ -131,6 +270,31 @@ export default function RequestDocumentsDialog({
             </div>
           </div>
         ))}
+        
+        {/* Custom Documents */}
+        {Object.entries(reqs).filter(([docId]) => isCustomDoc(docId)).map(([docId, requirement]) => {
+          const customDoc = customDocs.find(d => d.documentTypeId === docId);
+          const docName = displayName(docId, '', customDoc?.customName);
+          
+          return (
+            <div key={docId} className="grid grid-cols-2 items-center px-3 py-2 border-t bg-blue-50/50">
+              <div className="text-sm flex items-center gap-2">
+                <span>{docName}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeCustomDocument(docId)}
+                  className="h-6 w-6 p-0 hover:bg-red-100"
+                >
+                  <X className="h-3 w-3 text-red-500" />
+                </Button>
+              </div>
+              <div className="justify-self-end">
+                <RequirementSelector compact value={requirement} onChange={v => setReqs(s => ({ ...s, [docId]: v }))} />
+              </div>
+            </div>
+          );
+        })}
       </div>
       
       {/* Invitation Toggle and Message */}

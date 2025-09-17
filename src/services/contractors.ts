@@ -12,6 +12,7 @@ export type ContractorDocument = {
   status: DocStatus;
   validUntil?: string | null;
   rejectionReason?: string | null;
+  customName?: string; // For custom documents with docTypeId starting with 'custom:'
 };
 
 // Map der (vorläufig) konfigurierten Anforderungen je Paket:

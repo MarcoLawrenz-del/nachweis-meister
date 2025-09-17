@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Send, CheckCircle2, Package, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, CheckCircle2, Package, Mail, Plus, X } from 'lucide-react';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ROUTES } from '@/lib/ROUTES';
@@ -33,6 +33,7 @@ import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
 import { PACKAGE_PROFILES, seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
 import { sendInvitation } from "@/services/email";
+import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
 
 const FormSchema = z.object({
   name: z.string().min(2, "Bitte Name angeben"),
@@ -89,6 +90,44 @@ export function NewSubcontractorWizard({
   const [message, setMessage] = useState(
     "Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank."
   );
+  
+  // Custom documents
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customDocName, setCustomDocName] = useState("");
+  const [customDocRequirement, setCustomDocRequirement] = useState<"required"|"optional"|"hidden">("required");
+  const [customNameError, setCustomNameError] = useState<string | null>(null);
+  
+  const validateCustomName = (name: string) => {
+    // Create array of existing docs for validation
+    const existingDocs = Object.keys(requirements)
+      .filter(isCustomDoc)
+      .map(docId => ({ 
+        documentTypeId: docId, 
+        customName: docId.replace('custom:', '') 
+      }));
+    
+    const error = validateCustomDocName(name, existingDocs);
+    setCustomNameError(error);
+    return error === null;
+  };
+  
+  const addCustomDocument = () => {
+    if (!validateCustomName(customDocName)) return;
+    
+    const docId = makeCustomDocId(customDocName);
+    setRequirements(prev => ({ ...prev, [docId]: customDocRequirement }));
+    
+    // Reset form
+    setCustomDocName("");
+    setCustomDocRequirement("required");
+    setShowCustomForm(false);
+    setCustomNameError(null);
+  };
+  
+  const removeCustomDocument = (docId: string) => {
+    const { [docId]: removed, ...rest } = requirements;
+    setRequirements(rest);
+  };
 
   // Static package options
   const staticPackages = [
@@ -371,11 +410,77 @@ export function NewSubcontractorWizard({
               </div>
             </div>
 
+            {/* Custom Document Form */}
+            <div className="mb-4">
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowCustomForm(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Eigenes Dokument hinzufügen
+              </Button>
+            </div>
+
+            {showCustomForm && (
+              <div className="mb-4 p-3 border rounded-lg bg-muted/50">
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-sm">Dokumentname</Label>
+                    <Input
+                      value={customDocName}
+                      onChange={(e) => {
+                        setCustomDocName(e.target.value);
+                        if (customNameError) validateCustomName(e.target.value);
+                      }}
+                      placeholder="z.B. Bankbestätigung"
+                      className={`text-sm ${customNameError ? "border-red-500" : ""}`}
+                      size={undefined}
+                    />
+                    {customNameError && (
+                      <p className="text-xs text-red-500 mt-1">{customNameError}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-sm">Anforderung</Label>
+                    <RequirementSelector 
+                      compact
+                      value={customDocRequirement} 
+                      onChange={setCustomDocRequirement} 
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={addCustomDocument}
+                      disabled={!customDocName.trim() || !!customNameError}
+                    >
+                      Hinzufügen
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setShowCustomForm(false);
+                        setCustomDocName("");
+                        setCustomNameError(null);
+                      }}
+                    >
+                      Abbrechen
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Document Requirements Matrix */}
             <div className="mt-4 border rounded-xl">
               <div className="grid grid-cols-2 px-3 py-2 text-xs uppercase text-muted-foreground">
                 <div>Dokument</div><div>Anforderung</div>
               </div>
+              
+              {/* Standard Documents */}
               {DOCUMENT_TYPES.map(dt => (
                 <div key={dt.id} className="grid grid-cols-2 items-center px-3 py-2 border-t">
                   <div className="text-sm">{dt.label}</div>
@@ -388,6 +493,34 @@ export function NewSubcontractorWizard({
                   </div>
                 </div>
               ))}
+              
+              {/* Custom Documents */}
+              {Object.entries(requirements).filter(([docId]) => isCustomDoc(docId)).map(([docId, requirement]) => {
+                const docName = displayName(docId, '', docId.replace('custom:', ''));
+                
+                return (
+                  <div key={docId} className="grid grid-cols-2 items-center px-3 py-2 border-t bg-blue-50/50">
+                    <div className="text-sm flex items-center gap-2">
+                      <span>{docName}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCustomDocument(docId)}
+                        className="h-5 w-5 p-0 hover:bg-red-100"
+                      >
+                        <X className="h-3 w-3 text-red-500" />
+                      </Button>
+                    </div>
+                    <div className="justify-self-end">
+                      <RequirementSelector
+                        compact
+                        value={requirement}
+                        onChange={(v) => setRequirements(s => ({ ...s, [docId]: v }))}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Send Invitation Option */}

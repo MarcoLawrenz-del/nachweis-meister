@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getContractorMeta, getDocs } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
+import { displayName } from "@/utils/customDocs";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -69,11 +70,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   // Filter documents
   const filteredDocs = docs.filter(doc => {
     const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-    if (!docType) return false;
+    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
     
     // Search filter
-    const matchesSearch = docType.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         docType.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = docName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.documentTypeId.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Status filter
     const matchesStatus = statusFilter === 'all' || doc.status === statusFilter;
@@ -99,9 +100,12 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       validUntil
     });
     
+    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+    const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
+    
     toast({
       title: "Dokument akzeptiert",
-      description: `${docType.label} wurde erfolgreich akzeptiert.`,
+      description: `${docName} wurde erfolgreich akzeptiert.`,
     });
   };
 
@@ -109,7 +113,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const handleReject = async () => {
     if (!showRejectDialog) return;
     
-    const docType = DOCUMENT_TYPES.find(t => t.id === showRejectDialog.documentTypeId);
+    const rejectDocType = DOCUMENT_TYPES.find(t => t.id === showRejectDialog.documentTypeId);
+    const rejectedDoc = getDocs(contractorId).find(d => d.documentTypeId === showRejectDialog.documentTypeId);
+    const rejectDocName = displayName(showRejectDialog.documentTypeId, rejectDocType?.label || '', rejectedDoc?.customName);
     
     await setDocumentStatus({
       contractorId,
@@ -127,7 +133,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     
     toast({
       title: "Ablehnung gesendet",
-      description: `Die Ablehnung für ${docType?.label || 'das Dokument'} wurde gesendet.`,
+      description: `Die Ablehnung für ${rejectDocName} wurde gesendet.`,
     });
     
     setShowRejectDialog(null);
@@ -152,7 +158,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       .filter(d => d.requirement === 'required' && ['missing', 'rejected', 'expired'].includes(d.status))
       .map(d => {
         const docType = DOCUMENT_TYPES.find(t => t.id === d.documentTypeId);
-        return docType?.label || d.documentTypeId;
+        return displayName(d.documentTypeId, docType?.label || '', d.customName);
       });
     
     await sendReminderMissing({ 
@@ -296,7 +302,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
             <TableBody>
               {filteredDocs.map((doc) => {
                 const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-                if (!docType) return null;
+                const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
+                
+                if (!docType && !doc.customName) return null;
                 
                 const statusConfig = getStatusConfig(doc.status);
                 const StatusIcon = statusConfig.icon;
@@ -310,9 +318,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                   <TableRow key={doc.documentTypeId}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{docType.label}</div>
+                        <div className="font-medium">{docName}</div>
                         <div className="text-sm text-muted-foreground">
-                          {docType.id}
+                          {doc.documentTypeId}
                         </div>
                       </div>
                     </TableCell>
@@ -374,8 +382,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                               variant="destructive"
                               size="sm"
                               onClick={() => {
-                                const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-                                const defaultReason = `Das eingereichte ${docType?.label || 'Dokument'} entspricht nicht den Anforderungen. Bitte reichen Sie ein korrigiertes Dokument ein.`;
+                                const defaultReason = `Das eingereichte ${docName} entspricht nicht den Anforderungen. Bitte reichen Sie ein korrigiertes Dokument ein.`;
                                 setRejectReason(defaultReason);
                                 setRejectMessage('');
                                 setShowRejectDialog({ documentTypeId: doc.documentTypeId });
