@@ -3,12 +3,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getSettings, updateSettings, subscribeToSettings } from '@/services/settings.store';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Bell, Info, Mail } from 'lucide-react';
 
 export default function Notifications() {
-  const [settings, setSettings] = useState(getSettings);
+  const { user } = useAuthContext();
+  const [settings, setSettings] = useState(() => getSettings());
   const { toast } = useToast();
+  
+  // Guard: return loading if no user context yet
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const unsubscribe = subscribeToSettings(() => {

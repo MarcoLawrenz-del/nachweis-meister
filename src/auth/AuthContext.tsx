@@ -50,8 +50,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.removeItem(LS_KEY);
-    setUser(null);
+    try {
+      localStorage.removeItem(LS_KEY);
+      setUser(null);
+    } catch (error) {
+      console.warn('Logout cleanup failed:', error);
+      setUser(null);
+    }
   };
 
   const isAuthenticated = useMemo(() => user !== null, [user]);

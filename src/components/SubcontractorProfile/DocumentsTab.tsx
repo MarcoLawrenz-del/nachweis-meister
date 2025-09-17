@@ -42,6 +42,7 @@ import { getContractorMeta, getDocs, setContractorMeta, markUploaded } from "@/s
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
+import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -64,6 +65,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const [rejectReason, setRejectReason] = useState('');
   const [rejectMessage, setRejectMessage] = useState('');
   const [validityDates, setValidityDates] = useState<Record<string, string>>({});
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
   const { toast } = useToast();
   
   // Load docs from store
@@ -502,8 +504,16 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                     
                      <TableCell>
                        <div className="flex gap-2">
-                         {/* Upload button for admin */}
-                         {['missing', 'rejected', 'expired', 'submitted'].includes(doc.status) && (
+                         {doc.fileUrl ? (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => setPreviewDoc(doc)}
+                           >
+                             <Eye className="w-4 h-4 mr-1" />
+                             Ansehen
+                           </Button>
+                         ) : (
                            <div className="relative">
                              <input
                                type="file"
@@ -513,7 +523,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                                  const file = e.target.files?.[0];
                                  if (file) {
                                    handleAdminFileUpload(doc, file);
-                                   e.target.value = ''; // Reset input
+                                   e.target.value = '';
                                  }
                                }}
                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

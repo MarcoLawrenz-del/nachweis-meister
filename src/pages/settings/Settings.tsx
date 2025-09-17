@@ -1,93 +1,73 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Bell, Users, Settings as SettingsIcon } from 'lucide-react';
+import { SettingsErrorBoundary } from '@/components/SettingsErrorBoundary';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { TeamGuard } from '@/components/TeamGuard';
+import { canManageTeam } from '@/services/team.store';
 import Team from './Team';
 import Profile from './Profile';
 import Notifications from './Notifications';
 import System from './System';
-import { 
-  Settings as SettingsIcon, 
-  User, 
-  Users, 
-  Mail, 
-  Bell,
-  Info,
-  Shield
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { getRoleDisplayName, canManageTeam } from '@/services/team.store';
 
 export default function Settings() {
   const { user, userRole } = useAuthContext();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('profile');
-
+  const [currentTab, setCurrentTab] = useState('profile');
+  
   const canAccessTeam = canManageTeam(userRole);
 
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <SettingsErrorBoundary>
+      <div className="space-y-8">
+        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Einstellungen</h1>
           <p className="text-muted-foreground">
-            Verwalten Sie Ihre Konto- und Systemeinstellungen
+            Verwalten Sie Ihr Konto und Ihre Präferenzen
           </p>
         </div>
-      </div>
 
-      {/* Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Profil
-          </TabsTrigger>
-          <TabsTrigger 
-            value="team" 
-            className="flex items-center gap-2"
-            disabled={!canAccessTeam}
-          >
-            <Users className="w-4 h-4" />
-            Team & Rollen
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            Benachrichtigungen
-          </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
-            <SettingsIcon className="w-4 h-4" />
-            System
-          </TabsTrigger>
-        </TabsList>
+        {/* Settings Navigation */}
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Profil</span>
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-2" disabled={!canAccessTeam}>
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Team</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              <span className="hidden sm:inline">Benachrichtigungen</span>
+            </TabsTrigger>
+            <TabsTrigger value="system" className="flex items-center gap-2">
+              <SettingsIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">System</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-6">
-          <Profile />
-        </TabsContent>
+          <TabsContent value="profile" className="space-y-6">
+            <Profile />
+          </TabsContent>
 
-        {/* Team Tab */}
-        <TabsContent value="team" className="space-y-6">
-          <TeamGuard>
+          <TabsContent value="team" className="space-y-6">
             <Team />
-          </TeamGuard>
-        </TabsContent>
+          </TabsContent>
 
-        {/* Notifications Tab */}
-        <TabsContent value="notifications" className="space-y-6">
-          <Notifications />
-        </TabsContent>
+          <TabsContent value="notifications" className="space-y-6">
+            <Notifications />
+          </TabsContent>
 
-        {/* System Tab */}
-        <TabsContent value="system" className="space-y-6">
-          <System />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="system" className="space-y-6">
+            <System />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </SettingsErrorBoundary>
   );
 }

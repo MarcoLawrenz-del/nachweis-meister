@@ -21,9 +21,12 @@ const LS_KEY = "subfix.team.v1";
 function load(): TeamMember[] {
   if (typeof window === "undefined") return [];
   try {
-    const s = localStorage.getItem(LS_KEY);
-    return s ? JSON.parse(s) : [];
-  } catch {
+    const stored = localStorage.getItem(LS_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
+    // Defensive: ensure we return an array
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("Failed to load team data:", error);
     return [];
   }
 }

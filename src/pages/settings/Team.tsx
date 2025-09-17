@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Users, Plus, Edit, Trash2, Shield, Crown, User, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { 
   listTeamMembers, 
   createTeamMember, 
@@ -25,6 +26,7 @@ import {
 } from '@/services/team.store';
 
 export default function Team() {
+  const { user } = useAuthContext();
   const { toast } = useToast();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
@@ -33,6 +35,15 @@ export default function Team() {
   const [inviteData, setInviteData] = useState({ name: '', email: '', role: 'staff' as UserRole });
   
   const currentUserRole = getCurrentUserRole();
+  
+  // Guard: return loading if no user context yet
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const loadMembers = () => setMembers(listTeamMembers());

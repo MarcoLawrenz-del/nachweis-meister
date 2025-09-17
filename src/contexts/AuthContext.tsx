@@ -4,6 +4,8 @@ import { getCurrentUserRole, type UserRole } from '@/services/team.store';
 
 interface AuthContextType extends ReturnType<typeof useAuth> {
   userRole: UserRole;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 // AuthContext for managing authentication state
@@ -15,7 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const contextValue: AuthContextType = {
     ...auth,
-    userRole
+    userRole,
+    logout: auth.signOut,
+    isAuthenticated: !!auth.user
   };
   
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

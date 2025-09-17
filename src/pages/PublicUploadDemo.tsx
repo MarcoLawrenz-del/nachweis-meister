@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, FileCheck, AlertTriangle } from "lucide-react";
+import { Upload, FileCheck, AlertTriangle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
 
 interface DocumentUpload {
   id: string;
@@ -25,6 +26,7 @@ export default function PublicUploadDemo() {
   const contractorId = searchParams.get("cid");
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -195,9 +197,28 @@ export default function PublicUploadDemo() {
                     </span>
                   </div>
                   {doc.uploaded && (
-                    <div className="flex items-center gap-1 text-green-600">
-                      <FileCheck className="h-4 w-4" />
-                      <span className="text-sm">Hochgeladen</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-green-600">
+                        <FileCheck className="h-4 w-4" />
+                        <span className="text-sm">Eingereicht</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Find the actual document data for preview
+                          if (contractorId) {
+                            const existingDocs = getDocs(contractorId);
+                            const docData = existingDocs.find(d => d.documentTypeId === doc.id);
+                            if (docData?.fileUrl) {
+                              setPreviewDoc(docData);
+                            }
+                          }
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ansehen
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -239,6 +260,13 @@ export default function PublicUploadDemo() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Document Preview Dialog */}
+        <DocumentPreviewDialog 
+          open={!!previewDoc} 
+          onOpenChange={(open) => !open && setPreviewDoc(null)}
+          doc={previewDoc}
+        />
       </div>
     </div>
   );

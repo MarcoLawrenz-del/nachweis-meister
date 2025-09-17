@@ -32,7 +32,17 @@ function loadSettings(): Settings {
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return { ...defaultSettings, ...parsed };
+      // Defensive merge with validation
+      return {
+        notifications: {
+          remindersEnabled: parsed.notifications?.remindersEnabled ?? defaultSettings.notifications.remindersEnabled,
+          statusUpdatesEnabled: parsed.notifications?.statusUpdatesEnabled ?? defaultSettings.notifications.statusUpdatesEnabled,
+        },
+        system: {
+          locale: parsed.system?.locale ?? defaultSettings.system.locale,
+          demoMode: parsed.system?.demoMode ?? defaultSettings.system.demoMode,
+        }
+      };
     }
   } catch (error) {
     console.warn('Failed to load settings:', error);
