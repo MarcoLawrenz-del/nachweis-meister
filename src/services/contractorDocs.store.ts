@@ -49,38 +49,20 @@ export function subscribe(id: string, fn: () => void) {
   return () => { s.delete(fn); }; 
 }
 
-// Meta data store for contractor metadata
-const metaDb = new Map<string, any>();
-const LSMETA_KEY = (id: string) => `contractorMeta:${id}`;
-
-function loadMeta(id: string) { 
-  if (typeof window === "undefined") return {}; 
-  try { 
-    const s = localStorage.getItem(LSMETA_KEY(id)); 
-    return s ? JSON.parse(s) : {}; 
-  } catch { 
-    return {}; 
-  } 
+// Meta
+type ContractorMeta = { lastRequestedAt?: string };
+const metaDb = new Map<string, ContractorMeta>();
+const META_KEY = (id:string)=>`contractorDocsMeta:${id}`;
+export function getContractorMeta(id:string): ContractorMeta {
+  if (!metaDb.get(id)) {
+    const raw = localStorage.getItem(META_KEY(id));
+    metaDb.set(id, raw ? JSON.parse(raw) : {});
+  }
+  return metaDb.get(id)!;
 }
-
-function saveMeta(id: string, meta: any) { 
-  if (typeof window === "undefined") return; 
-  try { 
-    localStorage.setItem(LSMETA_KEY(id), JSON.stringify(meta)); 
-  } catch {} 
-}
-
-export function getContractorMeta(id: string) { 
-  const m = metaDb.get(id); 
-  if (m) return m; 
-  const fromLS = loadMeta(id); 
-  metaDb.set(id, fromLS); 
-  return fromLS; 
-}
-
-export function setContractorMeta(id: string, meta: any) {
-  const current = getContractorMeta(id);
-  const updated = { ...current, ...meta };
-  metaDb.set(id, updated); 
-  saveMeta(id, updated); 
+export function setContractorMeta(id:string, m:ContractorMeta){
+  const cur = { ...getContractorMeta(id), ...m };
+  metaDb.set(id, cur);
+  localStorage.setItem(META_KEY(id), JSON.stringify(cur));
+  listeners.get(id)?.forEach(fn=>fn());
 }

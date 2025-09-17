@@ -33,6 +33,9 @@ import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useToast } from "@/hooks/use-toast";
+import { getContractorMeta } from "@/services/contractorDocs.store";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -59,6 +62,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   
   // Load docs from store
   const docs = useContractorDocuments(contractorId);
+  
+  // Load meta data
+  const meta = getContractorMeta(contractorId);
 
   // Filter documents
   const filteredDocs = docs.filter(doc => {
@@ -258,6 +264,14 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               <FileText className="h-5 w-5" />
               Dokumente ({filteredDocs.length})
             </div>
+            {meta.lastRequestedAt && (
+              <Badge variant="secondary" className="text-xs">
+                Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), { 
+                  addSuffix: true, 
+                  locale: de 
+                })}
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
