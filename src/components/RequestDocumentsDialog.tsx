@@ -152,7 +152,7 @@ export default function RequestDocumentsDialog({
     };
     
     toast({ 
-      title: "Anforderungen versendet", 
+      title: "Dokumente angefordert", 
       description: `${reqCount.required} Pflicht / ${reqCount.optional} Optional` 
     });
     

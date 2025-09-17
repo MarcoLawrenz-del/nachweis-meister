@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -217,9 +218,10 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <Card>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Filters */}
+        <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
@@ -356,12 +358,29 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                     </TableCell>
                     
                     <TableCell>
-                      <Input
-                        type="date"
-                        value={validityDates[doc.documentTypeId] || (doc.validUntil ? doc.validUntil.split('T')[0] : '')}
-                        onChange={(e) => setValidityDates(prev => ({ ...prev, [doc.documentTypeId]: e.target.value }))}
-                        className="w-40"
-                      />
+                      {doc.status === "accepted" ? (
+                        <Input
+                          type="date"
+                          value={validityDates[doc.documentTypeId] || (doc.validUntil ? doc.validUntil.split('T')[0] : '')}
+                          onChange={(e) => setValidityDates(prev => ({ ...prev, [doc.documentTypeId]: e.target.value }))}
+                          className="w-40"
+                        />
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              type="date"
+                              value={validityDates[doc.documentTypeId] || (doc.validUntil ? doc.validUntil.split('T')[0] : '')}
+                              onChange={(e) => setValidityDates(prev => ({ ...prev, [doc.documentTypeId]: e.target.value }))}
+                              className="w-40 bg-muted cursor-not-allowed"
+                              disabled
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Datum erst nach Annahme setzbar</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </TableCell>
                     
                     <TableCell>
@@ -484,6 +503,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
           </DialogContent>
         </Dialog>
       )}
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
