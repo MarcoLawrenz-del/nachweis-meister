@@ -15,7 +15,11 @@ export default function QARunner(){
       setLogs(l => [...l, `Start QA for ${contractorId}`]);
       await seedDocumentsForContractor(contractorId, pkg);
       setLogs(l => [...l, `[mock] seeded docs for ${contractorId} (${pkg})`]);
-      await sendInvitation({ contractorId, email: "qa@example.com" });
+      await sendInvitation({ 
+        contractorId, 
+        email: "qa@example.com", 
+        message: "QA test invitation" 
+      });
       setLogs(l => [...l, `[stub] sendInvitation { contractorId: ${contractorId}, email: qa@example.com }`]);
       await exportContractorBundle({ contractorName, documents: [] });
       setLogs(l => [...l, `Export triggered: ZIP with deckblatt.pdf for ${contractorName}`]);

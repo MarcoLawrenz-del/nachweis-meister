@@ -33,7 +33,7 @@ import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta } from "@/services/contractorDocs.store";
+import { getContractorMeta, getDocs } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -146,16 +146,24 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     // Get email from profile
     const contractorEmail = profile?.contact_email;
     
+    // Find missing required docs for this contractor
+    const allDocs = getDocs(contractorId);
+    const missingDocs = allDocs
+      .filter(d => d.requirement === 'required' && ['missing', 'rejected', 'expired'].includes(d.status))
+      .map(d => {
+        const docType = DOCUMENT_TYPES.find(t => t.id === d.documentTypeId);
+        return docType?.label || d.documentTypeId;
+      });
+    
     await sendReminderMissing({ 
       contractorId, 
-      documentTypeId: doc.documentTypeId, 
-      email: contractorEmail ?? "" 
+      email: contractorEmail ?? "",
+      missingDocs
     });
     
-    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
     toast({
-      title: "Erinnerung gesendet",
-      description: docType?.label || "Dokument"
+      title: "Erinnerung versendet",
+      description: `${missingDocs.length} Dokument(e) angefordert`
     });
   };
 

@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
 import { getDocs, setDocs, setContractorMeta } from "@/services/contractorDocs.store";
+import { getContractor } from "@/services/contractors";
 import type { ContractorDocument, Requirement } from "@/services/contractors";
-import { sendInvitation, sendReminderMissing } from "@/services/email";
+import { sendInvitation } from "@/services/email";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,10 @@ export default function RequestDocumentsDialog({
     const cur = getDocs(contractorId);
     const next: ContractorDocument[] = [];
     
+    // Determine which documents are becoming required/optional  
+    const becameRequired: string[] = [];
+    const becameOptional: string[] = [];
+    
     for (const dt of DOCUMENT_TYPES) {
       const r = reqs[dt.id];
       const existing = cur.find(c => c.documentTypeId === dt.id);
@@ -37,9 +42,20 @@ export default function RequestDocumentsDialog({
         continue; 
       }
       
+      // Check if requirement changed to required or optional
       if (existing) {
+        if (existing.requirement === "hidden" && r === "required") {
+          becameRequired.push(dt.label);
+        } else if (existing.requirement === "hidden" && r === "optional") {
+          becameOptional.push(dt.label);
+        } else if (existing.requirement === "optional" && r === "required") {
+          becameRequired.push(dt.label);
+        }
         next.push({ ...existing, requirement: r, status: existing.status });
       } else {
+        if (r === "required") becameRequired.push(dt.label);
+        if (r === "optional") becameOptional.push(dt.label);
+        
         next.push({ 
           contractorId, 
           documentTypeId: dt.id, 
@@ -70,17 +86,27 @@ export default function RequestDocumentsDialog({
     
     // Send invitation if requested
     if (sendNow) {
-      if (contractorEmail) {
+      // Get contractor email from store
+      const contractor = getContractor(contractorId);
+      const email = contractor?.email || contractorEmail;
+      
+      if (email) {
         const link = `${window.location.origin}/upload?cid=${contractorId}`;
-        const personalizedMessage = message.replace("{{magic_link}}", link).replace("{{name}}", "");
+        const requestedDocs = [...becameRequired, ...becameOptional];
+        const personalizedMessage = message
+          .replace("{{magic_link}}", link)
+          .replace("{{name}}", contractor?.company_name || "");
+          
         await sendInvitation({ 
           contractorId, 
-          email: contractorEmail, 
-          message: personalizedMessage 
+          email: email, 
+          message: personalizedMessage,
+          contractorName: contractor?.company_name
         });
+        
         toast({ 
           title: "Einladung gesendet", 
-          description: contractorEmail 
+          description: email 
         });
       } else {
         console.warn("Cannot send invitation: contractor email not available");

@@ -69,8 +69,9 @@ export default function ReminderControls({
       if (action === 'immediate') {
       // Send immediate reminder via stub
       await sendReminderMissing({
-        requirementId,
-        subcontractorId
+        contractorId: subcontractorId,
+        email: "", // Email will be fetched in the stub
+        missingDocs: [requirementId]
       });
 
         toast({

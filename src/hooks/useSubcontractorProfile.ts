@@ -267,8 +267,9 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
   const sendReminder = async (requirementIds?: string[]) => {
     try {
       await sendReminderMissing({
-        subcontractor_id: subcontractorId,
-        requirement_ids: requirementIds
+        contractorId: subcontractorId,
+        email: "", // Email will be fetched in the stub  
+        missingDocs: requirementIds || []
       });
 
       await fetchEmailLogs(); // Refresh logs

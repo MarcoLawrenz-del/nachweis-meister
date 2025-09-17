@@ -81,8 +81,7 @@ Mit freundlichen Grüßen`
         message: inviteData.message.replace('{UPLOAD_LINK}', 
           `${window.location.origin}/upload/${token}`
         ),
-        subcontractorName,
-        projectName
+        contractorName: subcontractorName
       });
 
       toast({
