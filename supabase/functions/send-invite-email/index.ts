@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
+// Email configuration
+const EMAIL_CONFIG = {
+  invitations: {
+    from: 'invitations@subfix.de',
+    replyTo: 'support@subfix.de'
+  }
+} as const;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -57,8 +65,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('About to call resend.emails.send...');
     const emailResponse = await resend.emails.send({
-      from: "Nachweis-Meister <onboarding@resend.dev>",
+      from: EMAIL_CONFIG.invitations.from,
       to: [to],
+      reply_to: EMAIL_CONFIG.invitations.replyTo,
       subject: subject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

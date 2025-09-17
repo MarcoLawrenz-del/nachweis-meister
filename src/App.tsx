@@ -240,17 +240,12 @@ const App = () => (
                         </Suspense>
                       } />
                       
-                      {/* Public document upload (no auth required) */}
-                      <Route path="/public/upload/:token" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <PublicUpload />
-                        </Suspense>
-                      } />
-                      <Route path="/upload/:token" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <PublicUpload />
-                        </Suspense>
-                      } />
+                       {/* Public document upload (no auth required) */}
+                       <Route path="/upload/:token" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <PublicUpload />
+                         </Suspense>
+                       } />
                       
                       {/* Test route */}
                       <Route path="/test-upload" element={

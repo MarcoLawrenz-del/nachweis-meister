@@ -2,6 +2,14 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
 
+// Email configuration
+const EMAIL_CONFIG = {
+  reviews: {
+    from: 'reviews@subfix.de',
+    replyTo: 'support@subfix.de'
+  }
+} as const;
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
@@ -122,8 +130,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Document Review <noreply@resend.dev>",
+      from: EMAIL_CONFIG.reviews.from,
       to: [recipientEmail],
+      reply_to: EMAIL_CONFIG.reviews.replyTo,
       subject: subject,
       html: htmlContent,
     });

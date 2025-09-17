@@ -143,6 +143,54 @@ export const useReviews = () => {
     }
   };
 
+  const startReview = async (requirementId: string) => {
+    setIsLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('requirements')
+        .update({ 
+          status: 'in_review',
+          assigned_reviewer_id: user.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requirementId);
+
+      if (error) throw error;
+
+      // Create audit event
+      await supabase
+        .from('review_history')
+        .insert({
+          requirement_id: requirementId,
+          reviewer_id: user.id,
+          action: 'assigned',
+          comment: 'Review started'
+        });
+
+      toast({
+        title: "Prüfung gestartet",
+        description: "Das Dokument wurde zur Prüfung übernommen.",
+      });
+
+      return true;
+
+    } catch (error: any) {
+      console.error('Start review error:', error);
+      toast({
+        title: "Fehler",
+        description: "Die Prüfung konnte nicht gestartet werden.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const assignReviewer = async (requirementId: string, reviewerId: string) => {
     setIsLoading(true);
     
@@ -177,6 +225,7 @@ export const useReviews = () => {
 
   return {
     submitReview,
+    startReview,
     assignReviewer,
     isLoading,
   };
