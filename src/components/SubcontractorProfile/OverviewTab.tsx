@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   AlertTriangle, 
   Clock, 
@@ -31,6 +32,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { aggregateContractorStatus, type ContractorDocument } from "@/services/contractors";
 import { isExpiring } from "@/utils/validity";
+import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 
 interface OverviewTabProps {
   kpis: KPIData;
@@ -48,6 +50,7 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   const { projectId: urlProjectId, id: urlSubId } = useParams();
   const subId = urlSubId!;
   const wording = getWording('de');
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
 
   // Calculate KPIs from ContractorDocument[]
   const missing = docs.filter(d => d.requirement === "required" && ["missing", "rejected", "expired"].includes(d.status)).length;
@@ -124,16 +127,48 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
             Compliance-Status und nächste Schritte
           </p>
         </div>
-        {projectId && (
+        <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => navigate(ROUTES.subPackage(projectId ?? "demo-project", subId))}
+            size="sm"
+            onClick={() => setShowRequestDialog(true)}
             className="gap-2"
           >
-            <FileText className="h-4 w-4" />
-            {wording.overview.headerCta}
+            <Upload className="h-4 w-4" />
+            Dokumente anfordern
           </Button>
-        )}
+          {projectId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(ROUTES.subPackage(projectId ?? "demo-project", subId))}
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              {wording.overview.headerCta}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Aggregated Status */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Status:</span>
+          <Badge variant={
+            agg === "complete" ? "default" : 
+            agg === "attention" ? "secondary" : 
+            "destructive"
+          } className={
+            agg === "complete" ? "bg-green-100 text-green-800 border-green-200" :
+            agg === "attention" ? "bg-amber-100 text-amber-800 border-amber-200" :
+            "bg-red-100 text-red-800 border-red-200"
+          }>
+            {agg === "complete" ? "Vollständig" : 
+             agg === "attention" ? "Aufmerksamkeit" : 
+             "Fehlt"}
+          </Badge>
+        </div>
       </div>
 
       {/* Complete Banner */}
@@ -345,6 +380,18 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Request Documents Dialog */}
+      {showRequestDialog && (
+        <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
+          <DialogContent className="max-w-2xl">
+            <RequestDocumentsDialog
+              contractorId={subId}
+              onClose={() => setShowRequestDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
       )}
 
     </div>
