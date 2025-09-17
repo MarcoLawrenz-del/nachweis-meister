@@ -248,15 +248,6 @@ function PublicSubcontractors() {
     }
   };
 
-  // legacy removed
-      electrical: 'Elektro',
-      plumbing: 'Sanitär',
-      hvac: 'HLK',
-      other: 'Sonstige'
-    };
-    return <Badge variant="outline">{types[type] || type}</Badge>;
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

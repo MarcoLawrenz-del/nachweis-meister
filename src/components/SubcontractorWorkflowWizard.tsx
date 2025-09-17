@@ -135,7 +135,7 @@ export function SubcontractorWorkflowWizard({
                 .eq('project_sub.subcontractor_id', subcontractorId)
                 .eq('document_type.required_by_default', true);
 
-              const mandatoryDocCount = await getMandatoryDocumentCount(subcontractor.company_type);
+              const mandatoryDocCount = documents?.filter(d => d.document_type?.required_by_default).length || 0;
               const uploadedCount = documents?.filter(d => d.status !== 'missing').length || 0;
               completed = uploadedCount >= mandatoryDocCount;
               break;
