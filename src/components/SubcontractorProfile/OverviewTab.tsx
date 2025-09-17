@@ -3,51 +3,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   AlertTriangle, 
   Clock, 
   CheckCircle, 
   XCircle, 
-  Upload,
-  Eye,
-  RotateCcw,
-  FileText,
-  Calendar,
-  TrendingUp,
-  ChevronDown,
-  Settings,
-  User
+  Upload
 } from 'lucide-react';
-import { KPIData, RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
-import { RequirementStatus } from '@/types/compliance';
-import { StatusBadge } from '@/components/StatusBadge';
-import { WORDING } from '@/content/wording';
-import { getWording } from '@/lib/wording';
-import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
 import { useParams } from 'react-router-dom';
 import { aggregateContractorStatusById, type ContractorDocument } from "@/services/contractors";
-import { isExpiring } from "@/utils/validity";
+import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
+import { displayName } from "@/utils/customDocs";
 
 interface OverviewTabProps {
-  kpis: KPIData;
-  requirements: RequirementWithDocument[];
-  reviewHistory: any[];
   profile: any;
-  onActionClick: (action: string, requirementId?: string) => void;
-  onUpdateProfile: (updates: any) => Promise<boolean>;
   projectId?: string;
 }
 
-export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId }: OverviewTabProps) {
+export function OverviewTab({ profile, projectId }: OverviewTabProps) {
   const { id: urlSubId } = useParams();
   const subId = urlSubId!;
-  const wording = getWording('de');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   
   // Get docs from store (with safety fallback)
@@ -62,65 +40,37 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   const reviewing = counts.reviewing; 
   const expiring = counts.expiring;
   const valid = counts.valid;
-  const showComplete = hasRequired && status === "complete";
 
-  const getNextAction = (requirement: RequirementWithDocument) => {
-    switch (requirement.status) {
+  // Get next steps: first 3 required documents that need action (missing|rejected|expired)
+  const nextSteps = docs
+    .filter(doc => doc.requirement === "required" && 
+      ["missing", "rejected", "expired"].includes(doc.status))
+    .slice(0, 3)
+    .map(doc => {
+      const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
+      const docName = displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName, doc.label);
+      
+      return {
+        id: doc.documentTypeId,
+        name: docName,
+        status: doc.status,
+        doc
+      };
+    });
+
+  // Get status info for display
+  const getStatusInfo = (status: string) => {
+    switch (status) {
       case 'missing':
-        return {
-          actionLabel: 'Upload anfordern',
-          actionIcon: Upload,
-          variant: 'primary' as const,
-          color: 'text-blue-600'
-        };
-      case 'submitted':
-      case 'in_review':
-        return {
-          actionLabel: 'Prüfen',
-          actionIcon: Eye,
-          variant: 'outline' as const,
-          color: 'text-orange-600'
-        };
-      case 'expiring':
-        return {
-          actionLabel: 'Erneuern',
-          actionIcon: RotateCcw,
-          variant: 'outline' as const,
-          color: 'text-yellow-600'
-        };
-      case 'expired':
-        return {
-          actionLabel: 'Neu anfordern',
-          actionIcon: AlertTriangle,
-          variant: 'destructive' as const,
-          color: 'text-red-600'
-        };
+        return { label: 'Fehlend', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
       case 'rejected':
-        return {
-          actionLabel: 'Korrektur anfordern',
-          actionIcon: XCircle,
-          variant: 'outline' as const,
-          color: 'text-red-600'
-        };
+        return { label: 'Abgelehnt', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
+      case 'expired':
+        return { label: 'Abgelaufen', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
       default:
-        return {
-          actionLabel: 'Verwalten',
-          actionIcon: FileText,
-          variant: 'ghost' as const,
-          color: 'text-gray-600'
-        };
+        return { label: 'Unbekannt', variant: 'outline' as const, className: '' };
     }
   };
-
-  // Priority requirements (need immediate action)
-  const priorityRequirements = requirements
-    .filter(r => r.document_types.required_by_default && 
-      ['missing', 'expired', 'rejected', 'expiring'].includes(r.status))
-    .sort((a, b) => {
-      const priority = { expired: 1, missing: 2, rejected: 3, expiring: 4 };
-      return (priority[a.status as keyof typeof priority] || 5) - 
-             (priority[b.status as keyof typeof priority] || 5);
-    });
 
   return (
     <div className="space-y-6">
@@ -232,8 +182,8 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         </Card>
       </div>
 
-      {/* Next 3 Open Required Documents */}
-      {priorityRequirements.length > 0 && (
+      {/* Next Steps - Specific Missing Required Documents */}
+      {nextSteps.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -242,26 +192,33 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {priorityRequirements.slice(0, 3).map((requirement) => (
-              <div
-                key={requirement.id}
-                className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200"
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium">{requirement.document_types.name_de}</h3>
-                  <StatusBadge status={requirement.status} />
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowRequestDialog(true)}
-                  className="gap-2"
+            {nextSteps.map((step) => {
+              const statusInfo = getStatusInfo(step.status);
+              return (
+                <div
+                  key={step.id}
+                  className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200"
                 >
-                  <Upload className="h-4 w-4" />
-                  Anfordern
-                </Button>
-              </div>
-            ))}
+                  <div className="flex-1 flex items-center gap-3">
+                    <div>
+                      <h3 className="font-medium">{step.name}</h3>
+                      <Badge variant={statusInfo.variant} className={statusInfo.className}>
+                        {statusInfo.label}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowRequestDialog(true)}
+                    className="gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Anfordern
+                  </Button>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}

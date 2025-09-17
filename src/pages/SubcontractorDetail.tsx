@@ -98,24 +98,8 @@ export default function SubcontractorDetail() {
 
         <TabsContent value="overview">
           <OverviewTab 
-            kpis={kpis}
-            requirements={requirements}
-            reviewHistory={reviewHistory}
             profile={profile}
-            projectId="demo-project" // Placeholder project ID
-            onActionClick={(action, requirementId) => {
-              if (action === 'view_document' && requirementId) {
-                // Navigate to document detail if available
-                const requirement = requirements.find(r => r.id === requirementId);
-                if (requirement?.documents?.[0]) {
-                  navigate(`/documents/${requirement.documents[0].id}`);
-                }
-              } else if (action === 'review' && requirementId) {
-                // Navigate to requirement review
-                navigate(`/requirements/${requirementId}`);
-              }
-            }}
-            onUpdateProfile={updateProfile}
+            projectId="demo-project"
           />
         </TabsContent>
 
