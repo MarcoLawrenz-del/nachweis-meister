@@ -82,7 +82,7 @@ export function usePackages() {
     }
   };
 
-  // Get default package (STANDARD)
+  // Get default package - legacy removed, replaced with Standard
   const getDefaultPackage = () => {
     return packages.find(p => p.code === 'STANDARD') || packages[0];
   };

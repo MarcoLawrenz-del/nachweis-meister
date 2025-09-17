@@ -20,8 +20,6 @@ import {
   Package
 } from 'lucide-react';
 import { SubcontractorProfileData } from '@/hooks/useSubcontractorProfile';
-import { ComplianceFlags } from '@/components/ComplianceFlags';
-import { CompanyType } from '@/types/compliance';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -42,13 +40,12 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
     phone: profile.phone || '',
     address: profile.address || '',
     country_code: profile.country_code,
-    company_type: profile.company_type as CompanyType,
+    company_type: profile.company_type,
     notes: profile.notes || '',
     status: profile.status
   });
 
   const [isSaving, setIsSaving] = useState(false);
-  const [showComplianceSettings, setShowComplianceSettings] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -149,14 +146,13 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
               <Label htmlFor="company_type">Rechtsform *</Label>
               <Select 
                 value={formData.company_type} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, company_type: value as CompanyType }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, company_type: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="dienstleister">Dienstleister</SelectItem>
+                  <SelectItem value="unternehmen">Unternehmen</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -263,46 +259,6 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
           </div>
         </CardContent>
       </Card>
-
-      {/* Advanced Compliance Settings (Collapsible) */}
-      <Collapsible open={showComplianceSettings} onOpenChange={setShowComplianceSettings}>
-        <Card>
-          <CardHeader>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="w-full justify-between p-0 h-auto">
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Erweiterte Einstellungen (optional)
-                </CardTitle>
-                <ChevronDown className={`h-4 w-4 transition-transform ${showComplianceSettings ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent>
-              <Alert className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Hinweis:</strong> Diese Einstellungen sind für Sonderfälle gedacht. 
-                  In den meisten Fällen reicht die Auswahl über das Dokumentenpaket aus.
-                </AlertDescription>
-              </Alert>
-              
-              <ComplianceFlags
-                subcontractorId={profile.id}
-                currentFlags={{
-                  requires_employees: profile.requires_employees,
-                  has_non_eu_workers: profile.has_non_eu_workers,
-                  employees_not_employed_in_germany: profile.employees_not_employed_in_germany
-                }}
-                onFlagsUpdate={() => {
-                  // Flags update will trigger automatic requirement recalculation
-                }}
-              />
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
 
       {/* Notes */}
       <Card>

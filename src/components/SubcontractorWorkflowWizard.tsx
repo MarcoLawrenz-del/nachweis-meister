@@ -191,21 +191,7 @@ export function SubcontractorWorkflowWizard({
     }
   };
 
-  const getMandatoryDocumentCount = async (companyType: string): Promise<number> => {
-    const { data } = await supabase
-      .from('document_types')
-      .select('id')
-      .eq('required_by_default', true);
-
-    let count = data?.length || 0;
-    
-    // Adjust for company type (Einzelunternehmen has one optional document)
-    if (companyType === 'einzelunternehmen') {
-      count = Math.max(0, count - 1); // BG membership is optional
-    }
-
-    return count;
-  };
+  // legacy removed
 
   const activateSubcontractor = async () => {
     if (!workflow?.canActivate) return;

@@ -29,7 +29,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
-import { ComplianceFlags } from '@/components/ComplianceFlags';
 
 interface OverviewTabProps {
   kpis: KPIData;
@@ -386,48 +385,6 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         </Card>
       )}
 
-      {/* Advanced Compliance Settings (Collapsible) */}
-      <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Erweiterte Einstellungen
-                  <Badge variant="secondary" className="text-xs">Optional</Badge>
-                </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />
-              </CardTitle>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent>
-              <Alert className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Warnung:</strong> Diese Einstellungen sind nur für Sonderfälle gedacht. 
-                  Änderungen können zu unvollständigen Compliance-Prüfungen führen.
-                </AlertDescription>
-              </Alert>
-              
-              {profile && (
-                <ComplianceFlags
-                  subcontractorId={profile.id}
-                  currentFlags={{
-                    requires_employees: profile.requires_employees,
-                    has_non_eu_workers: profile.has_non_eu_workers,
-                    employees_not_employed_in_germany: profile.employees_not_employed_in_germany
-                  }}
-                  onFlagsUpdate={() => {
-                    // Flags update will trigger automatic requirement recalculation
-                  }}
-                />
-              )}
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
     </div>
   );
 }

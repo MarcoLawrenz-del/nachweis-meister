@@ -248,9 +248,7 @@ function PublicSubcontractors() {
     }
   };
 
-  const getCompanyTypeBadge = (type: string) => {
-    const types: Record<string, string> = {
-      general_contractor: 'Generalunternehmer',
+  // legacy removed
       electrical: 'Elektro',
       plumbing: 'Sanitär',
       hvac: 'HLK',
@@ -276,7 +274,9 @@ function PublicSubcontractors() {
                   <p className="text-muted-foreground">{contractor.contact_person}</p>
                 </div>
                 <div className="flex gap-2">
-                  {getCompanyTypeBadge(contractor.company_type)}
+                  <Badge variant="outline" className="text-xs">
+                    {contractor.company_type}
+                  </Badge>
                   {getComplianceBadge(contractor.compliance_status)}
                 </div>
               </div>

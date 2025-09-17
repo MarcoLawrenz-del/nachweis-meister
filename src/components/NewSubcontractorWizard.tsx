@@ -79,7 +79,7 @@ export function NewSubcontractorWizard({
     phone: '',
     address: '',
     country_code: 'DE',
-    company_type: 'standard',
+    company_type: 'unternehmen',
     notes: ''
   });
 
@@ -117,7 +117,7 @@ export function NewSubcontractorWizard({
         phone: '',
         address: '',
         country_code: 'DE',
-        company_type: 'standard',
+        company_type: 'unternehmen',
         notes: ''
       });
       setCurrentStep(1);
@@ -320,8 +320,7 @@ export function NewSubcontractorWizard({
                     <SelectValue placeholder="Unternehmensform wählen" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Standard</SelectItem>
-                    <SelectItem value="dienstleister">Dienstleister</SelectItem>
+                    <SelectItem value="unternehmen">Unternehmen</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

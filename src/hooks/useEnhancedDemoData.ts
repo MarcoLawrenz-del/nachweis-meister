@@ -18,7 +18,7 @@ const demoSubcontractors = [
     contact_email: 'info@mueller-bau.de',
     phone: '+49 30 123456',
     address: 'Baustraße 1, 10115 Berlin',
-    company_type: 'standard' as const,
+    company_type: 'unternehmen' as const,
     compliance_status: 'non_compliant' as const,
     status: 'inactive' as const, // INACTIVE
     notes: 'Spezialisiert auf Rohbau und Betonarbeiten. Fehlende Nachweise.',
@@ -42,7 +42,7 @@ const demoSubcontractors = [
     contact_email: 'kontakt@schmidt-elektro.de',
     phone: '+49 40 654321',
     address: 'Elektroweg 5, 20095 Hamburg',
-    company_type: 'standard' as const,
+    company_type: 'unternehmen' as const,
     compliance_status: 'compliant' as const,
     status: 'active' as const, // ACTIVE + COMPLIANT
     notes: 'Elektroinstallationen und Smart Home Systeme. Vollständig konform.',
@@ -66,7 +66,7 @@ const demoSubcontractors = [
     contact_email: 'info@kowalski-bau.pl',
     phone: '+48 22 123456',
     address: 'Budowlana 15, 00-001 Warszawa, Polen',
-    company_type: 'dienstleister' as const,
+    company_type: 'unternehmen' as const,
     compliance_status: 'expiring_soon' as const,
     status: 'active' as const, // ACTIVE + WITH POSTING (Entsendung)
     notes: 'Entsendungsbetrieb aus Polen. Specialisiert auf Maurerarbeiten.',
