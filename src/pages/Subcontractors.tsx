@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ComplianceStatusBadge, ComplianceIndicator } from '@/components/ComplianceStatusBadge';
 import { SimpleStatusBadge } from '@/components/StatusBadge';
@@ -16,22 +14,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NewSubcontractorWizard } from '@/components/NewSubcontractorWizard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
@@ -76,18 +59,8 @@ export default function Subcontractors() {
   const [filteredSubcontractors, setFilteredSubcontractors] = useState<Subcontractor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
-  const [newSubcontractor, setNewSubcontractor] = useState({
-    company_name: '',
-    contact_name: '',
-    contact_email: '',
-    phone: '',
-    address: '',
-    country_code: 'DE',
-    company_type: 'baubetrieb' as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
-    notes: ''
-  });
   const { profile } = useAppAuth();
   const { toast } = useToast();
   const { isDemo, demoSubcontractors } = useDemoData();
@@ -188,75 +161,18 @@ export default function Subcontractors() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
-
-    try {
-      const subData = {
-        tenant_id: profile.tenant_id || null,
-        company_name: newSubcontractor.company_name,
-        contact_name: newSubcontractor.contact_name || null,
-        contact_email: newSubcontractor.contact_email,
-        phone: newSubcontractor.phone || null,
-        address: newSubcontractor.address || null,
-        country_code: newSubcontractor.country_code,
-        company_type: newSubcontractor.company_type,
-        notes: newSubcontractor.notes || null
-      };
-
-      if (editingSubcontractor) {
-        const { error } = await supabase
-          .from('subcontractors')
-          .update(subData)
-          .eq('id', editingSubcontractor.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Nachunternehmer aktualisiert",
-          description: `${newSubcontractor.company_name} wurde erfolgreich aktualisiert.`
-        });
-      } else {
-        const { error } = await supabase
-          .from('subcontractors')
-          .insert(subData);
-
-        if (error) throw error;
-
-        toast({
-          title: "Nachunternehmer erstellt",
-          description: `${newSubcontractor.company_name} wurde erfolgreich erstellt.`
-        });
-      }
-
-      resetForm();
-      fetchSubcontractors();
-    } catch (error: any) {
-      console.error('Error saving subcontractor:', error);
-      toast({
-        title: "Fehler",
-        description: error.message.includes('duplicate') 
-          ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
-          : "Nachunternehmer konnte nicht gespeichert werden.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleEdit = (subcontractor: Subcontractor) => {
     setEditingSubcontractor(subcontractor);
-    setNewSubcontractor({
-      company_name: subcontractor.company_name,
-      contact_name: subcontractor.contact_name || '',
-      contact_email: subcontractor.contact_email,
-      phone: subcontractor.phone || '',
-      address: subcontractor.address || '',
-      country_code: subcontractor.country_code,
-      company_type: subcontractor.company_type,
-      notes: subcontractor.notes || ''
-    });
-    setIsDialogOpen(true);
+    setIsWizardOpen(true);
+  };
+
+  const handleCloseWizard = () => {
+    setIsWizardOpen(false);
+    setEditingSubcontractor(null);
+  };
+
+  const handleWizardSuccess = () => {
+    fetchSubcontractors();
   };
 
   const handleDelete = async (subcontractor: Subcontractor) => {
@@ -287,18 +203,8 @@ export default function Subcontractors() {
   };
 
   const resetForm = () => {
-    setNewSubcontractor({
-      company_name: '',
-      contact_name: '',
-      contact_email: '',
-      phone: '',
-      address: '',
-      country_code: 'DE',
-      company_type: 'baubetrieb',
-      notes: ''
-    });
     setEditingSubcontractor(null);
-    setIsDialogOpen(false);
+    setIsWizardOpen(false);
   };
 
   if (loading) {
@@ -333,133 +239,17 @@ export default function Subcontractors() {
             Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
           </p>
         </div>
+        <Button onClick={() => setIsWizardOpen(true)} data-testid="btn-einladen">
+          <Plus className="mr-2 h-4 w-4" />
+          Neuer Nachunternehmer
+        </Button>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => resetForm()} data-testid="btn-einladen">
-              <Plus className="mr-2 h-4 w-4" />
-              Neuer Nachunternehmer
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>
-                  {editingSubcontractor ? 'Nachunternehmer bearbeiten' : 'Neuer Nachunternehmer'}
-                </DialogTitle>
-                <DialogDescription>
-                  Erfassen Sie die Kontaktdaten des Nachunternehmers.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="company_name">Firmenname *</Label>
-                  <Input
-                    id="company_name"
-                    placeholder="z.B. Elektro Müller GmbH"
-                    value={newSubcontractor.company_name}
-                    onChange={(e) => setNewSubcontractor(prev => ({ ...prev, company_name: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact_name">Ansprechpartner</Label>
-                  <Input
-                    id="contact_name"
-                    placeholder="z.B. Max Müller"
-                    value={newSubcontractor.contact_name}
-                    onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contact_name: e.target.value }))}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="contact_email">E-Mail *</Label>
-                    <Input
-                      id="contact_email"
-                      type="email"
-                      placeholder="max@firma.de"
-                      value={newSubcontractor.contact_email}
-                      onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contact_email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon</Label>
-                    <Input
-                      id="phone"
-                      placeholder="+49 30 12345678"
-                      value={newSubcontractor.phone}
-                      onChange={(e) => setNewSubcontractor(prev => ({ ...prev, phone: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country_code">Land</Label>
-                  <Select
-                    value={newSubcontractor.country_code}
-                    onValueChange={(value) => setNewSubcontractor(prev => ({ ...prev, country_code: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DE">Deutschland</SelectItem>
-                      <SelectItem value="AT">Österreich</SelectItem>
-                      <SelectItem value="CH">Schweiz</SelectItem>
-                      <SelectItem value="PL">Polen</SelectItem>
-                      <SelectItem value="CZ">Tschechien</SelectItem>
-                    </SelectContent>
-                  </Select>
-                 </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="company_type">Unternehmensform</Label>
-                   <Select
-                     value={newSubcontractor.company_type}
-                     onValueChange={(value: 'gbr' | 'baubetrieb' | 'einzelunternehmen') => 
-                       setNewSubcontractor(prev => ({ ...prev, company_type: value }))}
-                   >
-                     <SelectTrigger>
-                       <SelectValue placeholder="Unternehmensform wählen" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="gbr">Gesellschaft bürgerlichen Rechts (GbR)</SelectItem>
-                       <SelectItem value="baubetrieb">Baubetrieb / Dienstleister</SelectItem>
-                       <SelectItem value="einzelunternehmen">Einzelunternehmen (Solo)</SelectItem>
-                     </SelectContent>
-                   </Select>
-                 </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="address">Adresse</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Straße, PLZ Ort"
-                    value={newSubcontractor.address}
-                    onChange={(e) => setNewSubcontractor(prev => ({ ...prev, address: e.target.value }))}
-                    rows={2}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notizen</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Zusätzliche Informationen..."
-                    value={newSubcontractor.notes}
-                    onChange={(e) => setNewSubcontractor(prev => ({ ...prev, notes: e.target.value }))}
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  Abbrechen
-                </Button>
-                <Button type="submit">
-                  {editingSubcontractor ? 'Aktualisieren' : 'Erstellen'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <NewSubcontractorWizard
+          isOpen={isWizardOpen}
+          onClose={handleCloseWizard}
+          onSuccess={handleWizardSuccess}
+          editingSubcontractor={editingSubcontractor}
+        />
       </div>
 
       {/* Subcontractors Table */}
