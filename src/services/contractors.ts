@@ -14,23 +14,40 @@ export type ContractorDocument = {
 // Map der (vorläufig) konfigurierten Anforderungen je Paket:
 export type PackageProfile = Record<string, Requirement>;
 export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
-  Standard: { 
-    haftpflicht: "required", 
-    freistellungsbescheinigung: "required", 
-    gewerbeanmeldung: "optional" 
+  Standard: {
+    haftpflicht: "required",
+    freistellungsbescheinigung: "required",
+    gewerbeanmeldung: "optional",
+    unbedenklichkeitsbescheinigung: "optional",
+    handelsregisterauszug: "optional",
+    kk_unbedenklichkeit: "optional",
+    bg_mitgliedschaft: "optional",
+    avv: "optional",
+    a1_bescheinigung: "hidden",
   },
-  Minimal: { 
-    haftpflicht: "required", 
-    freistellungsbescheinigung: "required", 
-    gewerbeanmeldung: "hidden" 
+  Minimal: {
+    haftpflicht: "required",
+    freistellungsbescheinigung: "required",
+    gewerbeanmeldung: "hidden",
+    unbedenklichkeitsbescheinigung: "hidden",
+    handelsregisterauszug: "hidden",
+    kk_unbedenklichkeit: "hidden",
+    bg_mitgliedschaft: "hidden",
+    avv: "hidden",
+    a1_bescheinigung: "hidden",
   },
-  Erweitert: { 
-    haftpflicht: "required", 
-    freistellungsbescheinigung: "required", 
-    gewerbeanmeldung: "optional", 
-    unbedenklichkeitsbescheinigung: "optional" 
+  Erweitert: {
+    haftpflicht: "required",
+    freistellungsbescheinigung: "required",
+    gewerbeanmeldung: "optional",
+    unbedenklichkeitsbescheinigung: "optional",
+    handelsregisterauszug: "optional",
+    kk_unbedenklichkeit: "optional",
+    bg_mitgliedschaft: "optional",
+    avv: "optional",
+    a1_bescheinigung: "optional",
   },
-};
+} as const;
 
 import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
 
