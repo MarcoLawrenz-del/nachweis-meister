@@ -36,6 +36,11 @@ export default function Team() {
 
   useEffect(() => {
     const loadMembers = () => setMembers(listTeamMembers());
+    
+    // Ensure current user is in team
+    const { ensureCurrentUserInTeam } = require('@/services/team.store');
+    ensureCurrentUserInTeam();
+    
     loadMembers();
     return subscribe(loadMembers);
   }, []);
@@ -191,14 +196,17 @@ export default function Team() {
                   <TableRow key={member.id}>
                     <TableCell className="font-medium">{member.name}</TableCell>
                     <TableCell>{member.email}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getRoleIcon(member.role)}
-                        <Badge variant={getRoleBadgeVariant(member.role)}>
-                          {getRoleDisplayName(member.role)}
-                        </Badge>
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex items-center gap-2">
+                         {getRoleIcon(member.role)}
+                         <Badge variant={getRoleBadgeVariant(member.role)}>
+                           {getRoleDisplayName(member.role)}
+                         </Badge>
+                         {member.id === 'current-user' && (
+                           <Badge variant="outline" className="text-xs">Sie</Badge>
+                         )}
+                       </div>
+                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(member.created_at).toLocaleDateString('de-DE')}
                     </TableCell>
@@ -239,11 +247,11 @@ export default function Team() {
                               </TooltipContent>
                             </Tooltip>
                           </>
-                        )}
-                        {member.id === 'current-user' && (
-                          <Badge variant="outline" className="text-xs">Sie</Badge>
-                        )}
-                      </div>
+                         )}
+                         {member.id === 'current-user' && (
+                           <Badge variant="outline" className="text-xs">Sie</Badge>
+                         )}
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -53,13 +53,30 @@ function initializeTeam() {
     const defaultOwner: TeamMember = {
       id: 'current-user',
       name: 'Aktueller Benutzer',
-      email: 'owner@demo.local',
+      email: 'demo@subfix.app',
       role: 'owner',
       created_at: new Date().toISOString(),
       active: true
     };
     teamMap.set(defaultOwner.id, defaultOwner);
     saveFromMap();
+  }
+}
+
+// Auto-add current user if they don't exist in team
+export function ensureCurrentUserInTeam() {
+  const { getSession } = require('./auth'); // Dynamic import to avoid circular deps
+  const session = getSession();
+  
+  if (session) {
+    // Update the current user's info if they exist
+    const currentUser = teamMap.get('current-user');
+    if (currentUser && currentUser.email !== session.user.email) {
+      // Update existing user with real session data
+      currentUser.name = session.user.name || currentUser.name;
+      currentUser.email = session.user.email;
+      saveFromMap();
+    }
   }
 }
 

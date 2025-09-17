@@ -52,9 +52,11 @@ export function AppSidebar() {
     active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent hover:text-accent-foreground";
 
   const handleSignOut = async () => {
-    if (!isDemo) {
-      signOut();
-      navigate("/login");
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -102,10 +104,9 @@ export function AppSidebar() {
                     variant="ghost" 
                     onClick={handleSignOut}
                     className="justify-start w-full h-auto p-2 font-normal"
-                    disabled={isDemo}
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>{isDemo ? "Abmelden (Demo)" : "Abmelden"}</span>
+                    <span>Abmelden</span>
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
