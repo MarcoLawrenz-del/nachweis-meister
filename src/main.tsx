@@ -11,6 +11,13 @@ if (typeof window !== 'undefined' && new URLSearchParams(window.location.search)
   document.documentElement.setAttribute('screenshot', '1');
 }
 
+// Development regression checks
+if (import.meta.env.DEV) {
+  import('./dev/quickChecks').then(({ runQuickChecks }) => {
+    runQuickChecks();
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="subfix-ui-theme">
     <AuthProvider>
