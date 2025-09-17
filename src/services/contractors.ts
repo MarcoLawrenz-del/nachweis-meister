@@ -78,3 +78,18 @@ export async function setDocumentStatus(input: {
   console.info("[mock] setDocumentStatus", input);
   return input;
 }
+
+export function aggregateContractorStatus(docs: ContractorDocument[]): "complete" | "attention" | "missing" {
+  if (!docs || docs.length === 0) return "missing";
+  
+  const requiredDocs = docs.filter(doc => doc.requirement === "required");
+  if (requiredDocs.length === 0) return "complete";
+  
+  const acceptedCount = requiredDocs.filter(doc => doc.status === "accepted").length;
+  const attentionStatuses = ["submitted", "in_review", "expired"];
+  const hasAttention = requiredDocs.some(doc => attentionStatuses.includes(doc.status));
+  
+  if (acceptedCount === requiredDocs.length) return "complete";
+  if (hasAttention || acceptedCount > 0) return "attention";
+  return "missing";
+}

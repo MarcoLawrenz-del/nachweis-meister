@@ -34,8 +34,7 @@ import {
   CheckCircle,
   Eye
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { aggregateContractorStatus } from "@/services/contractors";
 
 interface Subcontractor {
   id: string;
@@ -311,8 +310,7 @@ export default function Subcontractors() {
                     <TableHead>Firma</TableHead>
                     <TableHead>Kontakt</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Projekte</TableHead>
-                    <TableHead>Compliance</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aktionen</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -351,20 +349,15 @@ export default function Subcontractors() {
                         <SimpleStatusBadge status={subcontractor.status} />
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {subcontractor.project_count} Projekt{subcontractor.project_count !== 1 ? 'e' : ''}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <ComplianceIndicator complianceStatus={subcontractor.compliance_status} />
-                          {subcontractor.critical_issues > 0 && (
-                            <Badge variant="destructive" className="text-xs">
-                              <AlertTriangle className="mr-1 h-3 w-3" />
-                              {subcontractor.critical_issues}
-                            </Badge>
-                          )}
-                        </div>
+                        {(() => {
+                          // Mock document data for aggregation - in real implementation this would come from API
+                          const docs = []; // ContractorDocument[] would be fetched for this contractor
+                          const agg = aggregateContractorStatus(docs);
+                          const chip = agg === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800"} :
+                                      agg === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800"} :
+                                                           {label: "Fehlt", class: "bg-red-100 text-red-800"};
+                          return <span className={"px-2 py-1 rounded-lg text-xs " + chip.class}>{chip.label}</span>;
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
