@@ -10,6 +10,7 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { ArrowLeft, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { usePackages, type DocumentSelection } from '@/hooks/usePackages';
 import { WORDING } from '@/content/wording';
+import { getWording } from '@/lib/wording';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,6 +37,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
   const [documentSelections, setDocumentSelections] = useState<DocumentSelection[]>([]);
   const [sending, setSending] = useState(false);
   const [locale] = useState<'de' | 'en'>('de'); // Default to German, can be made dynamic
+  const wording = getWording(locale);
 
   // Initialize with default package
   useEffect(() => {
@@ -258,9 +260,9 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
           <ArrowLeft className="mr-2 h-4 w-4" />
           Zurück
         </Button>
-        <h1 className="text-3xl font-bold">{WORDING.packageWizard[locale]}</h1>
+        <h1 className="text-3xl font-bold">{wording.package.title}</h1>
         <p className="text-muted-foreground mt-2">
-          {WORDING.fullControl[locale]}
+          {wording.package.ctaOpen}
         </p>
       </div>
 
@@ -268,7 +270,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
         {/* Package Selection */}
         <Card>
           <CardHeader>
-            <CardTitle>{WORDING.selectPackage[locale]}</CardTitle>
+            <CardTitle>Paket auswählen</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {packages.map((pkg) => (
@@ -303,7 +305,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
         {documentSelections.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>{WORDING.customizeDocuments[locale]}</CardTitle>
+              <CardTitle>Dokumente anpassen</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -318,7 +320,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
                         <span className="font-medium">Document Type {selection.document_type_id.slice(-4)}</span>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant={selection.is_required ? "default" : "secondary"}>
-                            {selection.is_required ? WORDING.documentRequired[locale] : WORDING.documentOptional[locale]}
+                            {selection.is_required ? 'Pflicht' : 'Optional'}
                           </Badge>
                         </div>
                       </div>
@@ -344,14 +346,14 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
       {selectedDocuments.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>{WORDING.invitationSummary[locale]}</CardTitle>
+            <CardTitle>Zusammenfassung</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               {requiredDocuments.length > 0 && (
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground mb-2">
-                    {WORDING.requiredDocuments[locale]} ({requiredDocuments.length})
+                    Pflichtdokumente ({requiredDocuments.length})
                   </h4>
                   <ul className="space-y-1">
                     {requiredDocuments.map((doc) => (
@@ -367,7 +369,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
               {optionalDocuments.length > 0 && (
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground mb-2">
-                    {WORDING.optionalDocuments[locale]} ({optionalDocuments.length})
+                    Optionale Dokumente ({optionalDocuments.length})
                   </h4>
                   <ul className="space-y-1">
                     {optionalDocuments.map((doc) => (
@@ -397,7 +399,7 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
-                    {WORDING.sendInvitation[locale]}
+                    Einladung senden
                   </>
                 )}
               </Button>

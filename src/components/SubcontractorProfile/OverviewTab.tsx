@@ -18,6 +18,7 @@ import { KPIData, RequirementWithDocument } from '@/hooks/useSubcontractorProfil
 import { RequirementStatus } from '@/types/compliance';
 import { StatusBadge } from '@/components/StatusBadge';
 import { WORDING } from '@/content/wording';
+import { getWording } from '@/lib/wording';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -32,6 +33,7 @@ interface OverviewTabProps {
 export function OverviewTab({ kpis, requirements, onActionClick, projectId }: OverviewTabProps) {
   const navigate = useNavigate();
   const { id: subId } = useParams<{ id: string }>();
+  const wording = getWording('de'); // Can be made dynamic based on user preference
 
   // Calculate KPIs from requirements instead of using hardcoded values
   const actualKpis = {
@@ -125,7 +127,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
             className="gap-2"
           >
             <FileText className="h-4 w-4" />
-            Dokumentenpaket wählen
+            {wording.overview.headerCta}
           </Button>
         )}
       </div>
@@ -139,7 +141,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
                 <XCircle className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Fehlend</p>
+                <p className="text-sm font-medium">{wording.overview.missing}</p>
                 <p className="text-2xl font-bold text-red-600">{actualKpis.missing}</p>
               </div>
             </div>
@@ -153,7 +155,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Läuft ab</p>
+                <p className="text-sm font-medium">{wording.overview.expiring}</p>
                 <p className="text-2xl font-bold text-yellow-600">{actualKpis.expiring + actualKpis.expired}</p>
               </div>
             </div>
@@ -167,7 +169,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">In Prüfung</p>
+                <p className="text-sm font-medium">{wording.overview.inReview}</p>
                 <p className="text-2xl font-bold text-blue-600">{actualKpis.in_review + actualKpis.submitted}</p>
               </div>
             </div>
@@ -181,7 +183,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">Gültig</p>
+                <p className="text-sm font-medium">{wording.overview.valid}</p>
                 <p className="text-2xl font-bold text-green-600">{actualKpis.valid}</p>
               </div>
             </div>
@@ -194,7 +196,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Compliance-Fortschritt
+              {wording.overview.progress}
           </CardTitle>
         </CardHeader>
         <CardContent>
