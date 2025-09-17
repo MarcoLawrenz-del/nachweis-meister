@@ -116,28 +116,6 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* Navigation Cards */}
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        <NavigationCard
-          title="Nachunternehmer"
-          description="Verwalten Sie alle Nachunternehmer und deren Dokumente"
-          icon={Users}
-          to="/app/subcontractors"
-          variant="primary"
-        />
-        <NavigationCard
-          title="Einstellungen"
-          description="Team, Benachrichtigungen und Systemeinstellungen"
-          icon={Settings}
-          to="/app/einstellungen"
-        />
-        <NavigationCard
-          title="Upload (Demo)"
-          description="Dokumente hochladen und verwalten"
-          icon={Upload}
-          to="/upload"
-        />
-      </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
