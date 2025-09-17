@@ -43,7 +43,8 @@ interface OverviewTabProps {
 
 export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId }: OverviewTabProps) {
   const navigate = useNavigate();
-  const { id: subId } = useParams<{ id: string }>();
+  const { projectId: urlProjectId, id: urlSubId } = useParams();
+  const subId = urlSubId!; // TODO: subId aus props falls verfügbar
   const wording = getWording('de'); // Can be made dynamic based on user preference
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
@@ -135,13 +136,14 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         {projectId && (
           <Button
             variant="outline"
-            onClick={() => navigate(ROUTES.subPackage(projectId, subId))}
+            onClick={() => navigate(ROUTES.subPackage(projectId ?? "demo-project", subId))}
             className="gap-2"
           >
             <FileText className="h-4 w-4" />
             {wording.overview.headerCta}
           </Button>
         )}
+        {/* TODO: projectId aus echtem Kontext befüllen, bis dahin Fallback "demo-project". */}
       </div>
 
       {/* KPI Overview */}
