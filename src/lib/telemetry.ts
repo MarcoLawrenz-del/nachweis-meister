@@ -122,17 +122,8 @@ class TelemetryService {
     }, userId, tenantId);
   }
 
-  trackComplianceFlagsChanged(
-    subcontractorId: string,
-    changes: Record<string, boolean>,
-    userId?: string,
-    tenantId?: string
-  ) {
-    this.track('ComplianceFlagsChanged', {
-      subcontractor_id: subcontractorId,
-      flag_changes: changes,
-    }, userId, tenantId);
-  }
+  // legacy removed
+  trackComplianceFlagsChanged() {}
 
   trackDocumentUploaded(
     requirementId: string,

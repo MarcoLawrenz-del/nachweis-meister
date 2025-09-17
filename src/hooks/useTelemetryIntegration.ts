@@ -65,9 +65,8 @@ export function useTelemetryIntegration() {
     trackSubcontractorDeactivated: (subcontractorId: string) => {
       telemetry.trackSubcontractorDeactivated(subcontractorId, profile?.id, profile?.tenant_id);
     },
-    trackComplianceFlagsChanged: (subcontractorId: string, changes: Record<string, boolean>) => {
-      telemetry.trackComplianceFlagsChanged(subcontractorId, changes, profile?.id, profile?.tenant_id);
-    },
+    // legacy removed
+    trackComplianceFlagsChanged: () => {},
     trackDocumentUploaded: (requirementId: string, documentId: string, fileSize: number, mimeType: string) => {
       telemetry.trackDocumentUploaded(requirementId, documentId, fileSize, mimeType, profile?.id, profile?.tenant_id);
     },
