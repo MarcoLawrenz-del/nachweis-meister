@@ -37,71 +37,33 @@ export function useRealtimeKPIs() {
       setIsLoading(true);
       setError(null);
 
-      // Manually calculate KPIs for now until types are updated
-      // Fetch subcontractors
-      const { data: subcontractors, error: subError } = await supabase
-        .from('subcontractors')
-        .select('id, status')
-        .eq('tenant_id', profile.tenant_id);
-
-      if (subError) throw subError;
-
-      // Fetch requirements with project filtering
-      const { data: requirements, error: reqError } = await supabase
-        .from('requirements')
-        .select(`
-          id, 
-          status,
-          project_subs!inner (
-            project_id,
-            projects!inner (
-              tenant_id
-            )
-          )
-        `)
-        .eq('project_subs.projects.tenant_id', profile.tenant_id);
-
-      if (reqError) throw reqError;
-
-      // Calculate KPIs
-      const totalSubs = subcontractors?.length || 0;
-      const activeSubs = subcontractors?.filter(s => s.status === 'active').length || 0;
-      const inactiveSubs = totalSubs - activeSubs;
-
-      const totalReqs = requirements?.length || 0;
-      const statusCounts = requirements?.reduce((acc, req) => {
-        acc[req.status] = (acc[req.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      const complianceRate = totalReqs > 0 
-        ? Math.round(((statusCounts.valid || 0) / totalReqs) * 100) 
-        : 0;
-
+      // For local auth, return default/empty KPIs to avoid Supabase calls
+      console.log('📊 useRealtimeKPIs: Using local auth - returning default values');
+      
       setKpis({
-        total_subcontractors: totalSubs,
-        active_subcontractors: activeSubs,
-        inactive_subcontractors: inactiveSubs,
-        total_requirements: totalReqs,
-        missing_requirements: statusCounts.missing || 0,
-        submitted_requirements: statusCounts.submitted || 0,
-        in_review_requirements: statusCounts.in_review || 0,
-        valid_requirements: statusCounts.valid || 0,
-        rejected_requirements: statusCounts.rejected || 0,
-        expiring_requirements: statusCounts.expiring || 0,
-        expired_requirements: statusCounts.expired || 0,
-        compliance_rate: complianceRate,
+        total_subcontractors: 0,
+        active_subcontractors: 0,
+        inactive_subcontractors: 0,
+        total_requirements: 0,
+        missing_requirements: 0,
+        submitted_requirements: 0,
+        in_review_requirements: 0,
+        valid_requirements: 0,
+        rejected_requirements: 0,
+        expiring_requirements: 0,
+        expired_requirements: 0,
+        compliance_rate: 0,
         last_updated: new Date().toISOString(),
         // Legacy support
-        total: totalSubs,
-        expired: statusCounts.expired || 0,
-        expiring: statusCounts.expiring || 0,
-        valid: statusCounts.valid || 0,
-        complianceRate: complianceRate,
+        total: 0,
+        expired: 0,
+        expiring: 0,
+        valid: 0,
+        complianceRate: 0,
       });
     } catch (err) {
-      console.error('Error fetching KPIs:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch KPIs');
+      console.error('Error setting default KPIs:', err);
+      setError(err instanceof Error ? err.message : 'Failed to set default KPIs');
     } finally {
       setIsLoading(false);
     }
@@ -113,62 +75,11 @@ export function useRealtimeKPIs() {
     // Initial fetch
     fetchKPIs();
 
-    // Set up real-time subscriptions for relevant tables
-    const channel = supabase
-      .channel('kpi-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'subcontractors',
-          filter: `tenant_id=eq.${profile.tenant_id}`
-        },
-        () => {
-          console.log('Subcontractors table changed, refreshing KPIs');
-          fetchKPIs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'requirements'
-        },
-        (payload) => {
-          console.log('Requirements table changed:', payload);
-          fetchKPIs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'documents'
-        },
-        () => {
-          console.log('Documents table changed, refreshing KPIs');
-          fetchKPIs();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'project_subs'
-        },
-        () => {
-          console.log('Project subcontractors changed, refreshing KPIs');
-          fetchKPIs();
-        }
-      )
-      .subscribe();
-
+    // For local auth, skip real-time subscriptions to avoid Supabase calls
+    console.log('📊 useRealtimeKPIs: Skipping real-time subscriptions for local auth');
+    
     return () => {
-      supabase.removeChannel(channel);
+      // No cleanup needed for local auth
     };
   }, [profile?.tenant_id]);
 
