@@ -152,6 +152,8 @@ export function NewSubcontractorWizard({
   const handleSubmit = async () => {
     if (!profile) return;
 
+    let subcontractorId: string | undefined;
+
     try {
       setSubmitting(true);
 
@@ -167,8 +169,6 @@ export function NewSubcontractorWizard({
         company_type: 'unternehmen',
         notes: subcontractorData.notes || null
       };
-
-      let subcontractorId: string;
 
       if (editingSubcontractor) {
         // Update existing subcontractor
@@ -202,33 +202,41 @@ export function NewSubcontractorWizard({
           // Seed documents for contractor
           await seedDocumentsForContractor(subcontractorId, selectedPackageId, requirements);
 
+          // First toast: Nachunternehmer erstellt
+          toast({
+            title: "Nachunternehmer erstellt",
+            description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
+          });
+
           // Send invitation if email is provided
           if (subcontractorData.contact_email && sendInvitationFlag) {
             await sendInvitation({ contractorId: subcontractorId, email: subcontractorData.contact_email, message });
+            // Second toast: Einladung gesendet
             toast({ 
               title: "Einladung gesendet", 
               description: subcontractorData.contact_email 
             });
           }
 
-          toast({
-            title: "Nachunternehmer erstellt",
-            description: `${subcontractorData.company_name} wurde erfolgreich erstellt${sendInvitationFlag ? ' und eingeladen' : ''}.`
-          });
-
+          // Navigate to contractor detail page
+          navigate(ROUTES.contractor(subcontractorId));
           onClose();
           if (onSuccess) onSuccess();
         }
 
     } catch (error: any) {
       console.error('Error creating subcontractor:', error);
-      toast({
-        title: "Fehler",
-        description: error.message.includes('duplicate') 
-          ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
-          : "Nachunternehmer konnte nicht gespeichert werden.",
-        variant: "destructive"
-      });
+      
+      // Don't show error toast if subcontractor was successfully created
+      if (typeof subcontractorId === 'undefined') {
+        toast({
+          title: "Fehler",
+          description: error.message.includes('duplicate') 
+            ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
+            : "Nachunternehmer konnte nicht gespeichert werden.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setSubmitting(false);
     }
