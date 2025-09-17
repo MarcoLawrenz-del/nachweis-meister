@@ -205,6 +205,10 @@ export function NewSubcontractorWizard({
           // Send invitation if email is provided
           if (subcontractorData.contact_email && sendInvitationFlag) {
             await sendInvitation({ contractorId: subcontractorId, email: subcontractorData.contact_email, message });
+            toast({ 
+              title: "Einladung gesendet", 
+              description: subcontractorData.contact_email 
+            });
           }
 
           toast({

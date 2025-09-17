@@ -28,6 +28,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { setDocumentStatus } from "@/services/contractors";
+import { sendReminderMissing } from "@/services/email";
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
@@ -136,9 +137,19 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       status: "missing"
     });
     
-    console.info("[stub] sendReminderMissing", { 
+    // Get email from profile
+    const contractorEmail = profile?.contact_email;
+    
+    await sendReminderMissing({ 
       contractorId, 
-      documentTypeId: doc.documentTypeId 
+      documentTypeId: doc.documentTypeId, 
+      email: contractorEmail ?? "" 
+    });
+    
+    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+    toast({
+      title: "Erinnerung gesendet",
+      description: docType?.label || "Dokument"
     });
   };
 

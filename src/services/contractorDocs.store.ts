@@ -48,3 +48,39 @@ export function subscribe(id: string, fn: () => void) {
   listeners.set(id, s); 
   return () => { s.delete(fn); }; 
 }
+
+// Meta data store for contractor metadata
+const metaDb = new Map<string, any>();
+const LSMETA_KEY = (id: string) => `contractorMeta:${id}`;
+
+function loadMeta(id: string) { 
+  if (typeof window === "undefined") return {}; 
+  try { 
+    const s = localStorage.getItem(LSMETA_KEY(id)); 
+    return s ? JSON.parse(s) : {}; 
+  } catch { 
+    return {}; 
+  } 
+}
+
+function saveMeta(id: string, meta: any) { 
+  if (typeof window === "undefined") return; 
+  try { 
+    localStorage.setItem(LSMETA_KEY(id), JSON.stringify(meta)); 
+  } catch {} 
+}
+
+export function getContractorMeta(id: string) { 
+  const m = metaDb.get(id); 
+  if (m) return m; 
+  const fromLS = loadMeta(id); 
+  metaDb.set(id, fromLS); 
+  return fromLS; 
+}
+
+export function setContractorMeta(id: string, meta: any) {
+  const current = getContractorMeta(id);
+  const updated = { ...current, ...meta };
+  metaDb.set(id, updated); 
+  saveMeta(id, updated); 
+}

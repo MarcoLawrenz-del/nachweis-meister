@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
-import { getDocs, setDocs } from "@/services/contractorDocs.store";
+import { getDocs, setDocs, setContractorMeta } from "@/services/contractorDocs.store";
 import type { ContractorDocument, Requirement } from "@/services/contractors";
-import { sendInvitation } from "@/services/email";
+import { sendInvitation, sendReminderMissing } from "@/services/email";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RequestDocumentsDialog({ 
   contractorId, 
@@ -21,6 +22,7 @@ export default function RequestDocumentsDialog({
   const [reqs, setReqs] = useState<Record<string, Requirement>>(initial);
   const [sendNow, setSendNow] = useState(false);
   const [message, setMessage] = useState("Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank.");
+  const { toast } = useToast();
   
   async function apply() {
     const cur = getDocs(contractorId);
@@ -51,15 +53,34 @@ export default function RequestDocumentsDialog({
     
     setDocs(contractorId, next);
     
+    // Track last request time
+    const now = new Date().toISOString();
+    setContractorMeta(contractorId, { lastRequestedAt: now });
+    
+    // Count requirements
+    const reqCount = {
+      required: next.filter(doc => doc.requirement === 'required').length,
+      optional: next.filter(doc => doc.requirement === 'optional').length
+    };
+    
+    toast({ 
+      title: "Anforderungen versendet", 
+      description: `${reqCount.required} Pflicht / ${reqCount.optional} Optional` 
+    });
+    
     // Send invitation if requested
     if (sendNow) {
       if (contractorEmail) {
-        const link = `${window.location.origin}/upload?cid=${contractorId}`; // Demo-Link
+        const link = `${window.location.origin}/upload?cid=${contractorId}`;
         const personalizedMessage = message.replace("{{magic_link}}", link).replace("{{name}}", "");
         await sendInvitation({ 
           contractorId, 
           email: contractorEmail, 
           message: personalizedMessage 
+        });
+        toast({ 
+          title: "Einladung gesendet", 
+          description: contractorEmail 
         });
       } else {
         console.warn("Cannot send invitation: contractor email not available");
