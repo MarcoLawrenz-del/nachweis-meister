@@ -1,17 +1,23 @@
 import { useLocation } from 'react-router-dom';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useDemoAuthContext } from '@/contexts/DemoContext';
+import { useAuthContext } from '@/auth/AuthContext';
 
 /**
  * Hook that returns the appropriate auth context based on current route.
- * Uses demo context when in /demo routes, real auth context otherwise.
+ * For now, just returns the main auth context since we've simplified to local auth.
  */
 export function useAppAuth() {
   const location = useLocation();
-  const realAuth = useAuthContext();
-  const demoAuth = useDemoAuthContext();
+  const auth = useAuthContext();
   
-  const isDemo = location.pathname.startsWith('/demo');
-  
-  return isDemo ? demoAuth : realAuth;
+  // Return user as profile for backward compatibility
+  return {
+    ...auth,
+    profile: auth.user ? {
+      id: auth.user.id,
+      email: auth.user.email,
+      name: auth.user.name || auth.user.email.split('@')[0],
+      tenant_id: auth.user.id, // Use user ID as tenant ID for local auth
+      role: 'owner' as const // Default role for local auth - gives full permissions
+    } : null
+  };
 }
