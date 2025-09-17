@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
-import { AuthProvider } from "@/auth/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Screenshot mode detection
 if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screenshot') === '1') {
