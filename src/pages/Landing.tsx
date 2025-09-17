@@ -32,7 +32,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Starter',
     price: 49,
-    description: '≤ 10 beauftragte Firmen',
+    description: '≤ 10 Nachunternehmer',
     maxSubcontractors: 'Bis zu 10 Nachunternehmer',
     features: [
       'Automatische Pflicht-Überwachung',
@@ -46,7 +46,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Growth',
     price: 149,
-    description: '≤ 50 beauftragte Firmen',
+    description: '≤ 50 Nachunternehmer',
     maxSubcontractors: 'Bis zu 50 Nachunternehmer',
     badge: 'Beliebt',
     features: [
@@ -62,7 +62,7 @@ const pricingPlans: PricingPlan[] = [
   {
     name: 'Pro',
     price: 399,
-    description: '51–200 beauftragte Firmen',
+    description: '51–200 Nachunternehmer',
     maxSubcontractors: '51-200 Nachunternehmer',
     features: [
       'Alle Growth-Features',
@@ -143,7 +143,7 @@ export default function Landing() {
     <>
       <Helmet>
         <title>subfix — Pflichtnachweise automatisch einsammeln</title>
-        <meta name="description" content="Beauftragte Firmen per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, klar sehen, was fehlt. 14 Tage kostenlos testen." />
+        <meta name="description" content="Nachunternehmer per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, klar sehen, was fehlt. 14 Tage kostenlos testen." />
         <meta name="keywords" content="Nachunternehmer, Compliance, Baurecht, Pflichtnachweise, Freistellungsbescheinigung, A1-Bescheinigung, Generalunternehmer" />
         
         <meta property="og:title" content={`${WORDING.productName} - ${WORDING.categoryLabel}`} />
@@ -223,7 +223,7 @@ export default function Landing() {
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Beauftragte Firmen per Link einladen. subfix fordert nur erforderliche Nachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.
+              Nachunternehmer per Link einladen. subfix fordert nur erforderliche Nachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4 mb-8">

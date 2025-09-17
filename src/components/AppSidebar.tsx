@@ -24,7 +24,7 @@ import { ROUTES } from "@/lib/ROUTES";
 
 const mainItems = [
   { title: "Dashboard", url: ROUTES.dashboard, icon: BarChart3, testId: "nav-dashboard" },
-  { title: "Beauftragte Firmen", url: ROUTES.contractors, icon: Users, testId: "nav-firmen" },
+  { title: "Nachunternehmer", url: ROUTES.contractors, icon: Users, testId: "nav-firmen" },
   { title: "Einstellungen", url: ROUTES.settings, icon: Settings, testId: "nav-einstellungen" },
 ];
 

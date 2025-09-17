@@ -234,7 +234,7 @@ export default function Subcontractors() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Beauftragte Firmen</h1>
+          <h1 className="text-3xl font-bold">Nachunternehmer</h1>
           <p className="text-muted-foreground">
             Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
           </p>

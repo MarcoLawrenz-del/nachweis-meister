@@ -6,7 +6,7 @@ export default function A1Entsendung() {
       title="A1 & Entsendung: Pflichtnachweise automatisch anfordern"
       intro="Nur relevante Pflichtnachweise. Automatische Erinnerungen. Export bei Bedarf."
       metaTitle="A1 & Entsendung — Pflichtnachweise automatisch anfordern"
-      metaDescription="Beauftragte Firmen per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, bei Bedarf exportieren. 14 Tage kostenlos testen."
+      metaDescription="Nachunternehmer per Link einladen. Nur Pflichtnachweise anfordern, automatisch erinnern, bei Bedarf exportieren. 14 Tage kostenlos testen."
       
       steps={[
         {
@@ -50,7 +50,7 @@ export default function A1Entsendung() {
       
       faq={[
         {
-          question: "Brauchen beauftragte Firmen eine App?",
+          question: "Brauchen Nachunternehmer eine App?",
           answer: "Nein, der Link genügt. Upload funktioniert direkt im Browser, auch mobil per Kamera."
         },
         {

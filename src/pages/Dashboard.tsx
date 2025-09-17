@@ -515,7 +515,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                  <div className="flex items-center gap-2">
-                   <p className="text-sm font-medium text-muted-foreground">Aktive beauftragte Firmen</p>
+                   <p className="text-sm font-medium text-muted-foreground">Aktive Nachunternehmer</p>
                    <TooltipProvider>
                      <Tooltip>
                        <TooltipTrigger>
