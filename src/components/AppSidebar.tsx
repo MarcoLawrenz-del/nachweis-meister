@@ -21,7 +21,7 @@ import { BRAND } from "@/config/brand";
 import { Logo } from "@/components/Brand/Logo";
 import { ROUTES } from "@/lib/ROUTES";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useSupabaseAuthContext } from "@/contexts/SupabaseAuthContext";
 
 const mainItems = [
   { title: "Dashboard", url: ROUTES.dashboard, icon: BarChart3, testId: "nav-dashboard" },
@@ -34,7 +34,7 @@ const settingsItems: any[] = [];
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuthContext();
+  const { signOut } = useSupabaseAuthContext();
   const currentPath = location.pathname;
 
   // Check if we're in demo mode
@@ -52,13 +52,13 @@ export function AppSidebar() {
   const getNavCls = (active: boolean) =>
     active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent hover:text-accent-foreground";
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     try {
-      logout();
-      navigate('/login', { replace: true });
+      await signOut();
+      navigate('/auth', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
-      navigate('/login', { replace: true });
+      navigate('/auth', { replace: true });
     }
   };
 

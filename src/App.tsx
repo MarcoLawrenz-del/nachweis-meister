@@ -10,7 +10,8 @@ import { A11yProvider, SkipLink } from "./components/A11yProvider";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ROUTES } from "@/lib/ROUTES";
 import Landing from "./pages/Landing";
-import { RequireAuth } from "@/auth/RequireAuth";
+import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
+import { SupabaseProtectedRoute } from "@/components/SupabaseProtectedRoute";
 
 // Lazy Loading für Performance-Optimierung
 const AppLayout = lazy(() => import("./components/AppLayout").then(module => ({ default: module.AppLayout })));
@@ -43,6 +44,7 @@ const Settings = lazy(() => import("./pages/settings/Settings"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
 const Register = lazy(() => import("./pages/Register"));
 const MagicLinkWizard = lazy(() => import("./pages/MagicLinkWizard"));
 const Setup = lazy(() => import("./pages/Setup"));
@@ -81,77 +83,84 @@ const App = () => (
       <ErrorBoundary>
         <A11yProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <SkipLink />
-              <div id="main-content">
-                <Suspense fallback={<LoadingSpinner />}>
-                  <Routes>
-                    {/* Login Route */}
-                    <Route path="/login" element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <Login />
-                      </Suspense>
-                    } />
+            <SupabaseAuthProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <SkipLink />
+                <div id="main-content">
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <Routes>
+                      {/* Landing Page */}
+                      <Route path="/" element={<Landing />} />
 
-                     {/* App-Scope - Protected */}
-                    <Route path="/app/*" element={
-                      <RequireAuth>
+                      {/* Auth Route */}
+                      <Route path="/auth" element={
                         <Suspense fallback={<LoadingSpinner />}>
-                          <AppLayout />
-                        </Suspense>
-                      </RequireAuth>
-                    }>
-                      {/* Index leitet auf Subcontractors */}
-                      <Route index element={<Navigate to="/app/subcontractors" replace />} />
-                      <Route path="dashboard" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Dashboard />
+                          <AuthPage />
                         </Suspense>
                       } />
-                      <Route path="subcontractors" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Subcontractors />
-                        </Suspense>
-                      } />
-                      <Route path="subcontractors/:id" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <SubcontractorDetail />
-                        </Suspense>
-                      } />
-                      <Route path="qa-runner" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <QARunner />
-                        </Suspense>
-                      } />
-                      <Route path="einstellungen" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Settings />
-                        </Suspense>
-                      } />
-                      {/* Fallback 404 im App-Scope */}
-                      <Route path="*" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <RouteNotFound />
-                        </Suspense>
-                      } />
-                    </Route>
 
-                    {/* Public routes - Keep unprotected */}
-                    <Route path="/upload" element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <PublicUploadDemo />
-                      </Suspense>
-                    } />
+                      {/* Legacy Login Route - redirect to auth */}
+                      <Route path="/login" element={<Navigate to="/auth" replace />} />
 
-                    {/* Root and global fallback */}
-                    <Route path="/" element={<Navigate to="/app/subcontractors" replace />} />
-                    <Route path="*" element={<Navigate to="/app/subcontractors" replace />} />
-                  </Routes>
-                </Suspense>
-              </div>
-            </BrowserRouter>
+                      {/* App-Scope - Protected */}
+                      <Route path="/app/*" element={
+                        <SupabaseProtectedRoute>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <AppLayout />
+                          </Suspense>
+                        </SupabaseProtectedRoute>
+                      }>
+                        {/* Index leitet auf Dashboard */}
+                        <Route index element={<Navigate to="/app/dashboard" replace />} />
+                        <Route path="dashboard" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Dashboard />
+                          </Suspense>
+                        } />
+                        <Route path="subcontractors" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Subcontractors />
+                          </Suspense>
+                        } />
+                        <Route path="subcontractors/:id" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <SubcontractorDetail />
+                          </Suspense>
+                        } />
+                        <Route path="qa-runner" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <QARunner />
+                          </Suspense>
+                        } />
+                        <Route path="einstellungen" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <Settings />
+                          </Suspense>
+                        } />
+                        {/* Fallback 404 im App-Scope */}
+                        <Route path="*" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <RouteNotFound />
+                          </Suspense>
+                        } />
+                      </Route>
+
+                      {/* Public routes - Keep unprotected */}
+                      <Route path="/upload" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicUploadDemo />
+                        </Suspense>
+                      } />
+
+                      {/* Global fallback - redirect to landing */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Suspense>
+                </div>
+              </BrowserRouter>
+            </SupabaseAuthProvider>
           </TooltipProvider>
         </A11yProvider>
       </ErrorBoundary>

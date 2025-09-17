@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getSettings, subscribeToSettings } from '@/services/settings.store';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Settings as SettingsIcon, Info, Globe, Shield } from 'lucide-react';
 
 export default function System() {
-  const { user } = useAuthContext();
+  const { user } = useSupabaseAuthContext();
   const [settings, setSettings] = useState(() => getSettings());
   const { toast } = useToast();
   

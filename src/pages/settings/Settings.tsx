@@ -1,18 +1,35 @@
 import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, Bell, Users, Settings as SettingsIcon } from 'lucide-react';
+import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { SettingsErrorBoundary } from '@/components/SettingsErrorBoundary';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { canManageTeam } from '@/services/team.store';
+import { TeamGuard } from '@/components/TeamGuard';
 import Team from './Team';
 import Profile from './Profile';
 import Notifications from './Notifications';
 import System from './System';
+import { 
+  Settings as SettingsIcon, 
+  User, 
+  Users, 
+  Mail, 
+  Bell,
+  Info,
+  Shield
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { getRoleDisplayName, canManageTeam } from '@/services/team.store';
 
 export default function Settings() {
-  const { user, userRole } = useAuthContext();
+  const { user, profile } = useSupabaseAuthContext();
   const [currentTab, setCurrentTab] = useState('profile');
+  const { toast } = useToast();
   
+  // For now, default to 'staff' role - this can be enhanced with proper role management
+  const userRole = 'staff';
   const canAccessTeam = canManageTeam(userRole);
 
   const handleTabChange = (value: string) => {

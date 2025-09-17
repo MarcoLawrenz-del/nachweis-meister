@@ -100,7 +100,7 @@ export default function Landing() {
     if (user) {
       navigate(ROUTES.dashboard);
     } else {
-      navigate('/login');
+      navigate('/auth');
     }
   };
 
@@ -111,7 +111,7 @@ export default function Landing() {
     }
 
     if (!user) {
-      navigate('/login');
+      navigate('/auth');
       return;
     }
 
@@ -184,7 +184,7 @@ export default function Landing() {
                 ) : (
                   <>
                     <Button variant="ghost" asChild>
-                      <Link to="/login">Anmelden</Link>
+                      <Link to="/auth">Anmelden</Link>
                     </Button>
                     <Button onClick={handleStartTrial}>
                       Kostenlos testen

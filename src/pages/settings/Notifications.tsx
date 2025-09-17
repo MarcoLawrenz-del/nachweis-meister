@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getSettings, updateSettings, subscribeToSettings } from '@/services/settings.store';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Bell, Info, Mail } from 'lucide-react';
 
 export default function Notifications() {
-  const { user } = useAuthContext();
+  const { user } = useSupabaseAuthContext();
   const [settings, setSettings] = useState(() => getSettings());
   const { toast } = useToast();
   

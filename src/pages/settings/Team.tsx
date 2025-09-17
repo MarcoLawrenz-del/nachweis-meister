@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Users, Plus, Edit, Trash2, Shield, Crown, User, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { 
   listTeamMembers, 
   createTeamMember, 
@@ -26,7 +26,7 @@ import {
 } from '@/services/team.store';
 
 export default function Team() {
-  const { user } = useAuthContext();
+  const { user } = useSupabaseAuthContext();
   const { toast } = useToast();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
