@@ -122,20 +122,57 @@ export async function setDocumentStatus(input: {
   return input;
 }
 
-export type Aggregate = "complete" | "attention" | "missing";
-export function aggregateContractorStatusById(contractorId:string): Aggregate {
+export type AggregateStatus = "complete" | "attention" | "missing";
+
+export function aggregateContractorStatusById(contractorId: string): {
+  status: AggregateStatus;
+  counts: { missing: number; reviewing: number; expiring: number; valid: number };
+  hasRequired: boolean;
+} {
   const docs = getDocs(contractorId);
-  const required = docs.filter(d => d.requirement==="required");
-  if (required.length===0) return "missing";
-  const hasMissing = required.some(d => ["missing","rejected","expired"].includes(d.status));
-  const hasReview  = docs.some(d => ["submitted","in_review"].includes(d.status));
-  const hasExpiring = docs.some(d => d.status==="accepted" && d.validUntil && isExpiring(new Date(d.validUntil),30));
-  if (hasMissing) return "missing";
-  if (hasReview || hasExpiring) return "attention";
-  return "complete";
+  const requiredDocs = docs.filter(d => d.requirement === "required");
+  const hasRequired = requiredDocs.length > 0;
+  
+  // Count different document states
+  const missing = requiredDocs.filter(d => 
+    ["missing", "rejected", "expired"].includes(d.status)
+  ).length;
+  
+  const reviewing = docs.filter(d => 
+    ["submitted", "in_review"].includes(d.status)
+  ).length;
+  
+  const acceptedDocs = docs.filter(d => d.status === "accepted");
+  const expiring = acceptedDocs.filter(d => 
+    d.validUntil && isExpiring(new Date(d.validUntil), 30)
+  ).length;
+  
+  const valid = acceptedDocs.filter(d => 
+    !d.validUntil || !isExpiring(new Date(d.validUntil), 30)
+  ).length;
+  
+  // Determine overall status
+  let status: AggregateStatus;
+  if (missing > 0) {
+    status = "missing";
+  } else if (reviewing > 0 || expiring > 0) {
+    status = "attention";
+  } else if (hasRequired) {
+    status = "complete";
+  } else {
+    status = "missing"; // No required docs = always missing (never complete without requirements)
+  }
+  
+  return {
+    status,
+    counts: { missing, reviewing, expiring, valid },
+    hasRequired
+  };
 }
 
 export function aggregateContractorStatus(docs: ContractorDocument[]): "complete" | "attention" | "missing" {
+  // Legacy function - kept for backward compatibility but redirects to new implementation
+  // This assumes we have a contractor ID, but since this is legacy, we'll keep simple logic
   if (!docs || docs.length === 0) return "missing";
   
   const requiredDocs = docs.filter(doc => doc.requirement === "required");

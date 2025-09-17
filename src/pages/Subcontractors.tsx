@@ -92,17 +92,17 @@ export default function Subcontractors() {
       
       const contractors = listContractors();
       const processedSubcontractors = contractors.map(contractor => {
-        const status = aggregateContractorStatusById(contractor.id);
+        const aggregation = aggregateContractorStatusById(contractor.id);
         
         return {
           ...contractor,
           contact_email: contractor.email,
           country_code: contractor.country || '',
           status: contractor.active ? 'active' as const : 'inactive' as const,
-          compliance_status: status === 'complete' ? 'compliant' as const : 
-                           status === 'attention' ? 'expiring_soon' as const : 'non_compliant' as const,
+          compliance_status: aggregation.status === 'complete' ? 'compliant' as const : 
+                           aggregation.status === 'attention' ? 'expiring_soon' as const : 'non_compliant' as const,
           project_count: 0,
-          critical_issues: status === 'missing' ? 1 : 0
+          critical_issues: aggregation.status === 'missing' ? 1 : 0
         } as Subcontractor;
       });
 
@@ -317,8 +317,8 @@ export default function Subcontractors() {
                         <TableCell>
                           {(() => {
                             const agg = aggregateContractorStatusById(subcontractor.id);
-                            const chip = agg === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
-                                        agg === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
+                            const chip = agg.status === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
+                                        agg.status === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
                                                              {label: "Fehlt", class: "bg-red-100 text-red-800 border-red-200"};
                             return <Badge variant="outline" className={chip.class}>{chip.label}</Badge>;
                           })()}

@@ -53,14 +53,16 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   // Get docs from store
   const docs = useContractorDocuments(subId);
 
-  // Calculate KPIs from ContractorDocument[]
-  const missing = docs.filter(d => d.requirement === "required" && ["missing", "rejected", "expired"].includes(d.status)).length;
-  const reviewing = docs.filter(d => ["submitted", "in_review"].includes(d.status)).length;
-  const expiring = docs.filter(d => d.status === "accepted" && d.validUntil && isExpiring(new Date(d.validUntil), 30)).length;
-  const valid = docs.filter(d => d.status === "accepted" && (!d.validUntil || !isExpiring(new Date(d.validUntil), 30))).length;
-  const requiredCount = docs.filter(d => d.requirement === "required").length;
-  const showComplete = requiredCount > 0 && missing === 0 && reviewing === 0 && expiring === 0 && valid > 0;
+  // Get aggregated status and counts from centralized function
   const agg = aggregateContractorStatusById(subId);
+  const { status, counts, hasRequired } = agg;
+  
+  // Use counts from aggregation
+  const missing = counts.missing;
+  const reviewing = counts.reviewing; 
+  const expiring = counts.expiring;
+  const valid = counts.valid;
+  const showComplete = hasRequired && status === "complete";
 
   const getNextAction = (requirement: RequirementWithDocument) => {
     switch (requirement.status) {
@@ -146,23 +148,23 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground">Status:</span>
           <Badge variant={
-            agg === "complete" ? "default" : 
-            agg === "attention" ? "secondary" : 
+            status === "complete" ? "default" : 
+            status === "attention" ? "secondary" : 
             "destructive"
           } className={
-            agg === "complete" ? "bg-green-100 text-green-800 border-green-200" :
-            agg === "attention" ? "bg-amber-100 text-amber-800 border-amber-200" :
+            status === "complete" ? "bg-green-100 text-green-800 border-green-200" :
+            status === "attention" ? "bg-amber-100 text-amber-800 border-amber-200" :
             "bg-red-100 text-red-800 border-red-200"
           }>
-            {agg === "complete" ? "Vollständig" : 
-             agg === "attention" ? "Aufmerksamkeit" : 
+            {status === "complete" ? "Vollständig" : 
+             status === "attention" ? "Aufmerksamkeit" : 
              "Fehlt"}
           </Badge>
         </div>
       </div>
 
       {/* No Required Documents Message */}
-      {requiredCount === 0 && (
+      {!hasRequired && (
         <Alert className="border-blue-200 bg-blue-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-blue-800">
