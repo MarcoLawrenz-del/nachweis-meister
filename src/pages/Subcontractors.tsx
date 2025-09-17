@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ComplianceStatusBadge, ComplianceIndicator } from '@/components/ComplianceStatusBadge';
 import { SimpleStatusBadge } from '@/components/StatusBadge';
 import { 
@@ -28,11 +29,12 @@ import {
   Phone,
   MapPin,
   Users,
-  Edit,
+  PenLine,
   Trash2,
   AlertTriangle,
   CheckCircle,
-  Eye
+  Eye,
+  Circle
 } from 'lucide-react';
 import { aggregateContractorStatusById } from "@/services/contractors";
 
@@ -229,168 +231,202 @@ export default function Subcontractors() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Nachunternehmer</h1>
-          <p className="text-muted-foreground">
-            Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
-          </p>
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Nachunternehmer</h1>
+            <p className="text-muted-foreground">
+              Verwalten Sie Ihre Nachunternehmer und deren Compliance-Status
+            </p>
+          </div>
+          <Button onClick={() => setIsWizardOpen(true)} data-testid="btn-einladen">
+            <Plus className="mr-2 h-4 w-4" />
+            Neuer Nachunternehmer
+          </Button>
+          
+          <NewSubcontractorWizard
+            isOpen={isWizardOpen}
+            onClose={handleCloseWizard}
+            onSuccess={handleWizardSuccess}
+            editingSubcontractor={editingSubcontractor}
+          />
         </div>
-        <Button onClick={() => setIsWizardOpen(true)} data-testid="btn-einladen">
-          <Plus className="mr-2 h-4 w-4" />
-          Neuer Nachunternehmer
-        </Button>
-        
-        <NewSubcontractorWizard
-          isOpen={isWizardOpen}
-          onClose={handleCloseWizard}
-          onSuccess={handleWizardSuccess}
-          editingSubcontractor={editingSubcontractor}
-        />
-      </div>
 
-      {/* Subcontractors Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center">
-                <Building2 className="mr-2 h-5 w-5" />
-                Nachunternehmer-Übersicht ({subcontractors.length})
-              </CardTitle>
-              <CardDescription>
-                Alle Nachunternehmer mit Compliance-Status
-              </CardDescription>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Nachunternehmer durchsuchen..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
+        {/* Subcontractors Table */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center">
+                  <Building2 className="mr-2 h-5 w-5" />
+                  Nachunternehmer-Übersicht ({subcontractors.length})
+                </CardTitle>
+                <CardDescription>
+                  Alle Nachunternehmer mit Compliance-Status
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Nachunternehmer durchsuchen..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredSubcontractors.length === 0 ? (
-            <div className="text-center py-16">
-              {subcontractors.length === 0 ? (
-                <div className="space-y-4">
-                  <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <div>
-                    <h3 className="text-lg font-medium">Noch keine Nachunternehmer</h3>
-                    <p className="text-muted-foreground">
-                      Fügen Sie Ihren ersten Nachunternehmer hinzu, um mit der Compliance-Überwachung zu starten.
-                    </p>
+          </CardHeader>
+          <CardContent>
+            {filteredSubcontractors.length === 0 ? (
+              <div className="text-center py-16">
+                {subcontractors.length === 0 ? (
+                  <div className="space-y-4">
+                    <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <div>
+                      <h3 className="text-lg font-medium">Noch keine Nachunternehmer</h3>
+                      <p className="text-muted-foreground">
+                        Fügen Sie Ihren ersten Nachunternehmer hinzu, um mit der Compliance-Überwachung zu starten.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Search className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <div>
-                    <h3 className="text-lg font-medium">Keine Ergebnisse</h3>
-                    <p className="text-muted-foreground">
-                      Keine Nachunternehmer gefunden für "{searchTerm}".
-                    </p>
+                ) : (
+                  <div className="space-y-4">
+                    <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <div>
+                      <h3 className="text-lg font-medium">Keine Ergebnisse</h3>
+                      <p className="text-muted-foreground">
+                        Keine Nachunternehmer gefunden für "{searchTerm}".
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Firma</TableHead>
-                    <TableHead>Kontakt</TableHead>
-                    <TableHead>Konto</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Aktionen</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubcontractors.map((subcontractor) => (
-                    <TableRow key={subcontractor.id} className="hover:bg-muted/50">
-                       <TableCell>
-                        <div>
-                          <div className="font-medium">{subcontractor.company_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            Seit {new Date(subcontractor.created_at).toLocaleDateString('de-DE')}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {subcontractor.contact_name && (
-                            <div className="flex items-center text-sm">
-                              <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                              {subcontractor.contact_name}
-                            </div>
-                          )}
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Mail className="mr-2 h-4 w-4" />
-                            {subcontractor.contact_email}
-                          </div>
-                          {subcontractor.phone && (
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <Phone className="mr-2 h-4 w-4" />
-                              {subcontractor.phone}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <SimpleStatusBadge status={subcontractor.status} />
-                      </TableCell>
-                      <TableCell>
-                        {(() => {
-                          const agg = aggregateContractorStatusById(subcontractor.id);
-                          const chip = agg === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800"} :
-                                      agg === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800"} :
-                                                           {label: "Fehlt", class: "bg-red-100 text-red-800"};
-                          return <span className={"px-2 py-1 rounded-lg text-xs " + chip.class}>{chip.label}</span>;
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link to={`/app/subcontractors/${subcontractor.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleEdit(subcontractor)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          {!isDemo && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDelete(subcontractor)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Firma</TableHead>
+                      <TableHead>Kontakt</TableHead>
+                      <TableHead>Konto</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Aktionen</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubcontractors.map((subcontractor) => (
+                      <TableRow key={subcontractor.id} className="hover:bg-muted/50">
+                         <TableCell>
+                          <div>
+                            <div className="font-medium">{subcontractor.company_name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              Seit {new Date(subcontractor.created_at).toLocaleDateString('de-DE')}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {subcontractor.contact_name && (
+                              <div className="flex items-center text-sm">
+                                <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                                {subcontractor.contact_name}
+                              </div>
+                            )}
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Mail className="mr-2 h-4 w-4" />
+                              {subcontractor.contact_email}
+                            </div>
+                            {subcontractor.phone && (
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Phone className="mr-2 h-4 w-4" />
+                                {subcontractor.phone}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Circle 
+                              className={`h-2 w-2 fill-current ${
+                                subcontractor.status === 'active' 
+                                  ? 'text-green-500' 
+                                  : 'text-gray-400'
+                              }`} 
+                            />
+                            <span className="text-sm">
+                              {subcontractor.status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const agg = aggregateContractorStatusById(subcontractor.id);
+                            const chip = agg === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
+                                        agg === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
+                                                             {label: "Fehlt", class: "bg-red-100 text-red-800 border-red-200"};
+                            return <Badge variant="outline" className={chip.class}>{chip.label}</Badge>;
+                          })()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="sm" asChild>
+                                  <Link to={`/app/subcontractors/${subcontractor.id}`}>
+                                    <Eye className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Ansehen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleEdit(subcontractor)}
+                                >
+                                  <PenLine className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Bearbeiten</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            {!isDemo && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleDelete(subcontractor)}
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Löschen</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 }
