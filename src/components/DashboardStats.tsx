@@ -53,7 +53,19 @@ export function DashboardStats({ subcontractors }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('missing_requirements', stats.missing_requirements || 0)}>
+      <Card 
+        className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" 
+        onClick={() => handleKPIClick('missing_requirements', stats.missing_requirements || 0)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleKPIClick('missing_requirements', stats.missing_requirements || 0);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label="Fehlende Nachweise anzeigen"
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Fehlende Nachweise
@@ -70,7 +82,19 @@ export function DashboardStats({ subcontractors }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('expired_requirements', stats.expired_requirements || stats.expired || 0)}>
+      <Card 
+        className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" 
+        onClick={() => handleKPIClick('expired_requirements', stats.expired_requirements || stats.expired || 0)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleKPIClick('expired_requirements', stats.expired_requirements || stats.expired || 0);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label="Abgelaufene Dokumente anzeigen"
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Abgelaufen
@@ -87,7 +111,19 @@ export function DashboardStats({ subcontractors }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('expiring_requirements', stats.expiring_requirements || stats.expiring || 0)}>
+      <Card 
+        className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" 
+        onClick={() => handleKPIClick('expiring_requirements', stats.expiring_requirements || stats.expiring || 0)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleKPIClick('expiring_requirements', stats.expiring_requirements || stats.expiring || 0);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label="Ablaufende Dokumente anzeigen"
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             ≤ 30 Tage
@@ -104,7 +140,19 @@ export function DashboardStats({ subcontractors }: DashboardStatsProps) {
         </CardContent>
       </Card>
 
-      <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleKPIClick('in_review_requirements', stats.in_review_requirements || 0)}>
+      <Card 
+        className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" 
+        onClick={() => handleKPIClick('in_review_requirements', stats.in_review_requirements || 0)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleKPIClick('in_review_requirements', stats.in_review_requirements || 0);
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label="Dokumente in Prüfung anzeigen"
+      >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             {WORDING.terms.inReview}
