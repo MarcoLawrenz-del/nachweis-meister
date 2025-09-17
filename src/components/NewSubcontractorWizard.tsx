@@ -48,7 +48,7 @@ interface NewSubcontractorData {
   phone: string;
   address: string;
   country_code: string;
-  company_type: string;
+  
   notes: string;
 }
 
@@ -81,7 +81,6 @@ export function NewSubcontractorWizard({
     phone: '',
     address: '',
     country_code: 'DE',
-    company_type: 'unternehmen',
     notes: ''
   });
 
@@ -109,7 +108,7 @@ export function NewSubcontractorWizard({
         phone: editingSubcontractor.phone || '',
         address: editingSubcontractor.address || '',
         country_code: editingSubcontractor.country_code,
-        company_type: editingSubcontractor.company_type,
+        
         notes: editingSubcontractor.notes || ''
       });
       // For editing, skip package selection step
@@ -123,7 +122,7 @@ export function NewSubcontractorWizard({
         phone: '',
         address: '',
         country_code: 'DE',
-        company_type: 'unternehmen',
+        
         notes: ''
       });
       setCurrentStep(1);
@@ -165,7 +164,7 @@ export function NewSubcontractorWizard({
         phone: subcontractorData.phone || null,
         address: subcontractorData.address || null,
         country_code: subcontractorData.country_code,
-        company_type: subcontractorData.company_type,
+        company_type: 'unternehmen',
         notes: subcontractorData.notes || null
       };
 
@@ -303,40 +302,23 @@ export function NewSubcontractorWizard({
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="country_code">Land</Label>
-                <Select
-                  value={subcontractorData.country_code}
-                  onValueChange={(value) => setSubcontractorData(prev => ({ ...prev, country_code: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DE">Deutschland</SelectItem>
-                    <SelectItem value="AT">Österreich</SelectItem>
-                    <SelectItem value="CH">Schweiz</SelectItem>
-                    <SelectItem value="PL">Polen</SelectItem>
-                    <SelectItem value="CZ">Tschechien</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company_type">Unternehmensform</Label>
-                <Select
-                  value={subcontractorData.company_type}
-                  onValueChange={(value: string) => 
-                    setSubcontractorData(prev => ({ ...prev, company_type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Unternehmensform wählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unternehmen">Unternehmen</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="country_code">Land</Label>
+              <Select
+                value={subcontractorData.country_code}
+                onValueChange={(value) => setSubcontractorData(prev => ({ ...prev, country_code: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DE">Deutschland</SelectItem>
+                  <SelectItem value="AT">Österreich</SelectItem>
+                  <SelectItem value="CH">Schweiz</SelectItem>
+                  <SelectItem value="PL">Polen</SelectItem>
+                  <SelectItem value="CZ">Tschechien</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Adresse</Label>

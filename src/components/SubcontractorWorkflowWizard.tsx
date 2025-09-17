@@ -376,7 +376,7 @@ export function SubcontractorWorkflowWizard({
               Dokumente-Management
             </CardTitle>
             <CardDescription>
-              Laden Sie alle rechtlich erforderlichen Dokumente für diese Unternehmensform hoch.
+              Laden Sie alle rechtlich erforderlichen Dokumente hoch.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -35,7 +35,6 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
     phone: profile.phone || '',
     address: profile.address || '',
     country_code: profile.country_code,
-    company_type: profile.company_type,
     notes: profile.notes || '',
     status: profile.status
   });
@@ -63,7 +62,7 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
     phone: profile.phone || '',
     address: profile.address || '',
     country_code: profile.country_code,
-    company_type: profile.company_type,
+    
     notes: profile.notes || '',
     status: profile.status
   });
@@ -137,20 +136,6 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
               />
             </div>
             
-            <div>
-              <Label htmlFor="company_type">Rechtsform *</Label>
-              <Select 
-                value={formData.company_type} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, company_type: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unternehmen">Unternehmen</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div>
