@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ROUTES } from '@/lib/ROUTES';
 import { 
   ArrowLeft,
   Upload,
@@ -139,7 +140,7 @@ export default function RequirementsDetail() {
         description: "Projektdaten konnten nicht geladen werden.",
         variant: "destructive"
       });
-      navigate('/app/dashboard');
+      navigate(ROUTES.dashboard);
     }
   };
 

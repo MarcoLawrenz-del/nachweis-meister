@@ -98,7 +98,7 @@ export default function Landing() {
 
   const handleStartTrial = () => {
     if (user) {
-      navigate('/app/dashboard');
+      navigate(ROUTES.dashboard);
     } else {
       navigate('/register');
     }
@@ -121,7 +121,7 @@ export default function Landing() {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
           priceId: plan.stripePrice,
-          successUrl: `${window.location.origin}/app/dashboard?success=true`,
+          successUrl: `${window.location.origin}${ROUTES.dashboard}?success=true`,
           cancelUrl: `${window.location.origin}/#pricing`
         }
       });

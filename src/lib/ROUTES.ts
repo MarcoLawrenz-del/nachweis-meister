@@ -1,7 +1,8 @@
 export const APP_BASE = "/app" as const;
 
 export const ROUTES = {
-  home: `${APP_BASE}`,
+  // Hauptnavigation
+  dashboard: `${APP_BASE}/dashboard`,
   contractors: `${APP_BASE}/subcontractors`,
   contractor: (id: string) => `${APP_BASE}/subcontractors/${id}`,
   contractorWithTab: (id: string, tab: string) => `${APP_BASE}/subcontractors/${id}?tab=${tab}`,
@@ -14,5 +15,6 @@ export const ROUTES = {
   reminders: `${APP_BASE}/reminders`,
   settings: `${APP_BASE}/einstellungen`,
   rolesAccess: `${APP_BASE}/rollen-zugriff`,
-  dashboard: `${APP_BASE}/dashboard`,
+  // Alias, falls irgendwo noch verwendet:
+  home: `${APP_BASE}`,
 } as const;

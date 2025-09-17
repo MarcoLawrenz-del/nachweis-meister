@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ROUTES } from '@/lib/ROUTES';
 
 export default function AcceptInvitation() {
   const [searchParams] = useSearchParams();
@@ -86,7 +87,7 @@ export default function AcceptInvitation() {
         email: invitation.email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/app/dashboard`
+          emailRedirectTo: `${window.location.origin}${ROUTES.dashboard}`
         }
       });
 
@@ -124,7 +125,7 @@ export default function AcceptInvitation() {
 
         // Redirect to dashboard
         setTimeout(() => {
-          navigate('/app/dashboard');
+          navigate(ROUTES.dashboard);
         }, 2000);
       }
 

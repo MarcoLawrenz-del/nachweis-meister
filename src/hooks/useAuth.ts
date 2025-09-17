@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { sanitizeEmail, authRateLimiter, auditLogger } from '@/lib/validation';
 import { debug } from '@/lib/debug';
 import { edgeFunctions } from '@/lib/edgeFunctions';
+import { ROUTES } from '@/lib/ROUTES';
 
 // User Profile Interface
 interface UserProfile {
@@ -166,7 +167,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider === 'azure' ? 'azure' : 'google',
         options: {
-          redirectTo: `${window.location.origin}/app/dashboard`
+          redirectTo: `${window.location.origin}${ROUTES.dashboard}`
         }
       });
       
@@ -249,7 +250,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOtp({
         email: sanitizedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/app/dashboard`
+          emailRedirectTo: `${window.location.origin}${ROUTES.dashboard}`
         }
       });
       
