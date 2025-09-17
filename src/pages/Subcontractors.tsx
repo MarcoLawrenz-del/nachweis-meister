@@ -309,7 +309,7 @@ export default function Subcontractors() {
                   <TableRow>
                     <TableHead>Firma</TableHead>
                     <TableHead>Kontakt</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Konto</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aktionen</TableHead>
                   </TableRow>
