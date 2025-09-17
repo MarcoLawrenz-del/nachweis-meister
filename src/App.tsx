@@ -46,6 +46,7 @@ const Register = lazy(() => import("./pages/Register"));
 const MagicLinkWizard = lazy(() => import("./pages/MagicLinkWizard"));
 const Setup = lazy(() => import("./pages/Setup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const RouteNotFound = lazy(() => import("./components/RouteNotFound"));
 const Demo = lazy(() => import("./pages/Demo"));
 const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 import { Loader2, Building2, Users } from "lucide-react";
@@ -211,7 +212,11 @@ const App = () => (
                           </Suspense>
                         } />
                         {/* Fallback 404 im App-Scope */}
-                        <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
+                        <Route path="*" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <RouteNotFound />
+                          </Suspense>
+                        } />
                       </Route>
 
                       {/* Globaler Fallback */}
