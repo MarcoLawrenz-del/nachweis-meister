@@ -1,272 +1,71 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { Logo } from '@/components/Brand/Logo';
-import { BRAND } from '@/config/brand';
-import { Loader2, Mail, Building } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuthContext } from "@/auth/AuthContext";
+import { Mail, LogIn } from "lucide-react";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [magicLinkEmail, setMagicLinkEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [showTraditional, setShowTraditional] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const { signIn, signInWithOAuth, sendMagicLink } = useAuthContext();
+  const { signIn } = useAuthContext();
+  const nav = useNavigate();
+  const location = useLocation() as any;
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError('Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Zugangsdaten.');
-    }
-    
-    setLoading(false);
+    await signIn(email.trim(), name.trim() || undefined);
+    const to = location.state?.from?.pathname || "/app";
+    nav(to, { replace: true });
   };
-
-  const handleOAuthSignIn = async (provider: 'google' | 'azure') => {
-    setLoading(true);
-    setError('');
-    
-    const { error } = await signInWithOAuth(provider);
-    
-    if (error) {
-      setError(`Anmeldung über ${provider === 'google' ? 'Google' : 'Microsoft'} fehlgeschlagen.`);
-      setLoading(false);
-    }
-  };
-
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMagicLinkLoading(true);
-    setError('');
-
-    const { error } = await sendMagicLink(magicLinkEmail);
-    
-    if (error) {
-      setError('Magic Link konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
-    } else {
-      setMagicLinkSent(true);
-    }
-    
-    setMagicLinkLoading(false);
-  };
-
-  if (magicLinkSent) {
-    return (
-      <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center space-y-6">
-            <div className="flex justify-center">
-              <Logo width={140} height={42} />
-            </div>
-            <div>
-              <CardTitle className="text-2xl">Magic Link gesendet</CardTitle>
-              <CardDescription>
-                Prüfen Sie Ihre E-Mails und klicken Sie auf den Login-Link
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="p-6 bg-success/10 rounded-lg">
-              <Mail className="w-12 h-12 text-success mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground">
-                Wir haben einen Magic Link an <strong>{magicLinkEmail}</strong> gesendet.
-                Klicken Sie auf den Link in der E-Mail, um sich anzumelden.
-              </p>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => {
-                setMagicLinkSent(false);
-                setMagicLinkEmail('');
-              }}
-            >
-              Zurück zur Anmeldung
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-6">
-          <div className="flex justify-center">
-            <Logo width={140} height={42} />
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
+            <LogIn className="h-5 w-5 text-orange-600" />
           </div>
+          <h1 className="text-xl font-semibold">Anmelden</h1>
+        </div>
+
+        <form className="space-y-4" onSubmit={onSubmit}>
           <div>
-            <CardTitle className="text-2xl">Anmelden</CardTitle>
-            <CardDescription>
-              Wählen Sie Ihre bevorzugte Anmeldeart
-            </CardDescription>
+            <label className="text-sm font-medium">E-Mail</label>
+            <div className="mt-1 flex items-center gap-2 rounded-xl border px-3 py-2">
+              <Mail className="h-4 w-4 text-neutral-400" />
+              <input
+                type="email"
+                placeholder="ich@firma.de"
+                className="w-full outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
 
-          {!showTraditional ? (
-            <>
-              {/* SSO Buttons */}
-              <div className="space-y-3">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-14 text-base font-medium border-2 hover:bg-blue-50 hover:border-blue-200"
-                  onClick={() => handleOAuthSignIn('azure')}
-                  disabled={loading}
-                  data-testid="btn-login-microsoft"
-                >
-                  <Building className="mr-3 h-5 w-5 text-blue-600" />
-                  Mit Microsoft anmelden
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full h-14 text-base font-medium border-2 hover:bg-red-50 hover:border-red-200"
-                  onClick={() => handleOAuthSignIn('google')}
-                  disabled={loading}
-                  data-testid="btn-login-google"
-                >
-                  <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
-                    <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Mit Google anmelden
-                </Button>
-
-                <form onSubmit={handleMagicLink} className="space-y-3">
-                  <div className="space-y-2">
-                    <Input
-                      type="email"
-                      placeholder="E-Mail für Magic Link"
-                      value={magicLinkEmail}
-                      onChange={(e) => setMagicLinkEmail(e.target.value)}
-                      className="h-12 text-base"
-                      required
-                      disabled={magicLinkLoading}
-                    />
-                  </div>
-                  <Button 
-                    type="submit"
-                    variant="outline" 
-                    className="w-full h-14 text-base font-medium border-2 hover:bg-purple-50 hover:border-purple-200"
-                    disabled={magicLinkLoading}
-                    data-testid="btn-login-magic"
-                  >
-                    {magicLinkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <Mail className="mr-3 h-5 w-5 text-purple-600" />
-                    Magic Link senden
-                  </Button>
-                </form>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">oder</span>
-                </div>
-              </div>
-
-              <Button 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => setShowTraditional(true)}
-              >
-                Mit E-Mail & Passwort anmelden
-              </Button>
-            </>
-          ) : (
-            <>
-              {/* Traditional Login Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-Mail-Adresse</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="ihr@unternehmen.de"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Passwort</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    placeholder="••••••••"
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  size="lg"
-                  className="w-full" 
-                  disabled={loading}
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Anmelden
-                </Button>
-              </form>
-
-              <Button 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => setShowTraditional(false)}
-              >
-                ← Zurück zu SSO-Optionen
-              </Button>
-            </>
-          )}
-        </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Noch kein Account?{' '}
-              <Link to="/register" className="text-brand-primary hover:underline">
-                Jetzt registrieren
-              </Link>
-            </p>
-            <Link to="/" className="text-sm text-muted-foreground hover:underline">
-              ← Zurück zur Startseite
-            </Link>
+          <div>
+            <label className="text-sm font-medium">Name (optional)</label>
+            <input
+              type="text"
+              placeholder="Max Mustermann"
+              className="mt-1 w-full rounded-xl border px-3 py-2 outline-none"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
-        </CardFooter>
-      </Card>
+
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-orange-600 text-white py-2.5 font-medium hover:bg-orange-700 transition"
+          >
+            Weiter
+          </button>
+
+          <p className="text-xs text-neutral-500 text-center">
+            Demo-Login speichert den Nutzer lokal im Browser.
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
