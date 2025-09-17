@@ -44,6 +44,10 @@ export function useSubscription() {
         .single();
 
       if (error) throw error;
+      if (!tenant) {
+        console.warn('No tenant found for tenant_id:', profile.tenant_id);
+        return;
+      }
 
       const trialEndsAt = tenant.trial_ends_at ? new Date(tenant.trial_ends_at) : null;
       const now = new Date();
