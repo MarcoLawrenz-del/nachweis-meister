@@ -21,6 +21,7 @@ const Subcontractors = lazy(() => import("./pages/Subcontractors"));
 const SubcontractorDetail = lazy(() => import("./pages/SubcontractorDetail"));
 const PackageWizard = lazy(() => import("./pages/PackageWizard"));
 const QARunner = lazy(() => import("./pages/QARunner"));
+const RequirementSelectorDemo = lazy(() => import("./pages/RequirementSelectorDemo"));
 
 // Landing Pages
 const A1Entsendung = lazy(() => import("./pages/lp/A1Entsendung"));
@@ -210,6 +211,11 @@ const App = () => (
                         <Route path="qa-runner" element={
                           <Suspense fallback={<LoadingSpinner />}>
                             <QARunner />
+                          </Suspense>
+                        } />
+                        <Route path="requirement-selector-demo" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <RequirementSelectorDemo />
                           </Suspense>
                         } />
                         <Route path="einstellungen" element={
