@@ -32,6 +32,8 @@ export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
   },
 };
 
+import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
+
 export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>) {
   const profile = customRequirements || (PACKAGE_PROFILES[packageId] ?? {});
   const created: ContractorDocument[] = [];
@@ -65,6 +67,13 @@ export async function seedDocumentsForContractor(contractorId: string, packageId
     count: created.length 
   });
   
+  // Update store
+  const merged = [...getDocs(contractorId)];
+  for (const cd of created) { 
+    if (!merged.some(x => x.documentTypeId === cd.documentTypeId)) merged.push(cd); 
+  }
+  setDocs(contractorId, merged);
+  
   return created;
 }
 
@@ -76,6 +85,18 @@ export async function setDocumentStatus(input: {
   reason?: string | null; 
 }) {
   console.info("[mock] setDocumentStatus", input);
+  
+  // Update store
+  const currentReq = getDocs(input.contractorId).find(d => d.documentTypeId === input.documentTypeId)?.requirement ?? "required";
+  upsertDoc(input.contractorId, {
+    contractorId: input.contractorId,
+    documentTypeId: input.documentTypeId,
+    requirement: currentReq,
+    status: input.status,
+    validUntil: input.validUntil ?? null,
+    rejectionReason: input.reason ?? null,
+  });
+  
   return input;
 }
 
