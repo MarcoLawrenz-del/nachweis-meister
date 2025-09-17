@@ -30,6 +30,7 @@ import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { setDocumentStatus } from "@/services/contractors";
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
+import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -48,6 +49,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showRejectDialog, setShowRejectDialog] = useState<{ documentTypeId: string } | null>(null);
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectMessage, setRejectMessage] = useState('');
   const [validityDates, setValidityDates] = useState<Record<string, string>>({});
@@ -180,6 +182,15 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               <Filter className="h-5 w-5" />
               Filter & Suche
             </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRequestDialog(true)}
+              className="gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Dokumente anfordern
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -352,6 +363,18 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Request Documents Dialog */}
+      {showRequestDialog && (
+        <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
+          <DialogContent className="max-w-2xl">
+            <RequestDocumentsDialog
+              contractorId={contractorId}
+              onClose={() => setShowRequestDialog(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
       
       {/* Reject Dialog */}
       {showRejectDialog && (
