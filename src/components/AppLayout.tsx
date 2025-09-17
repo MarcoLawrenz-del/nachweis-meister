@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { Logo } from '@/components/Brand/Logo';
 import { TrialBanner } from '@/components/TrialBanner';
-import { useAuthContext } from '@/auth/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -18,10 +18,10 @@ import {
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const { user, logout } = useAuthContext();
+  const { signIn, signOut, user } = useAuthContext();
 
   const handleSignOut = async () => {
-    logout();
+    signOut();
     navigate("/login");
   };
 

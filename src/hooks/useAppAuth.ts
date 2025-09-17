@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { useAuthContext } from '@/auth/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 /**
  * Hook that returns the appropriate auth context based on current route.

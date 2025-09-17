@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuthContext } from "@/auth/AuthContext";
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 
 export default function Login() {
-  const { loginWithPassword, isAuthenticated } = useAuthContext();
+  const { signIn, user } = useAuthContext();
   const nav = useNavigate();
   const location = useLocation() as any;
   const [email, setEmail] = useState("");
@@ -15,10 +15,10 @@ export default function Login() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (user) {
       nav("/app", { replace: true });
     }
-  }, [isAuthenticated, nav]);
+  }, [user, nav]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +26,7 @@ export default function Login() {
     setError("");
     
     try {
-      await loginWithPassword(email.trim(), password);
+      await signIn(email.trim(), password);
       const to = location.state?.from?.pathname || "/app";
       nav(to, { replace: true });
     } catch (err) {

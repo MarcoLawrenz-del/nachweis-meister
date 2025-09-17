@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuthContext } from "./AuthContext";
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface RequireAuthProps {
   children: React.ReactNode;
