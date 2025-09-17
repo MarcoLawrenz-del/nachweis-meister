@@ -23,12 +23,16 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  RotateCcw,
+  Download,
+  Eye,
+  Clock
 } from 'lucide-react';
 import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import { setDocumentStatus } from "@/services/contractors";
+import { setDocumentStatus, getContractor } from "@/services/contractors";
 import { sendReminderMissing } from "@/services/email";
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
@@ -37,7 +41,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getContractorMeta, getDocs } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
-import { displayName } from "@/utils/customDocs";
+import { displayName, isCustomDoc } from "@/utils/customDocs";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -173,6 +177,60 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     });
   };
 
+  const handleSendReminder = async () => {
+    const contractor = getContractor(contractorId);
+    const email = contractor?.email;
+    
+    if (!email) {
+      toast({
+        title: "Warnung",
+        description: "Keine E-Mail hinterlegt – Erinnerung nicht gesendet.",
+        variant: "default"
+      });
+      return;
+    }
+
+    // Get missing required documents
+    const missingDocs = docs
+      .filter(doc => doc.requirement === "required" && 
+        ["missing", "rejected", "expired"].includes(doc.status))
+      .map(doc => {
+        const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
+        return displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName);
+      });
+
+    if (missingDocs.length === 0) {
+      toast({
+        title: "Keine Erinnerung erforderlich",
+        description: "Alle erforderlichen Dokumente sind vollständig.",
+        variant: "default"
+      });
+      return;
+    }
+
+    try {
+      await sendReminderMissing({
+        contractorId: contractorId,
+        email: email,
+        missingDocs: missingDocs,
+        message: `Bitte reichen Sie die folgenden fehlenden Dokumente nach: ${missingDocs.join(', ')}`
+      });
+      
+      toast({
+        title: "Erinnerung versendet",
+        description: `Erinnerung für ${missingDocs.length} Dokument(e) an ${email} gesendet.`,
+        variant: "default"
+      });
+    } catch (error) {
+      console.warn('Failed to send reminder:', error);
+      toast({
+        title: "Fehler beim Senden",
+        description: "Erinnerung konnte nicht gesendet werden.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Status configuration
   const getStatusConfig = (status: string) => {
     const configs = {
@@ -279,14 +337,29 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               <FileText className="h-5 w-5" />
               Dokumente ({filteredDocs.length})
             </div>
-            {meta.lastRequestedAt && (
-              <Badge variant="secondary" className="text-xs">
-                Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), { 
-                  addSuffix: true, 
-                  locale: de 
-                })}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {meta.lastRequestedAt && (
+                <Badge variant="secondary" className="text-xs">
+                  Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), { 
+                    addSuffix: true, 
+                    locale: de 
+                  })}
+                </Badge>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSendReminder}
+                className="gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Erneut anfordern
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Exportieren
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>

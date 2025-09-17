@@ -190,8 +190,6 @@ export function NewSubcontractorWizard({
   const handleSubmit = async () => {
     if (!profile) return;
 
-    let contractorId: string | undefined;
-
     try {
       setSubmitting(true);
 
@@ -207,61 +205,81 @@ export function NewSubcontractorWizard({
 
       if (editingSubcontractor) {
         // Update existing subcontractor
-        const contractor = updateContractor(editingSubcontractor.id, subData);
-        contractorId = contractor.id;
+        try {
+          const contractor = updateContractor(editingSubcontractor.id, subData);
+          
+          toast({
+            title: "Änderungen gespeichert",
+            description: `${subcontractorData.company_name} wurde erfolgreich aktualisiert.`
+          });
 
-        toast({
-          title: "Änderungen gespeichert",
-          description: `${subcontractorData.company_name} wurde erfolgreich aktualisiert.`
-        });
-
-        // Navigate to contractor detail page
-        navigate(ROUTES.contractor(contractorId));
-        onClose();
-        if (onSuccess) onSuccess();
+          // Navigate to contractor detail page
+          navigate(ROUTES.contractor(contractor.id));
+          onClose();
+          if (onSuccess) onSuccess();
+        } catch (error: any) {
+          console.error('Error updating subcontractor:', error);
+          toast({
+            title: "Fehler",
+            description: "Nachunternehmer konnte nicht aktualisiert werden.",
+            variant: "destructive"
+          });
+        }
       } else {
-        // Create new subcontractor
-        const contractor = createContractor(subData);
-        contractorId = contractor.id;
+        // Create new subcontractor - this should always work
+        let contractorId: string;
+        try {
+          const contractor = createContractor(subData);
+          contractorId = contractor.id;
+          
+          toast({
+            title: "Nachunternehmer erstellt",
+            description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
+          });
+        } catch (error: any) {
+          console.error('Error creating subcontractor:', error);
+          toast({
+            title: "Fehler",
+            description: error.message.includes('duplicate') 
+              ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
+              : "Nachunternehmer konnte nicht gespeichert werden.",
+            variant: "destructive"
+          });
+          return; // Don't proceed if contractor creation failed
+        }
 
-        // Seed documents for contractor
-        await seedDocumentsForContractor(contractorId, selectedPackageId, requirements);
-
-        // First toast: Nachunternehmer erstellt
-        toast({
-          title: "Nachunternehmer erstellt",
-          description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
-        });
-
-        // Send invitation if email is provided
-        if (subcontractorData.contact_email && sendInvitationFlag) {
-          await sendInvitation({ contractorId: contractorId, email: subcontractorData.contact_email, message });
-          // Second toast: Einladung gesendet
-          toast({ 
-            title: "Einladung gesendet", 
-            description: subcontractorData.contact_email 
+        // Non-blocking operations: document seeding and email sending
+        try {
+          await seedDocumentsForContractor(contractorId, selectedPackageId, requirements);
+          
+          if (subcontractorData.contact_email && sendInvitationFlag) {
+            await sendInvitation({ 
+              contractorId: contractorId, 
+              email: subcontractorData.contact_email, 
+              message: message,
+              contractorName: subcontractorData.company_name
+            });
+            
+            toast({ 
+              title: "Einladung gesendet", 
+              description: subcontractorData.contact_email 
+            });
+          }
+        } catch (error: any) {
+          console.warn('Non-critical error in document seeding or email sending:', error);
+          toast({
+            title: "Warnung",
+            description: "Dokumente/Einladung können später gesendet werden.",
+            variant: "default"
           });
         }
 
-        // Navigate to contractor detail page
+        // Always navigate after successful contractor creation
         navigate(ROUTES.contractor(contractorId));
         onClose();
         if (onSuccess) onSuccess();
       }
 
-    } catch (error: any) {
-      console.error('Error creating/updating subcontractor:', error);
-      
-      // Don't show error toast if subcontractor was successfully created
-      if (typeof contractorId === 'undefined') {
-        toast({
-          title: "Fehler",
-          description: error.message.includes('duplicate') 
-            ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
-            : editingSubcontractor ? "Nachunternehmer konnte nicht aktualisiert werden." : "Nachunternehmer konnte nicht gespeichert werden.",
-          variant: "destructive"
-        });
-      }
     } finally {
       setSubmitting(false);
     }

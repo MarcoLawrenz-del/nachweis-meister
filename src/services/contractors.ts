@@ -130,6 +130,16 @@ export function aggregateContractorStatusById(contractorId: string): {
   hasRequired: boolean;
 } {
   const docs = getDocs(contractorId);
+  
+  // Safety checks - return safe defaults if data is missing
+  if (!docs) {
+    return { 
+      status: "missing", 
+      counts: { missing: 0, reviewing: 0, expiring: 0, valid: 0 }, 
+      hasRequired: false 
+    };
+  }
+
   const requiredDocs = docs.filter(d => d.requirement === "required");
   const hasRequired = requiredDocs.length > 0;
   

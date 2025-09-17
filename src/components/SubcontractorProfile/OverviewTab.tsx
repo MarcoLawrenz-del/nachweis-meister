@@ -50,8 +50,8 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   const wording = getWording('de');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   
-  // Get docs from store
-  const docs = useContractorDocuments(subId);
+  // Get docs from store (with safety fallback)
+  const docs = useContractorDocuments(subId) ?? [];
 
   // Get aggregated status and counts from centralized function
   const agg = aggregateContractorStatusById(subId);
