@@ -31,6 +31,7 @@ import { setDocumentStatus } from "@/services/contractors";
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -53,6 +54,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const [rejectReason, setRejectReason] = useState('');
   const [rejectMessage, setRejectMessage] = useState('');
   const [validityDates, setValidityDates] = useState<Record<string, string>>({});
+  const { toast } = useToast();
   
   // Load docs from store
   const docs = useContractorDocuments(contractorId);
@@ -89,11 +91,18 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       status: "accepted",
       validUntil
     });
+    
+    toast({
+      title: "Dokument akzeptiert",
+      description: `${docType.label} wurde erfolgreich akzeptiert.`,
+    });
   };
 
   // Handle reject document
   const handleReject = async () => {
     if (!showRejectDialog) return;
+    
+    const docType = DOCUMENT_TYPES.find(t => t.id === showRejectDialog.documentTypeId);
     
     await setDocumentStatus({
       contractorId,
@@ -107,6 +116,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       documentTypeId: showRejectDialog.documentTypeId, 
       reason: rejectReason, 
       message: rejectMessage 
+    });
+    
+    toast({
+      title: "Ablehnung gesendet",
+      description: `Die Ablehnung für ${docType?.label || 'das Dokument'} wurde gesendet.`,
     });
     
     setShowRejectDialog(null);
@@ -271,7 +285,13 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                     </TableCell>
                     
                     <TableCell>
-                      <Badge variant={doc.requirement === 'required' ? 'default' : 'outline'}>
+                      <Badge 
+                        variant={doc.requirement === 'required' ? 'default' : 'secondary'}
+                        className={doc.requirement === 'required' 
+                          ? 'bg-red-100 text-red-800 border-red-200' 
+                          : 'bg-blue-100 text-blue-800 border-blue-200'
+                        }
+                      >
                         {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
                       </Badge>
                     </TableCell>
@@ -320,7 +340,13 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => setShowRejectDialog({ documentTypeId: doc.documentTypeId })}
+                              onClick={() => {
+                                const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+                                const defaultReason = `Das eingereichte ${docType?.label || 'Dokument'} entspricht nicht den Anforderungen. Bitte reichen Sie ein korrigiertes Dokument ein.`;
+                                setRejectReason(defaultReason);
+                                setRejectMessage('');
+                                setShowRejectDialog({ documentTypeId: doc.documentTypeId });
+                              }}
                               className="flex items-center gap-1"
                             >
                               <XCircle className="h-3 w-3" />
