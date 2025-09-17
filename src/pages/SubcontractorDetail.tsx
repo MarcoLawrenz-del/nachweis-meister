@@ -128,6 +128,7 @@ export default function SubcontractorDetail() {
             requirements={requirements}
             emailLogs={emailLogs}
             projectId="demo-project" // Placeholder project ID
+            profile={profile}
             onAction={(action, requirementId) => {
               if (action === 'view_document') {
                 const requirement = requirements.find(r => r.id === requirementId);

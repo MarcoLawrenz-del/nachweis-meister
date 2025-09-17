@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
+import { exportContractorBundle } from '@/utils/export';
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -39,9 +40,10 @@ interface DocumentsTabProps {
   onReview: (requirementId: string, action: 'approve' | 'reject', data: any) => Promise<boolean>;
   onSendReminder: (requirementIds?: string[]) => Promise<boolean>;
   projectId?: string;
+  profile?: any; // Add profile for export functionality
 }
 
-export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSendReminder, projectId }: DocumentsTabProps) {
+export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSendReminder, projectId, profile }: DocumentsTabProps) {
   const navigate = useNavigate();
   const { id: subId } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,6 +84,12 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     } finally {
       setIsSendingReminder(false);
     }
+  };
+
+  // Handle export bundle
+  const handleExportBundle = async () => {
+    const contractorName = profile?.company_name || 'Nachunternehmer';
+    await exportContractorBundle({ contractorName, documents: [] });
   };
 
   // Status configuration
@@ -249,15 +257,26 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               <Filter className="h-5 w-5" />
               Filter & Suche
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowReminderPanel(true)}
-              className="gap-2"
-            >
-              <Send className="h-4 w-4" />
-              Erinnerung senden
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportBundle}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                ZIP Export
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowReminderPanel(true)}
+                className="gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Erinnerung senden
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
