@@ -31,6 +31,7 @@ import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ROUTES } from '@/lib/ROUTES';
 import { seedDocumentsForContractor } from "@/services/contractors";
+import { sendInvitation as sendInvitationEmail } from "@/services/email";
 
 const FormSchema = z.object({
   name: z.string().min(2, "Bitte Name angeben"),
@@ -191,8 +192,7 @@ export function NewSubcontractorWizard({
 
           // Send invitation if email is provided
           if (subcontractorData.contact_email && sendInvitation) {
-            // TODO: implement sendInvitation function
-            console.info("[TODO] sendInvitation", { contractorId: subcontractorId, email: subcontractorData.contact_email });
+            await sendInvitationEmail({ contractorId: subcontractorId, email: subcontractorData.contact_email });
           }
 
           toast({
