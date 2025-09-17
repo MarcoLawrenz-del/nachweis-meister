@@ -18,6 +18,7 @@ const Projects = lazy(() => import("./pages/Projects"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const Subcontractors = lazy(() => import("./pages/Subcontractors"));
 const SubcontractorDetail = lazy(() => import("./pages/SubcontractorDetail"));
+const PackageWizard = lazy(() => import("./pages/PackageWizard"));
 
 // Landing Pages
 const A1Entsendung = lazy(() => import("./pages/lp/A1Entsendung"));
@@ -307,11 +308,16 @@ const App = () => (
                              <Subcontractors />
                            </Suspense>
                          } />
-                         <Route path="subcontractors/:id" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <SubcontractorDetail />
-                           </Suspense>
-                         } />
+                          <Route path="subcontractors/:id" element={
+                            <Suspense fallback={<LoadingSpinner />}>
+                              <SubcontractorDetail />
+                            </Suspense>
+                          } />
+                          <Route path="projects/:projectId/subs/:subId/package" element={
+                            <Suspense fallback={<LoadingSpinner />}>
+                              <PackageWizard />
+                            </Suspense>
+                          } />
                          <Route path="requirements/:projectSubId" element={
                            <Suspense fallback={<LoadingSpinner />}>
                              <RequirementsDetail />

@@ -20,14 +20,29 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { WORDING } from '@/content/wording';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface OverviewTabProps {
   kpis: KPIData;
   requirements: RequirementWithDocument[];
   onActionClick: (action: string, requirementId?: string) => void;
+  projectId?: string;
 }
 
-export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabProps) {
+export function OverviewTab({ kpis, requirements, onActionClick, projectId }: OverviewTabProps) {
+  const navigate = useNavigate();
+  const { id: subId } = useParams<{ id: string }>();
+
+  // Calculate KPIs from requirements instead of using hardcoded values
+  const actualKpis = {
+    missing: requirements.filter(r => r.status === 'missing').length,
+    submitted: requirements.filter(r => r.status === 'submitted').length,
+    in_review: requirements.filter(r => r.status === 'in_review').length,
+    valid: requirements.filter(r => r.status === 'valid').length,
+    rejected: requirements.filter(r => r.status === 'rejected').length,
+    expiring: requirements.filter(r => r.status === 'expiring').length,
+    expired: requirements.filter(r => r.status === 'expired').length
+  };
   // Calculate completion percentage
   const totalMandatory = requirements.filter(r => r.document_types.required_by_default).length;
   const completedMandatory = requirements.filter(r => 
@@ -95,6 +110,26 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
 
   return (
     <div className="space-y-6">
+      {/* Header with Package Wizard CTA */}
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Übersicht</h2>
+          <p className="text-muted-foreground">
+            Compliance-Status und nächste Schritte
+          </p>
+        </div>
+        {projectId && (
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/projects/${projectId}/subs/${subId}/package`)}
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Dokumentenpaket wählen
+          </Button>
+        )}
+      </div>
+
       {/* KPI Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -105,7 +140,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
               </div>
               <div>
                 <p className="text-sm font-medium">Fehlend</p>
-                <p className="text-2xl font-bold text-red-600">{kpis.missing}</p>
+                <p className="text-2xl font-bold text-red-600">{actualKpis.missing}</p>
               </div>
             </div>
           </CardContent>
@@ -119,7 +154,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
               </div>
               <div>
                 <p className="text-sm font-medium">Läuft ab</p>
-                <p className="text-2xl font-bold text-yellow-600">{kpis.expiring}</p>
+                <p className="text-2xl font-bold text-yellow-600">{actualKpis.expiring + actualKpis.expired}</p>
               </div>
             </div>
           </CardContent>
@@ -133,7 +168,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
               </div>
               <div>
                 <p className="text-sm font-medium">In Prüfung</p>
-                <p className="text-2xl font-bold text-blue-600">{kpis.in_review + kpis.submitted}</p>
+                <p className="text-2xl font-bold text-blue-600">{actualKpis.in_review + actualKpis.submitted}</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +182,7 @@ export function OverviewTab({ kpis, requirements, onActionClick }: OverviewTabPr
               </div>
               <div>
                 <p className="text-sm font-medium">Gültig</p>
-                <p className="text-2xl font-bold text-green-600">{kpis.valid}</p>
+                <p className="text-2xl font-bold text-green-600">{actualKpis.valid}</p>
               </div>
             </div>
           </CardContent>

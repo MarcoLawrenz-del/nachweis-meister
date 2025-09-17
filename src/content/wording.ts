@@ -1,145 +1,36 @@
 export const WORDING = {
-  productName: "subfix",
-  pitchOneLiner: "Nachunterlagen automatisch einsammeln – nur das, was wirklich Pflicht ist.",
-  pitchSubline: "Nachunternehmer (Subunternehmer) per Link einladen. Die App fordert ausschließlich Pflichtnachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.",
-  categoryLabel: "Nachweise-Manager für Nachunternehmer (Subunternehmer)",
-  valuePillars: ["Einfachheit", "Zeitersparnis", "Rechtssicherheit", "Nur Pflichten"],
-  
-  // German/English i18n texts
-  i18n: {
-    de: {
-      // Wizard texts
-      uploadDocuments: "Nachweise hochladen für",
-      onlyRequired: "Es werden ausschließlich Pflichtnachweise angefordert.",
-      yourProgress: "Ihr Fortschritt",
-      documentsUploaded: "Dokumente hochgeladen",
-      completed: "Abgeschlossen",
-      uploadNowButton: "Jetzt hochladen",
-      finish: "Fertigstellen",
-      
-      // Upload process
-      dragDropFiles: "Dateien hier ablegen oder klicken",
-      fileSelected: "Datei ausgewählt",
-      uploading: "Lade hoch...",
-      uploadSuccess: "Upload erfolgreich",
-      uploadError: "Upload fehlgeschlagen",
-      
-      // Validation
-      checking: "Überprüfe Einladung...",
-      invalidLink: "Ungültiger Link",
-      invalidDescription: "Dieser Einladungslink ist ungültig oder abgelaufen.",
-      contactSender: "Bitte wenden Sie sich an den Absender für einen neuen Link.",
-      toHomepage: "Zur Startseite",
-      
-      // Email subjects
-      inviteSubject: "Bitte Nachweise bereitstellen",
-      approvalSubject: "Nachweis genehmigt",
-      rejectionSubject: "Nachweis abgelehnt - Nachbesserung erforderlich",
-      reminderSubject: "Erinnerung: Nachweise noch ausstehend",
-      
-      // Review actions
-      startReview: "Prüfung starten",
-      reviewStarted: "Prüfung gestartet",
-      approved: "Genehmigt",
-      rejected: "Abgelehnt",
-      escalated: "Eskaliert"
-    },
-    en: {
-      // Wizard texts
-      uploadDocuments: "Upload documents for",
-      onlyRequired: "Only required documents are requested.",
-      yourProgress: "Your Progress",
-      documentsUploaded: "documents uploaded",
-      completed: "Completed",
-      uploadNowButton: "Upload now",
-      finish: "Finish",
-      
-      // Upload process
-      dragDropFiles: "Drop files here or click to browse",
-      fileSelected: "File selected",
-      uploading: "Uploading...",
-      uploadSuccess: "Upload successful",
-      uploadError: "Upload failed",
-      
-      // Validation
-      checking: "Verifying invitation...",
-      invalidLink: "Invalid Link",
-      invalidDescription: "This invitation link is invalid or expired.",
-      contactSender: "Please contact the sender for a new link.",
-      toHomepage: "To Homepage",
-      
-      // Email subjects
-      inviteSubject: "Please provide required documents",
-      approvalSubject: "Document approved",
-      rejectionSubject: "Document rejected - correction required",
-      reminderSubject: "Reminder: Documents still pending",
-      
-      // Review actions
-      startReview: "Start Review",
-      reviewStarted: "Review started",
-      approved: "Approved",
-      rejected: "Rejected", 
-      escalated: "Escalated"
-    }
-  },
-  
-  terms: {
-    subcontractor: "Nachunternehmer (Subunternehmer)",
-    requiredDoc: "Pflichtnachweis",
-    engagement: "Engagement",
-    inReview: "In Prüfung",
-    validUntil: "Gültig bis",
-    escalation: "Eskalation",
-    statusGreen: "Vollständig",
-    statusYellow: "Läuft bald ab",
-    statusRed: "Fehlt/abgelaufen"
-  },
-  cta: {
-    invite: "Einladen",
-    upload: "Hochladen",
-    review: "Prüfen",
-    remind: "Erinnern",
-    pause: "Pausieren",
-    resume: "Fortsetzen",
-    stop: "Stopp",
-    viewDemo: "Live-Demo ansehen",
-    startTrial: "14 Tage kostenlos testen"
-  },
-  trialBanner: "Testphase: 14 Tage verbleibend. Aktivieren Sie jetzt Ihren Plan, um nahtlos weiterzuarbeiten.",
-  empty: {
-    noDuties: "Für diesen Nachunternehmer (Subunternehmer) sind aktuell keine Pflichtnachweise erforderlich.",
-    noInReview: "Keine Nachweise im Status \"In Prüfung\"."
-  },
-  info: {
-    onlyRequiredWarn: "Nur Pflichtnachweise werden angefordert und als fehlend gewarnt.",
-    globalActive: "Engagements sind optional – die Nachweisprüfung läuft auch global.",
-    monthlyAuto: "Monatliche Pflichten werden automatisch angefordert und erinnert."
-  },
-  
-  // Package wizard
+  // Package Wizard
   packageWizard: {
-    de: 'Dokumentenpaket auswählen',
-    en: 'Select Document Package'
+    de: 'Dokumentenpaket wählen',
+    en: 'Choose Document Package'
   },
   selectPackage: {
     de: 'Paket auswählen',
     en: 'Select Package'
   },
-  standardPackage: {
-    de: 'Standard Paket',
-    en: 'Standard Package'
-  },
-  lightPackage: {
-    de: 'Light Paket', 
-    en: 'Light Package'
-  },
-  internationalPackage: {
-    de: 'Ausland Paket',
-    en: 'International Package'
-  },
   customizeDocuments: {
     de: 'Dokumente anpassen',
     en: 'Customize Documents'
+  },
+  invitationSummary: {
+    de: 'Zusammenfassung',
+    en: 'Summary'
+  },
+  sendInvitation: {
+    de: 'Einladung senden',
+    en: 'Send Invitation'
+  },
+  fullControl: {
+    de: 'Wählen Sie ein vorkonfiguriertes Paket oder passen Sie es individuell an',
+    en: 'Choose a pre-configured package or customize it individually'
+  },
+  documentRequired: {
+    de: 'Pflicht',
+    en: 'Required'
+  },
+  documentOptional: {
+    de: 'Optional',
+    en: 'Optional'
   },
   requiredDocuments: {
     de: 'Pflichtdokumente',
@@ -149,49 +40,153 @@ export const WORDING = {
     de: 'Optionale Dokumente',
     en: 'Optional Documents'
   },
-  documentRequired: {
-    de: 'Pflichtdokument',
-    en: 'Required Document'
+  productName: "subfix",
+  pitchOneLiner: "Nachunterlagen automatisch einsammeln – nur das, was wirklich Pflicht ist.",
+  pitchSubline: "Nachunternehmer (Subunternehmer) per Link einladen. Die App fordert ausschließlich Pflichtnachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.",
+  categoryLabel: "Nachweise-Manager für Nachunternehmer (Subunternehmer)",
+  valuePillars: ["Einfachheit", "Zeitersparnis", "Rechtssicherheit", "Nur Pflichten"],
+  
+  // German/English i18n texts
+  i18n: {
+    en: {
+      upload: "Upload",
+      documents: "Documents",
+      reviews: "Reviews",
+      reminders: "Reminders",
+      activity: "Activity",
+      settings: "Settings",
+      overview: "Overview",
+      status: "Status",
+      name: "Name",
+      email: "Email",
+      phone: "Phone",
+      address: "Address",
+      notes: "Notes",
+      save: "Save",
+      cancel: "Cancel",
+      delete: "Delete",
+      edit: "Edit",
+      add: "Add",
+      remove: "Remove",
+      search: "Search",
+      filter: "Filter",
+      all: "All",
+      active: "Active",
+      inactive: "Inactive",
+      pending: "Pending",
+      approved: "Approved",
+      rejected: "Rejected",
+      expired: "Expired",
+      expiring: "Expiring",
+      valid: "Valid",
+      invalid: "Invalid",
+      missing: "Missing",
+      submitted: "Submitted",
+      in_review: "In Review",
+      loading: "Loading...",
+      error: "Error",
+      success: "Success",
+      warning: "Warning",
+      info: "Info",
+      confirm: "Confirm",
+      yes: "Yes",
+      no: "No",
+      ok: "OK",
+      close: "Close",
+      back: "Back",
+      next: "Next",
+      previous: "Previous",
+      first: "First",
+      last: "Last",
+      page: "Page",
+      of: "of",
+      showing: "Showing",
+      entries: "entries",
+      total: "Total"
+    },
+    de: {
+      upload: "Hochladen",
+      documents: "Dokumente",
+      reviews: "Prüfungen",
+      reminders: "Erinnerungen",
+      activity: "Aktivität",
+      settings: "Einstellungen",
+      overview: "Übersicht",
+      status: "Status",
+      name: "Name",
+      email: "E-Mail",
+      phone: "Telefon",
+      address: "Adresse",
+      notes: "Notizen",
+      save: "Speichern",
+      cancel: "Abbrechen",
+      delete: "Löschen",
+      edit: "Bearbeiten",
+      add: "Hinzufügen",
+      remove: "Entfernen",
+      search: "Suchen",
+      filter: "Filter",
+      all: "Alle",
+      active: "Aktiv",
+      inactive: "Inaktiv",
+      pending: "Ausstehend",
+      approved: "Genehmigt",
+      rejected: "Abgelehnt",
+      expired: "Abgelaufen",
+      expiring: "Läuft ab",
+      valid: "Gültig",
+      invalid: "Ungültig",
+      missing: "Fehlend",
+      submitted: "Eingereicht",
+      in_review: "In Prüfung",
+      loading: "Wird geladen...",
+      error: "Fehler",
+      success: "Erfolgreich",
+      warning: "Warnung",
+      info: "Information",
+      confirm: "Bestätigen",
+      yes: "Ja",
+      no: "Nein",
+      ok: "OK",
+      close: "Schließen",
+      back: "Zurück",
+      next: "Weiter",
+      previous: "Zurück",
+      first: "Erste",
+      last: "Letzte",
+      page: "Seite",
+      of: "von",
+      showing: "Zeige",
+      entries: "Einträge",
+      total: "Gesamt"
+    }
   },
-  documentOptional: {
-    de: 'Optional',
-    en: 'Optional'
+  
+  complianceStatus: {
+    compliant: "Compliant",
+    non_compliant: "Nicht Compliant",
+    expiring_soon: "Läuft bald ab"
   },
-  selectedDocuments: {
-    de: 'Ausgewählte Dokumente',
-    en: 'Selected Documents'
-  },
-  sendInvitation: {
-    de: 'Einladung versenden',
-    en: 'Send Invitation'
-  },
-  invitationSummary: {
-    de: 'Einladungs-Zusammenfassung',
-    en: 'Invitation Summary'
-  },
-  documentsToRequest: {
-    de: 'Angeforderte Dokumente',
-    en: 'Requested Documents'
-  },
-  fullControl: {
-    de: 'Sie haben volle Kontrolle über die Dokumentenauswahl',
-    en: 'You have full control over document selection'
+  
+  info: {
+    onlyRequiredWarn: "Nur Pflichtnachweise werden angefordert und als fehlend gewarnt.",
+    globalActive: "Engagements sind optional – die Nachweisprüfung läuft auch global.",
+    monthlyAuto: "Monatliche Pflichten werden automatisch angefordert und erinnert."
   },
   
   email: {
     inviteSubject: "Bitte Nachweise bereitstellen",
     inviteBody: "Guten Tag {{name}},\nfür den Auftrag {{projekt}} benötigen wir folgende Pflichtnachweise: {{liste}}.\nBitte laden Sie diese unter {{link}} hoch. Vielen Dank – subfix."
-  }
-} as const;
-
-// Helper function to get localized text
-export const getText = (key: string, locale: 'de' | 'en' = 'de', fallback?: string): string => {
-  const keys = key.split('.');
-  let value: any = WORDING.i18n[locale];
+  },
   
-  for (const k of keys) {
-    value = value?.[k];
-  }
+  // Legacy terms for compatibility
+  terms: {
+    subcontractors: "Nachunternehmer",
+    projects: "Projekte",
+    documents: "Dokumente"
+  },
   
-  return value || fallback || key;
+  cta: {
+    getStarted: "Jetzt starten"
+  }
 };

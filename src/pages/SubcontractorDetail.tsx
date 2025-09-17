@@ -124,15 +124,17 @@ export default function SubcontractorDetail() {
           <OverviewTab 
             kpis={kpis}
             requirements={requirements}
+            projectId="demo-project" // Placeholder project ID
             onActionClick={(action, requirementId) => {
-              if (action === 'request_upload' && requirementId) {
-                sendReminder([requirementId]);
+              if (action === 'view_document' && requirementId) {
+                // Navigate to document detail if available
+                const requirement = requirements.find(r => r.id === requirementId);
+                if (requirement?.documents?.[0]) {
+                  navigate(`/documents/${requirement.documents[0].id}`);
+                }
               } else if (action === 'review' && requirementId) {
-                // Switch to reviews tab
-                const tabTrigger = document.querySelector('[value="reviews"]') as HTMLButtonElement;
-                tabTrigger?.click();
-              } else if (action === 'renew' && requirementId) {
-                sendReminder([requirementId]);
+                // Navigate to requirement review
+                navigate(`/requirements/${requirementId}`);
               }
             }}
           />
@@ -141,19 +143,21 @@ export default function SubcontractorDetail() {
         <TabsContent value="documents">
           <DocumentsTab 
             requirements={requirements}
+            projectId="demo-project" // Placeholder project ID
             onAction={(action, requirementId) => {
-              if (action === 'request_upload' || action === 'request_correction' || action === 'request_renewal') {
-                sendReminder([requirementId]);
-              } else if (action === 'review') {
-                // Switch to reviews tab and select requirement
-                const tabTrigger = document.querySelector('[value="reviews"]') as HTMLButtonElement;
-                tabTrigger?.click();
-              } else if (action === 'view_document') {
-                // Find and open document
+              if (action === 'view_document') {
                 const requirement = requirements.find(r => r.id === requirementId);
-                if (requirement?.documents?.[0]?.file_url) {
-                  window.open(requirement.documents[0].file_url, '_blank');
+                if (requirement?.documents?.[0]) {
+                  navigate(`/documents/${requirement.documents[0].id}`);
                 }
+              } else if (action === 'review') {
+                navigate(`/requirements/${requirementId}`);
+              } else if (action === 'request_upload') {
+                console.log('Request upload for requirement:', requirementId);
+              } else if (action === 'request_correction') {
+                console.log('Request correction for requirement:', requirementId);
+              } else if (action === 'request_renewal') {
+                console.log('Request renewal for requirement:', requirementId);
               }
             }}
           />
@@ -182,6 +186,7 @@ export default function SubcontractorDetail() {
         <TabsContent value="settings">
           <SettingsTab 
             profile={profile}
+            projectId="demo-project" // Placeholder project ID
             onUpdateProfile={updateProfile}
           />
         </TabsContent>

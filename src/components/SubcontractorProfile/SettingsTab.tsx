@@ -20,13 +20,19 @@ import {
 import { SubcontractorProfileData } from '@/hooks/useSubcontractorProfile';
 import { ComplianceFlags } from '@/components/ComplianceFlags';
 import { CompanyType } from '@/types/compliance';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, Package } from 'lucide-react';
 
 interface SettingsTabProps {
   profile: SubcontractorProfileData;
   onUpdateProfile: (updates: Partial<SubcontractorProfileData>) => Promise<boolean>;
+  projectId?: string;
 }
 
-export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
+export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTabProps) {
+  const navigate = useNavigate();
+  const { id: subId } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
     company_name: profile.company_name,
     contact_name: profile.contact_name || '',
@@ -40,6 +46,7 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [showComplianceSettings, setShowComplianceSettings] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -186,6 +193,34 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
         </CardContent>
       </Card>
 
+      {/* Document Package Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Dokumentenanforderung
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex-1">
+              <h3 className="font-medium mb-2">Dokumentenpaket wählen</h3>
+              <p className="text-sm text-muted-foreground">
+                Bestimmen Sie, welche Dokumente von diesem Nachunternehmer angefordert werden sollen.
+                Sie haben volle Kontrolle über Pflicht- und optionale Dokumente.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate(`/projects/${projectId}/subs/${subId}/package`)}
+              className="gap-2 ml-4"
+            >
+              <Package className="h-4 w-4" />
+              Paket wählen
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Contact Information */}
       <Card>
         <CardHeader>
@@ -228,18 +263,45 @@ export function SettingsTab({ profile, onUpdateProfile }: SettingsTabProps) {
         </CardContent>
       </Card>
 
-      {/* Compliance Flags */}
-      <ComplianceFlags
-        subcontractorId={profile.id}
-        currentFlags={{
-          requires_employees: profile.requires_employees,
-          has_non_eu_workers: profile.has_non_eu_workers,
-          employees_not_employed_in_germany: profile.employees_not_employed_in_germany
-        }}
-        onFlagsUpdate={() => {
-          // Flags update will trigger automatic requirement recalculation
-        }}
-      />
+      {/* Advanced Compliance Settings (Collapsible) */}
+      <Collapsible open={showComplianceSettings} onOpenChange={setShowComplianceSettings}>
+        <Card>
+          <CardHeader>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Erweiterte Compliance-Einstellungen (optional)
+                </CardTitle>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showComplianceSettings ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
+              <Alert className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Hinweis:</strong> Diese Einstellungen sind für Sonderfälle gedacht. 
+                  In den meisten Fällen reicht die Auswahl über das Dokumentenpaket aus.
+                </AlertDescription>
+              </Alert>
+              
+              <ComplianceFlags
+                subcontractorId={profile.id}
+                currentFlags={{
+                  requires_employees: profile.requires_employees,
+                  has_non_eu_workers: profile.has_non_eu_workers,
+                  employees_not_employed_in_germany: profile.employees_not_employed_in_germany
+                }}
+                onFlagsUpdate={() => {
+                  // Flags update will trigger automatic requirement recalculation
+                }}
+              />
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Notes */}
       <Card>

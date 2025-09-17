@@ -100,20 +100,33 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
         return;
       }
 
-      // Create project_sub entry first
-      const { data: projectSub, error: projectSubError } = await supabase
+      // Get or create project_sub entry
+      let projectSub: any;
+      const { data: existingProjectSub } = await supabase
         .from('project_subs')
-        .insert({
-          project_id: finalProjectId,
-          subcontractor_id: finalSubcontractorId,
-          status: 'active'
-        })
-        .select()
+        .select('*')
+        .eq('project_id', finalProjectId)
+        .eq('subcontractor_id', finalSubcontractorId)
         .single();
 
-      if (projectSubError) throw projectSubError;
+      if (existingProjectSub) {
+        projectSub = existingProjectSub;
+      } else {
+        const { data: newProjectSub, error: projectSubError } = await supabase
+          .from('project_subs')
+          .insert({
+            project_id: finalProjectId,
+            subcontractor_id: finalSubcontractorId,
+            status: 'active'
+          })
+          .select()
+          .single();
 
-      // Create requirements for selected documents
+        if (projectSubError) throw projectSubError;
+        projectSub = newProjectSub;
+      }
+
+      // Create requirements with idempotent insert (ON CONFLICT behavior)
       const requirementInserts = selectedDocuments.map(doc => ({
         project_sub_id: projectSub.id,
         document_type_id: doc.document_type_id,
@@ -121,9 +134,13 @@ export function PackageWizard({ projectId, subcontractorId, onComplete }: Packag
         due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
       }));
 
+      // Use upsert to handle duplicates
       const { error: requirementsError } = await supabase
         .from('requirements')
-        .insert(requirementInserts);
+        .upsert(requirementInserts, {
+          onConflict: 'project_sub_id,document_type_id',
+          ignoreDuplicates: false
+        });
 
       if (requirementsError) throw requirementsError;
 

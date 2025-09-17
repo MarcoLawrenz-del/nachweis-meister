@@ -28,13 +28,17 @@ import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { RequirementStatus } from '@/types/compliance';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
   onAction: (action: string, requirementId: string) => void;
+  projectId?: string;
 }
 
-export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
+export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTabProps) {
+  const navigate = useNavigate();
+  const { id: subId } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RequirementStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'mandatory' | 'optional'>('all');
@@ -354,10 +358,32 @@ export function DocumentsTab({ requirements, onAction }: DocumentsTabProps) {
                 );
               })}
               
-               {filteredRequirements.length === 0 && (
+               {filteredRequirements.length === 0 && requirements.length === 0 && (
+                 <TableRow>
+                   <TableCell colSpan={5} className="text-center py-12">
+                     <div className="flex flex-col items-center gap-4">
+                       <FileText className="h-12 w-12 text-muted-foreground" />
+                       <div className="text-center">
+                         <h3 className="text-lg font-medium mb-2">Noch keine Dokumente angefordert</h3>
+                         <p className="text-muted-foreground mb-4">
+                           Wählen Sie ein Dokumentenpaket aus, um Anforderungen zu erstellen.
+                         </p>
+                         <Button 
+                           onClick={() => navigate(`/projects/${projectId}/subs/${subId}/package`)}
+                           className="gap-2"
+                         >
+                           <Upload className="h-4 w-4" />
+                           Dokumente anfordern
+                         </Button>
+                       </div>
+                     </div>
+                   </TableCell>
+                 </TableRow>
+               )}
+               {filteredRequirements.length === 0 && requirements.length > 0 && (
                  <TableRow>
                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                     Keine Dokumente gefunden.
+                     Keine Dokumente mit den aktuellen Filtern gefunden.
                    </TableCell>
                  </TableRow>
                )}
