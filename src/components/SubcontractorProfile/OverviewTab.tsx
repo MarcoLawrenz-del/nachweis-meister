@@ -161,16 +161,6 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         </div>
       </div>
 
-      {/* Complete Banner */}
-      {showComplete && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription className="text-green-800">
-            🎉 Alles vollständig! Alle erforderlichen Dokumente sind eingereicht und gültig.
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* No Required Documents Message */}
       {requiredCount === 0 && (
         <Alert className="border-blue-200 bg-blue-50">
@@ -240,144 +230,36 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
         </Card>
       </div>
 
-      {/* Was fehlt jetzt? Section */}
-      {priorityRequirements.length > 0 ? (
-        <Card className="border-orange-200 bg-orange-50">
+      {/* Next 3 Open Required Documents */}
+      {priorityRequirements.length > 0 && (
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
-              Was fehlt jetzt?
+              Nächste Schritte
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {priorityRequirements.map((requirement) => {
-              const { actionLabel, actionIcon: ActionIcon, variant, color } = getNextAction(requirement);
-              return (
-                <div
-                  key={requirement.id}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg border"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-medium">{requirement.document_types.name_de}</h3>
-                      <StatusBadge status={requirement.status} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {requirement.document_types.description_de}
-                    </p>
-                  </div>
-                  <div className="ml-4">
-                    <Button
-                      variant={variant}
-                      size="sm"
-                      onClick={() => onActionClick(actionLabel.toLowerCase().replace(' ', '_'), requirement.id)}
-                      className={`flex items-center gap-2 ${color}`}
-                    >
-                      <ActionIcon className="h-4 w-4" />
-                      {actionLabel}
-                    </Button>
-                  </div>
+          <CardContent className="space-y-3">
+            {priorityRequirements.slice(0, 3).map((requirement) => (
+              <div
+                key={requirement.id}
+                className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200"
+              >
+                <div className="flex-1">
+                  <h3 className="font-medium">{requirement.document_types.name_de}</h3>
+                  <StatusBadge status={requirement.status} />
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-green-800 mb-2">Alles vollständig!</h3>
-            <p className="text-green-700">Für diesen Nachunternehmer sind aktuell keine Pflichtnachweise erforderlich.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* All Requirements Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Alle Pflichtanforderungen</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {requirements
-              .filter(r => r.document_types.required_by_default)
-              .map((requirement) => {
-                const { actionLabel, actionIcon: ActionIcon, variant } = getNextAction(requirement);
-                
-                return (
-                  <div key={requirement.id} 
-                       className="flex items-center justify-between p-3 border rounded">
-                    <div className="flex items-center gap-3">
-                      <StatusBadge status={requirement.status} />
-                      <span className="font-medium">{requirement.document_types.name_de}</span>
-                    </div>
-                    
-                    {requirement.status !== 'valid' && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => onActionClick(actionLabel.toLowerCase().replace(' ', '_'), requirement.id)}
-                      >
-                        <ActionIcon className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Recent Activity Timeline */}
-      {reviewHistory && reviewHistory.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Letzte Aktivitäten
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {reviewHistory.slice(0, 5).map((activity, index) => {
-                const activityConfig = {
-                  approved: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-100', label: 'Genehmigt' },
-                  rejected: { icon: XCircle, color: 'text-red-600', bg: 'bg-red-100', label: 'Abgelehnt' },
-                  submitted: { icon: Upload, color: 'text-blue-600', bg: 'bg-blue-100', label: 'Eingereicht' },
-                  default: { icon: Clock, color: 'text-gray-600', bg: 'bg-gray-100', label: 'Aktivität' }
-                };
-                
-                const config = activityConfig[activity.status as keyof typeof activityConfig] || activityConfig.default;
-                const ActivityIcon = config.icon;
-                
-                return (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full ${config.bg}`}>
-                      <ActivityIcon className={`h-4 w-4 ${config.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{config.label}</p>
-                        <Badge variant="outline" className="text-xs">
-                          {formatDistanceToNow(new Date(activity.created_at), { 
-                            addSuffix: true, 
-                            locale: de 
-                          })}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {activity.document_name || 'Dokument'} - {activity.reviewer_name || 'System'}
-                      </p>
-                      {activity.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">
-                          {activity.notes}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowRequestDialog(true)}
+                  className="gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Anfordern
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
