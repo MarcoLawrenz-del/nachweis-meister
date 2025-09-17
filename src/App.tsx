@@ -202,11 +202,6 @@ const App = () => (
                             <SubcontractorDetail />
                           </Suspense>
                         } />
-                        <Route path="projects/:projectId/subs/:subId/package" element={
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <PackageWizard />
-                          </Suspense>
-                        } />
                         <Route path="qa-runner" element={
                           <Suspense fallback={<LoadingSpinner />}>
                             <QARunner />

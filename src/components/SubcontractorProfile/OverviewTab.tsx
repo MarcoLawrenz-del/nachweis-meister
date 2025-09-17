@@ -28,8 +28,7 @@ import { WORDING } from '@/content/wording';
 import { getWording } from '@/lib/wording';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ROUTES } from '@/lib/ROUTES';
+import { useParams } from 'react-router-dom';
 import { aggregateContractorStatus, type ContractorDocument } from "@/services/contractors";
 import { isExpiring } from "@/utils/validity";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
@@ -46,8 +45,7 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId, docs = [] }: OverviewTabProps) {
-  const navigate = useNavigate();
-  const { projectId: urlProjectId, id: urlSubId } = useParams();
+  const { id: urlSubId } = useParams();
   const subId = urlSubId!;
   const wording = getWording('de');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
@@ -127,28 +125,15 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
             Compliance-Status und nächste Schritte
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowRequestDialog(true)}
-            className="gap-2"
-          >
-            <Upload className="h-4 w-4" />
-            Dokumente anfordern
-          </Button>
-          {projectId && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(ROUTES.subPackage(projectId ?? "demo-project", subId))}
-              className="gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              {wording.overview.headerCta}
-            </Button>
-          )}
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowRequestDialog(true)}
+          className="gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          Dokumente anfordern
+        </Button>
       </div>
 
       {/* Aggregated Status */}

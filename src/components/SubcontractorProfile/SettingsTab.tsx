@@ -16,12 +16,9 @@ import {
   Save,
   AlertTriangle,
   CheckCircle,
-  ChevronDown,
-  Package
+  ChevronDown
 } from 'lucide-react';
 import { SubcontractorProfileData } from '@/hooks/useSubcontractorProfile';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ROUTES } from '@/lib/ROUTES';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface SettingsTabProps {
@@ -31,8 +28,6 @@ interface SettingsTabProps {
 }
 
 export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTabProps) {
-  const navigate = useNavigate();
-  const { id: subId } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
     company_name: profile.company_name,
     contact_name: profile.contact_name || '',
@@ -186,34 +181,6 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
                 <SelectItem value="HU">Ungarn</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Document Package Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Dokumentenanforderung
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex-1">
-              <h3 className="font-medium mb-2">Dokumentenpaket wählen</h3>
-              <p className="text-sm text-muted-foreground">
-                Bestimmen Sie, welche Dokumente von diesem Nachunternehmer angefordert werden sollen.
-                Sie haben volle Kontrolle über Pflicht- und optionale Dokumente.
-              </p>
-            </div>
-            <Button
-              onClick={() => navigate(ROUTES.subPackage(projectId!, subId))}
-              className="gap-2 ml-4"
-            >
-              <Package className="h-4 w-4" />
-              Paket wählen
-            </Button>
           </div>
         </CardContent>
       </Card>
