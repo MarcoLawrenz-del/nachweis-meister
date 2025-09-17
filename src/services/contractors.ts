@@ -1,5 +1,6 @@
 export async function seedDocumentsForContractor(contractorId: string, packageId: string) {
   const items = await getPackageItems(packageId);
+  console.info("[mock] seeded docs", { contractorId, packageId, count: items.length });
   return Promise.all(items.map(it => createContractorDocument({
     contractorId,
     documentTypeId: it.documentTypeId,
@@ -14,7 +15,7 @@ export async function getPackageItems(packageId: string){
     { documentTypeId: "haftpflicht" }, { documentTypeId: "freistellungsbescheid" }, { documentTypeId: "gewerbeanmeldung" }, { documentTypeId: "unbedenklichkeitsbescheinigung" }
   ];
   // Standard
-  return [{ documentTypeId: "haftpflicht" }, { documentTypeId: "freistellungsbescheinigunq" /*sic fix later*/ }, { documentTypeId: "gewerbeanmeldung" }];
+  return [{ documentTypeId: "haftpflicht" }, { documentTypeId: "freistellungsbescheinigung" }, { documentTypeId: "gewerbeanmeldung" }];
 }
 
 export async function createContractorDocument(input: { contractorId:string; documentTypeId:string; status:"missing"|"submitted"|"expiring"|"expired"; }){
