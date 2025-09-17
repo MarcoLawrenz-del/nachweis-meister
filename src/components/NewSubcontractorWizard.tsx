@@ -30,8 +30,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ROUTES } from '@/lib/ROUTES';
-import { seedDocumentsForContractor } from "@/services/contractors";
-import { sendInvitation as sendInvitationEmail } from "@/services/email";
+import { DOCUMENT_TYPES } from "@/config/documentTypes";
+import RequirementSelector from "@/components/RequirementSelector";
+import { PACKAGE_PROFILES, seedDocumentsForContractor } from "@/services/contractors";
+import { sendInvitation } from "@/services/email";
 
 const FormSchema = z.object({
   name: z.string().min(2, "Bitte Name angeben"),
@@ -69,7 +71,7 @@ export function NewSubcontractorWizard({
   
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [sendInvitation, setSendInvitation] = useState(true);
+  const [sendInvitationFlag, setSendInvitationFlag] = useState(true);
   
   // Step 1: Basic data
   const [subcontractorData, setSubcontractorData] = useState<NewSubcontractorData>({
@@ -83,8 +85,12 @@ export function NewSubcontractorWizard({
     notes: ''
   });
 
-  // Step 2: Package selection
-  const [selectedPackageId, setSelectedPackageId] = useState<string>('');
+  // Step 2: Package selection and requirements
+  const [selectedPackageId, setSelectedPackageId] = useState<string>('Standard');
+  const [requirements, setRequirements] = useState<Record<string,"required"|"optional"|"hidden">>({});
+  const [message, setMessage] = useState(
+    "Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank."
+  );
 
   // Static package options
   const staticPackages = [
@@ -123,6 +129,13 @@ export function NewSubcontractorWizard({
       setCurrentStep(1);
     }
   }, [editingSubcontractor, isOpen]);
+
+  // Sync requirements with selected package
+  useEffect(() => {
+    const base = PACKAGE_PROFILES[selectedPackageId] ?? {};
+    const filled = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, base[d.id] ?? d.defaultRequirement]));
+    setRequirements(filled);
+  }, [selectedPackageId]);
 
 
   const handleNextStep = () => {
@@ -188,16 +201,16 @@ export function NewSubcontractorWizard({
           subcontractorId = newSub.id;
 
           // Seed documents for contractor
-          await seedDocumentsForContractor(subcontractorId, selectedPackageId);
+          await seedDocumentsForContractor(subcontractorId, selectedPackageId, requirements);
 
           // Send invitation if email is provided
-          if (subcontractorData.contact_email && sendInvitation) {
-            await sendInvitationEmail({ contractorId: subcontractorId, email: subcontractorData.contact_email });
+          if (subcontractorData.contact_email && sendInvitationFlag) {
+            await sendInvitation({ contractorId: subcontractorId, email: subcontractorData.contact_email, message });
           }
 
           toast({
             title: "Nachunternehmer erstellt",
-            description: `${subcontractorData.company_name} wurde erfolgreich erstellt${sendInvitation ? ' und eingeladen' : ''}.`
+            description: `${subcontractorData.company_name} wurde erfolgreich erstellt${sendInvitationFlag ? ' und eingeladen' : ''}.`
           });
 
           onClose();
@@ -353,11 +366,11 @@ export function NewSubcontractorWizard({
             {/* Package Selection */}
             <div>
               <Label className="text-base font-medium">Paket auswählen</Label>
-              <div className="grid gap-3 mt-3">
+              <div className="grid gap-2 mt-3">
                 {staticPackages.map((pkg) => (
                   <div
                     key={pkg.id}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                    className={`text-sm p-2 gap-2 rounded-lg border-2 cursor-pointer transition-colors ${
                       selectedPackageId === pkg.id
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/50'
@@ -366,11 +379,11 @@ export function NewSubcontractorWizard({
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold">{pkg.name}</h3>
-                        <p className="text-sm text-muted-foreground">{pkg.description}</p>
+                        <h4 className="text-sm font-semibold">{pkg.name}</h4>
+                        <p className="text-xs text-muted-foreground">{pkg.description}</p>
                       </div>
                       {selectedPackageId === pkg.id && (
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
                       )}
                     </div>
                   </div>
@@ -378,22 +391,58 @@ export function NewSubcontractorWizard({
               </div>
             </div>
 
-            {/* Send Invitation Option */}
-            <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg">
-              <Checkbox
-                id="send_invitation"
-                checked={sendInvitation}
-                onCheckedChange={(checked) => setSendInvitation(checked === true)}
-              />
-              <div className="flex-1">
-                <Label htmlFor="send_invitation" className="font-medium cursor-pointer">
-                  Direkt Einladung senden
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Sendet automatisch eine E-Mail mit Upload-Link
-                </p>
+            {/* Document Requirements Matrix */}
+            <div className="mt-4 border rounded-xl">
+              <div className="grid grid-cols-2 px-3 py-2 text-xs uppercase text-muted-foreground">
+                <div>Dokument</div><div>Anforderung</div>
               </div>
-              <Mail className="h-4 w-4 text-blue-600" />
+              {DOCUMENT_TYPES.map(dt => (
+                <div key={dt.id} className="grid grid-cols-2 items-center px-3 py-2 border-t">
+                  <div className="text-sm">{dt.label}</div>
+                  <div className="justify-self-end">
+                    <RequirementSelector
+                      compact
+                      value={requirements[dt.id]}
+                      onChange={(v) => setRequirements(s => ({ ...s, [dt.id]: v }))}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Send Invitation Option */}
+            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="send_invitation"
+                  checked={sendInvitationFlag}
+                  onCheckedChange={(checked) => setSendInvitationFlag(checked === true)}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="send_invitation" className="font-medium cursor-pointer">
+                    Direkt Einladung senden
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Sendet automatisch eine E-Mail mit Upload-Link
+                  </p>
+                </div>
+                <Mail className="h-4 w-4 text-blue-600" />
+              </div>
+              {sendInvitationFlag && (
+                <div className="space-y-2">
+                  <Label htmlFor="invitation_message" className="text-sm font-medium">
+                    Einladungstext
+                  </Label>
+                  <Textarea
+                    id="invitation_message"
+                    className="w-full text-sm border rounded-lg p-2"
+                    rows={4}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Einladungstext eingeben..."
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

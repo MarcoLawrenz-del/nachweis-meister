@@ -32,8 +32,8 @@ export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
   },
 };
 
-export async function seedDocumentsForContractor(contractorId: string, packageId: string) {
-  const profile = PACKAGE_PROFILES[packageId] ?? {};
+export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>) {
+  const profile = customRequirements || (PACKAGE_PROFILES[packageId] ?? {});
   const created: ContractorDocument[] = [];
   const seen = ((globalThis as any).__DOC_SEED__ ??= new Set<string>()) as Set<string>;
   
