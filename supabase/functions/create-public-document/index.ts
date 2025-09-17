@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Email identities configuration
+const EMAIL_IDENTITIES = {
+  invitations: 'invitations@subfix.de',
+  reminders: 'reminders@subfix.de', 
+  reviews: 'reviews@subfix.de',
+  onboarding: 'onboarding@subfix.de',
+  team: 'team@subfix.de',
+  support: 'support@subfix.de'
+};
+
 interface CreateDocumentRequest {
   requirement_id: string;
   file_name: string;

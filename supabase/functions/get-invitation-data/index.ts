@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Email identities configuration
+const EMAIL_IDENTITIES = {
+  invitations: 'invitations@subfix.de',
+  reminders: 'reminders@subfix.de', 
+  reviews: 'reviews@subfix.de',
+  onboarding: 'onboarding@subfix.de',
+  team: 'team@subfix.de',
+  support: 'support@subfix.de'
+};
+
 interface GetInvitationRequest {
   token: string;
 }
@@ -123,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
           const documentTypeIds = [...new Set(requirements.map(r => r.document_type_id))];
           const { data: documentTypes, error: docTypeError } = await supabaseClient
             .from('document_types')
-            .select('id, name_de, code, description_de')
+            .select('id, name_de, code, description_de, required_by_default')
             .in('id', documentTypeIds);
 
           if (docTypeError) throw docTypeError;
@@ -257,7 +267,7 @@ const handler = async (req: Request): Promise<Response> => {
       const documentTypeIds = [...new Set(requirements.map(r => r.document_type_id))];
       const { data: documentTypes, error: docTypeError } = await supabaseClient
         .from('document_types')
-        .select('id, name_de, code, description_de')
+        .select('id, name_de, code, description_de, required_by_default')
         .in('id', documentTypeIds);
 
       if (docTypeError) throw docTypeError;

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -18,8 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DragDropUpload from '@/components/DragDropUpload';
-import HelpTooltip from '@/components/HelpTooltip';
 import { DocumentTypeTooltip } from '@/components/DocumentTypeTooltip';
+import { WORDING } from '@/content/wording';
 import { 
   Upload,
   FileText,
@@ -28,12 +29,14 @@ import {
   Building2,
   Calendar,
   Clock,
-  ArrowRight,
   Save,
-  ExternalLink
+  ChevronDown,
+  ChevronUp,
+  Smartphone,
+  Camera
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 
 interface Invitation {
   id: string;
@@ -46,6 +49,7 @@ interface Invitation {
       tenant: {
         name: string;
         logo_url: string | null;
+        locale_default?: string;
       };
     };
     subcontractor: {
@@ -56,12 +60,13 @@ interface Invitation {
 
 interface Requirement {
   id: string;
-  status: 'missing' | 'in_review' | 'valid' | 'expiring' | 'expired';
+  status: 'missing' | 'submitted' | 'in_review' | 'valid' | 'expiring' | 'expired' | 'rejected';
   due_date: string | null;
   document_type: {
     name_de: string;
     code: string;
     description_de: string;
+    required_by_default: boolean;
   };
   documents: Document[];
 }
@@ -86,13 +91,14 @@ export default function PublicUpload() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedRequirement, setSelectedRequirement] = useState<Requirement | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [showOptional, setShowOptional] = useState(false);
+  const [locale, setLocale] = useState<'de' | 'en'>('de');
   const [uploadData, setUploadData] = useState({
     file: null as File | null,
     validFrom: '',
     validTo: '',
     documentNumber: ''
   });
-  const [showCompleted, setShowCompleted] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,31 +107,58 @@ export default function PublicUpload() {
     }
   }, [token]);
 
+  const getText = (key: string, fallback: string) => {
+    // Simple i18n helper
+    const texts = {
+      de: {
+        uploadInvitation: 'Lade Einladungsdaten...',
+        invitationNotFound: 'Einladung nicht gefunden',
+        invitationInvalid: 'Diese Einladung ist ungültig oder abgelaufen.',
+        uploadDocuments: 'Nachweise hochladen für',
+        onlyRequired: 'Es werden ausschließlich Pflichtnachweise angefordert.',
+        yourProgress: 'Ihr Fortschritt',
+        documentsUploaded: 'Dokumente hochgeladen',
+        completed: 'Abgeschlossen',
+        uploadNowButton: 'Jetzt hochladen',
+        finish: 'Fertigstellen'
+      },
+      en: {
+        uploadInvitation: 'Loading invitation data...',
+        invitationNotFound: 'Invitation not found',
+        invitationInvalid: 'This invitation is invalid or expired.',
+        uploadDocuments: 'Upload documents for',
+        onlyRequired: 'Only required documents are requested.',
+        yourProgress: 'Your Progress',
+        documentsUploaded: 'documents uploaded',
+        completed: 'Completed',
+        uploadNowButton: 'Upload now',
+        finish: 'Finish'
+      }
+    };
+    return texts[locale]?.[key as keyof typeof texts['de']] || fallback;
+  };
+
   const fetchInvitationData = async () => {
     if (!token) return;
 
     try {
-      // Fetch invitation details via Edge Function (bypasses RLS and type issues)
-      const { data: inviteResponse, error: inviteError } = await supabase.functions.invoke('get-invitation-data', {
+      const { data: inviteResponse, error } = await supabase.functions.invoke('get-invitation-data', {
         body: { token }
       });
 
-      if (inviteError || !inviteResponse?.data) throw new Error('Invitation not found');
-      const inviteData = inviteResponse.data;
-
-      if (inviteError) throw inviteError;
-      setInvitation(inviteData);
-
-      // Requirements are included in the invitation response
+      if (error || !inviteResponse?.data) throw new Error('Invitation not found');
+      
+      setInvitation(inviteResponse.data);
+      setLocale(inviteResponse.data.project_sub?.project?.tenant?.locale_default || 'de');
       setRequirements((inviteResponse.requirements || []).map((req: any) => ({
         ...req,
-        status: req.status as 'missing' | 'in_review' | 'valid' | 'expiring' | 'expired'
+        status: req.status as 'missing' | 'submitted' | 'in_review' | 'valid' | 'expiring' | 'expired' | 'rejected'
       })));
     } catch (error: any) {
       console.error('Error fetching invitation data:', error);
       toast({
-        title: "Einladung nicht gefunden",
-        description: "Diese Einladung ist ungültig oder abgelaufen.",
+        title: getText('invitationNotFound', 'Einladung nicht gefunden'),
+        description: getText('invitationInvalid', 'Diese Einladung ist ungültig oder abgelaufen.'),
         variant: "destructive"
       });
     } finally {
@@ -140,12 +173,10 @@ export default function PublicUpload() {
       setUploadLoading(true);
       setUploadProgress(10);
 
-      // Generate unique file name
       const fileExt = uploadData.file.name.split('.').pop();
       const fileName = `${selectedRequirement.document_type.code}_${Date.now()}.${fileExt}`;
       const filePath = `${invitation.project_sub.project.tenant.name}/${selectedRequirement.id}/${fileName}`;
 
-      // Upload file to Supabase Storage with progress tracking
       const { error: uploadError } = await supabase.storage
         .from('documents')
         .upload(filePath, uploadData.file, {
@@ -156,8 +187,6 @@ export default function PublicUpload() {
       if (uploadError) throw uploadError;
       setUploadProgress(60);
 
-      // Create document record via Edge Function (bypasses RLS)
-      // This will transition the requirement from 'missing' to 'submitted'
       const { error: docError } = await supabase.functions.invoke('create-public-document', {
         body: {
           requirement_id: selectedRequirement.id,
@@ -169,7 +198,6 @@ export default function PublicUpload() {
           valid_to: uploadData.validTo || null,
           document_number: uploadData.documentNumber || null,
           invitation_token: token,
-          // Explicit state transition: missing -> submitted
           new_status: 'submitted'
         }
       });
@@ -178,25 +206,15 @@ export default function PublicUpload() {
       setUploadProgress(100);
 
       toast({
-        title: "Dokument erfolgreich hochgeladen",
-        description: `${uploadData.file.name} wurde zur Prüfung übermittelt. Sie erhalten eine Benachrichtigung über das Prüfungsergebnis.`,
-        variant: "default"
+        title: "Upload erfolgreich",
+        description: `${uploadData.file.name} wurde zur Prüfung übermittelt.`,
       });
 
-      // Reset form and refresh data
-      setUploadData({
-        file: null,
-        validFrom: '',
-        validTo: '',
-        documentNumber: ''
-      });
+      setUploadData({ file: null, validFrom: '', validTo: '', documentNumber: '' });
       setSelectedRequirement(null);
       setUploadDialogOpen(false);
       
-      // Wait a bit before refreshing to ensure backend is updated
-      setTimeout(() => {
-        fetchInvitationData();
-      }, 1000);
+      setTimeout(() => fetchInvitationData(), 1000);
     } catch (error: any) {
       console.error('Error uploading document:', error);
       toast({
@@ -210,70 +228,12 @@ export default function PublicUpload() {
     }
   };
 
-  const getStatusBadge = (status: string, documents: Document[]) => {
-    switch (status) {
-      case 'valid':
-        return <Badge className="bg-success text-success-foreground">
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Genehmigt
-        </Badge>;
-      case 'in_review':
-        return <Badge className="bg-warning text-warning-foreground">
-          <Clock className="h-3 w-3 mr-1" />
-          In Prüfung
-        </Badge>;
-      case 'expired':
-        return <Badge variant="destructive">
-          <AlertTriangle className="h-3 w-3 mr-1" />
-          Abgelaufen
-        </Badge>;
-      case 'expiring':
-        return <Badge className="bg-warning text-warning-foreground">
-          <AlertTriangle className="h-3 w-3 mr-1" />
-          Läuft ab
-        </Badge>;
-      case 'missing':
-      default:
-        return <Badge variant="outline" className="border-destructive text-destructive">
-          <Upload className="h-3 w-3 mr-1" />
-          Upload erforderlich
-        </Badge>;
-    }
-  };
-
-  const saveProgress = () => {
-    // In a real app, this would save progress to localStorage or server
-    localStorage.setItem(`upload_progress_${token}`, JSON.stringify({
-      completedRequirements: requirements.filter(r => r.documents.length > 0).map(r => r.id),
-      timestamp: Date.now()
-    }));
-    
-    toast({
-      title: "Fortschritt gespeichert",
-      description: "Sie können später fortfahren wo Sie aufgehört haben.",
-      variant: "default"
-    });
-  };
-
-  const continueToNext = () => {
-    // This could navigate to a completion page or close the window
-    window.close();
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Lade Einladungsdaten...</p>
+          <p className="text-muted-foreground">{getText('uploadInvitation', 'Lade Einladungsdaten...')}</p>
         </div>
       </div>
     );
@@ -285,9 +245,11 @@ export default function PublicUpload() {
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Einladung nicht gefunden</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {getText('invitationNotFound', 'Einladung nicht gefunden')}
+            </h2>
             <p className="text-muted-foreground">
-              Diese Einladung ist ungültig oder bereits abgelaufen.
+              {getText('invitationInvalid', 'Diese Einladung ist ungültig oder bereits abgelaufen.')}
             </p>
           </CardContent>
         </Card>
@@ -295,18 +257,17 @@ export default function PublicUpload() {
     );
   }
 
-  // Filter requirements: only show missing/required ones by default
-  const missingRequirements = requirements.filter(r => 
-    r.status === 'missing' || (r.documents.length === 0)
+  const requiredRequirements = requirements.filter(r => r.document_type.required_by_default);
+  const completedRequired = requiredRequirements.filter(r => 
+    r.documents.length > 0 || ['valid', 'submitted', 'in_review'].includes(r.status)
   );
-  const completedRequirements = requirements.filter(r => 
-    r.documents.length > 0 || r.status === 'valid'
-  );
+  const totalRequired = requiredRequirements.length;
+  const completedCount = completedRequired.length;
+  const progressPercent = totalRequired > 0 ? Math.round((completedCount / totalRequired) * 100) : 0;
   
-  const displayedRequirements = showCompleted ? requirements : missingRequirements;
-  const totalRequirements = requirements.length;
-  const completedCount = completedRequirements.length;
-  const progressPercent = totalRequirements > 0 ? Math.round((completedCount / totalRequirements) * 100) : 0;
+  const openRequirements = requiredRequirements.filter(r => 
+    r.status === 'missing' || r.status === 'rejected' || (r.documents.length === 0)
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -326,93 +287,61 @@ export default function PublicUpload() {
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-xl font-bold">
-                Nachweise für {invitation.project_sub.project.name} hochladen
+              <h1 className="text-lg md:text-xl font-bold">
+                {getText('uploadDocuments', 'Nachweise hochladen für')} {invitation.project_sub.project.name}
               </h1>
               <p className="text-sm text-muted-foreground font-medium text-primary">
-                Es werden ausschließlich Pflichtnachweise angefordert.
+                {getText('onlyRequired', 'Es werden ausschließlich Pflichtnachweise angefordert.')}
               </p>
+              {isMobile && (
+                <div className="flex items-center gap-1 mt-1">
+                  <Smartphone className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {locale === 'de' ? 'Mobil-optimiert' : 'Mobile optimized'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
-        {/* Above the fold: Progress and Project Info */}
-        <div className="space-y-4">
-          {/* Progress Bar */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold">Ihr Fortschritt</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {completedCount} von {totalRequirements} Dokumenten hochgeladen
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">{progressPercent}%</div>
-                    <div className="text-xs text-muted-foreground">Abgeschlossen</div>
-                  </div>
-                </div>
-                <Progress value={progressPercent} className="h-3" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Project Info Compact */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-muted-foreground">Projekt:</span>
-                  <p className="font-medium">{invitation.project_sub.project.name}</p>
-                  <p className="text-xs text-muted-foreground">{invitation.project_sub.project.code}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Unternehmen:</span>
-                  <p className="font-medium">{invitation.project_sub.subcontractor.company_name}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-muted-foreground">Noch erforderlich:</span>
-                  <p className="font-medium text-destructive">{missingRequirements.length} Dokumente</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Open Requirements List */}
-        {missingRequirements.length > 0 && !showCompleted && (
-          <Card>
-            <CardHeader>
+        {/* Progress */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-6">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg flex items-center">
-                    <Upload className="mr-2 h-5 w-5 text-destructive" />
-                    Offene Pflichtnachweise ({missingRequirements.length})
-                  </CardTitle>
-                  <CardDescription>
-                    Nur Pflichtnachweise werden angefordert. Jetzt hochladen:
-                  </CardDescription>
+                  <h2 className="text-lg font-semibold">{getText('yourProgress', 'Ihr Fortschritt')}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {completedCount} {locale === 'de' ? 'von' : 'of'} {totalRequired} {getText('documentsUploaded', 'Dokumente hochgeladen')}
+                  </p>
                 </div>
-                {completedRequirements.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCompleted(true)}
-                  >
-                    Alle anzeigen
-                  </Button>
-                )}
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-primary">{progressPercent}%</div>
+                  <div className="text-xs text-muted-foreground">{getText('completed', 'Abgeschlossen')}</div>
+                </div>
               </div>
+              <Progress value={progressPercent} className="h-3" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Required Documents */}
+        {openRequirements.length > 0 && (
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <Upload className="mr-2 h-5 w-5 text-destructive" />
+                Pflichtnachweise ({openRequirements.length})
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {missingRequirements.map((requirement) => (
+            <CardContent className="space-y-3">
+              {openRequirements.map((requirement) => (
                 <Card key={requirement.id} className="border-destructive/20 bg-destructive/5">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
+                    <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center justify-between'} gap-4`}>
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">{requirement.document_type.name_de}</h3>
@@ -421,29 +350,17 @@ export default function PublicUpload() {
                         <p className="text-sm text-muted-foreground">
                           {requirement.document_type.description_de}
                         </p>
-                        {requirement.due_date && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            Fällig: {format(new Date(requirement.due_date), 'dd.MM.yyyy', { locale: de })}
-                          </div>
-                        )}
-                        <div className="pt-1">
-                          {getStatusBadge(requirement.status, requirement.documents)}
-                        </div>
                       </div>
-                      <div>
-                        <Button 
-                          onClick={() => {
-                            setSelectedRequirement(requirement);
-                            setUploadDialogOpen(true);
-                          }}
-                          className="bg-primary hover:bg-primary/90"
-                          data-testid="upload-start"
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Jetzt hochladen
-                        </Button>
-                      </div>
+                      <Button 
+                        onClick={() => {
+                          setSelectedRequirement(requirement);
+                          setUploadDialogOpen(true);
+                        }}
+                        className={`bg-primary hover:bg-primary/90 ${isMobile ? 'w-full' : ''}`}
+                      >
+                        {isMobile ? <Camera className="h-4 w-4 mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                        {getText('uploadNowButton', 'Jetzt hochladen')}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -452,110 +369,39 @@ export default function PublicUpload() {
           </Card>
         )}
 
-        {/* All Requirements (when showing completed) */}
-        {showCompleted && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  Alle Dokumente ({requirements.length})
-                </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCompleted(false)}
-                >
-                  Nur offene anzeigen
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {requirements.map((requirement) => (
-                <Card key={requirement.id} className={`${
-                  requirement.status === 'valid' ? 'border-success/20 bg-success/5' :
-                  requirement.status === 'in_review' ? 'border-warning/20 bg-warning/5' :
-                  'border-destructive/20 bg-destructive/5'
-                }`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{requirement.document_type.name_de}</h3>
-                          <DocumentTypeTooltip code={requirement.document_type.code} />
-                        </div>
-                        {requirement.documents.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <FileText className="h-3 w-3" />
-                            <span>{requirement.documents[0].file_name}</span>
-                            {requirement.status === 'in_review' && (
-                              <span className="text-warning font-medium">• Wird geprüft</span>
-                            )}
-                          </div>
-                        )}
-                        <div>
-                          {getStatusBadge(requirement.status, requirement.documents)}
-                        </div>
-                      </div>
-                      {requirement.status !== 'valid' && (
-                        <Button 
-                          size="sm"
-                          variant={requirement.documents.length > 0 ? "outline" : "primary"}
-                          onClick={() => {
-                            setSelectedRequirement(requirement);
-                            setUploadDialogOpen(true);
-                          }}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {requirement.documents.length > 0 ? 'Neu hochladen' : 'Hochladen'}
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Action Buttons */}
-        <div className="sticky bottom-0 bg-background border-t p-4 -mx-4">
-          <div className="flex gap-3 justify-center max-w-md mx-auto">
-            <Button 
-              variant="outline" 
-              onClick={saveProgress}
-              className="flex-1"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Später abschließen
-            </Button>
-            {missingRequirements.length === 0 && (
-              <Button 
-                onClick={continueToNext}
-                className="flex-1 bg-success hover:bg-success/90"
-              >
-                <ArrowRight className="h-4 w-4 mr-2" />
-                Fertig
+        {/* Completion */}
+        {progressPercent === 100 && (
+          <Card className="border-success bg-success/5">
+            <CardContent className="p-6 text-center">
+              <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-success mb-2">
+                {locale === 'de' ? 'Upload abgeschlossen!' : 'Upload completed!'}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {locale === 'de' 
+                  ? 'Alle erforderlichen Dokumente wurden eingereicht.'
+                  : 'All required documents have been submitted.'
+                }
+              </p>
+              <Button onClick={() => window.close()}>
+                {getText('finish', 'Fertigstellen')}
               </Button>
-            )}
-          </div>
-        </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className={`${isMobile ? 'sm:max-w-[95vw] h-[90vh] overflow-y-auto' : 'sm:max-w-md'}`}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Dokument hochladen
+              {isMobile ? <Camera className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+              Datei hochladen
             </DialogTitle>
-            <DialogDescription>
-              {selectedRequirement?.document_type.name_de} für {invitation.project_sub.subcontractor.company_name}
-            </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-6">
-            {/* Drag & Drop Upload */}
+
+          <div className="space-y-4">
             <DragDropUpload
               onFileSelect={(file) => setUploadData(prev => ({ ...prev, file }))}
               selectedFile={uploadData.file}
@@ -564,76 +410,47 @@ export default function PublicUpload() {
               onCancel={() => setUploadData(prev => ({ ...prev, file: null }))}
             />
 
-            {/* Validity Dates */}
             {uploadData.file && !uploadLoading && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                   <div>
-                    <Label htmlFor="valid_from">Gültig von (optional)</Label>
+                    <Label htmlFor="valid-from">Gültig von</Label>
                     <Input
-                      id="valid_from"
+                      id="valid-from"
                       type="date"
                       value={uploadData.validFrom}
                       onChange={(e) => setUploadData(prev => ({ ...prev, validFrom: e.target.value }))}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="valid_to">Gültig bis (optional)</Label>
+                    <Label htmlFor="valid-to">Gültig bis</Label>
                     <Input
-                      id="valid_to"
+                      id="valid-to"
                       type="date"
                       value={uploadData.validTo}
                       onChange={(e) => setUploadData(prev => ({ ...prev, validTo: e.target.value }))}
                     />
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="document_number">Dokumentennummer (optional)</Label>
-                  <Input
-                    id="document_number"
-                    placeholder="z.B. Zertifikatsnummer, Bescheinigungsnummer"
-                    value={uploadData.documentNumber}
-                    onChange={(e) => setUploadData(prev => ({ ...prev, documentNumber: e.target.value }))}
-                  />
-                </div>
               </div>
-            )}
-
-            {/* Processing Info */}
-            {uploadProgress === 100 && (
-              <Card className="border-success bg-success/5">
-                <CardContent className="p-4 text-center">
-                  <CheckCircle className="h-8 w-8 text-success mx-auto mb-2" />
-                  <h3 className="font-medium text-success">Upload erfolgreich!</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ihr Dokument wird in der Regel binnen 2-3 Werktagen geprüft.
-                    Sie erhalten eine E-Mail-Benachrichtigung über das Ergebnis.
-                  </p>
-                </CardContent>
-              </Card>
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className={isMobile ? 'flex-col space-y-2' : ''}>
             <Button 
               variant="outline" 
-              onClick={() => {
-                setUploadDialogOpen(false);
-                setUploadData({ file: null, validFrom: '', validTo: '', documentNumber: '' });
-              }} 
-              disabled={uploadLoading}
+              onClick={() => setUploadDialogOpen(false)}
+              className={isMobile ? 'w-full' : ''}
             >
-              {uploadProgress === 100 ? 'Schließen' : 'Abbrechen'}
+              Abbrechen
             </Button>
-            {uploadData.file && uploadProgress !== 100 && (
-              <Button 
-                onClick={handleFileUpload}
-                disabled={uploadLoading}
-              >
-                {uploadLoading ? 'Wird hochgeladen...' : 'Hochladen'}
-              </Button>
-            )}
+            <Button 
+              onClick={handleFileUpload}
+              disabled={!uploadData.file || uploadLoading}
+              className={isMobile ? 'w-full' : ''}
+            >
+              {uploadLoading ? 'Lade hoch...' : 'Hochladen'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
