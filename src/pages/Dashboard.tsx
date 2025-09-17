@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Plus, FileText, Upload, Users, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
+import { Plus, FileText, Upload, Users, AlertTriangle, Clock, CheckCircle2, Settings, Building } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,31 +10,46 @@ import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { subscribe as subscribeContractors } from "@/services/contractors.store";
 import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
+import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
 
-function KPICard({ title, value, icon: Icon, variant = "default" }: {
+function NavigationCard({ 
+  title, 
+  description, 
+  icon: Icon, 
+  to, 
+  variant = "default" 
+}: {
   title: string;
-  value: number;
+  description: string;
   icon: any;
-  variant?: "default" | "warning" | "success";
+  to: string;
+  variant?: "default" | "primary";
 }) {
-  const colorClass = variant === "warning" ? "text-orange-600" : 
-                    variant === "success" ? "text-green-600" : 
-                    "text-primary";
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Navigation handled by Link component
+    }
+  };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className={`h-4 w-4 ${colorClass}`} />
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${colorClass}`}>
-          {value}
-        </div>
-      </CardContent>
-    </Card>
+    <Link to={to} className="block">
+      <Card 
+        className={`cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none ${
+          variant === 'primary' ? 'border-primary bg-primary/5' : ''
+        }`}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      >
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+          <Icon className={`h-8 w-8 ${variant === 'primary' ? 'text-primary' : 'text-muted-foreground'}`} />
+        </CardHeader>
+      </Card>
+    </Link>
   );
 }
 
@@ -42,6 +57,7 @@ export default function Dashboard() {
   const [kpis, setKpis] = useState(() => calculateOrgKPIs());
   const [recentlyRequested, setRecentlyRequested] = useState(() => getRecentlyRequested());
   const [expiringDocs, setExpiringDocs] = useState(() => getExpiringDocs());
+  const [showNewSubcontractorWizard, setShowNewSubcontractorWizard] = useState(false);
 
   // Update data when stores change
   useEffect(() => {
@@ -89,55 +105,105 @@ export default function Dashboard() {
           <p className="text-muted-foreground">Überblick über Ihre Organisation</p>
         </div>
         
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/app/subcontractors/new">
-              <Plus className="w-4 h-4 mr-2" />
-              Neuer Nachunternehmer
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/app/subcontractors">
-              <FileText className="w-4 h-4 mr-2" />
-              Dokumente anfordern
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/upload">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload (Demo)
-            </Link>
-          </Button>
-        </div>
+        {/* Primary Action Button */}
+        <Button 
+          size="lg" 
+          onClick={() => setShowNewSubcontractorWizard(true)}
+          className="button-primary"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Neuer Nachunternehmer
+        </Button>
+      </div>
+
+      {/* Navigation Cards */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <NavigationCard
+          title="Nachunternehmer"
+          description="Verwalten Sie alle Nachunternehmer und deren Dokumente"
+          icon={Users}
+          to="/app/subcontractors"
+          variant="primary"
+        />
+        <NavigationCard
+          title="Einstellungen"
+          description="Team, Benachrichtigungen und Systemeinstellungen"
+          icon={Settings}
+          to="/app/einstellungen"
+        />
+        <NavigationCard
+          title="Upload (Demo)"
+          description="Dokumente hochladen und verwalten"
+          icon={Upload}
+          to="/upload"
+        />
       </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title="Aktive Nachunternehmer"
-          value={kpis.activeContractors}
-          icon={Users}
-          variant="default"
-        />
-        <KPICard
-          title="Fehlende Pflichtdokumente"
-          value={kpis.missingRequiredDocs}
-          icon={AlertTriangle}
-          variant="warning"
-        />
-        <KPICard
-          title="In Prüfung"
-          value={kpis.inReview}
-          icon={Clock}
-          variant="default"
-        />
-        <KPICard
-          title="Laufen ab (≤30 Tage)"
-          value={kpis.expiring}
-          icon={CheckCircle2}
-          variant="warning"
-        />
+        <Link to="/app/subcontractors" className="block">
+          <Card className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" tabIndex={0}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Aktive Nachunternehmer
+              </CardTitle>
+              <Users className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">
+                {kpis.activeContractors}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/app/subcontractors" className="block">
+          <Card className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" tabIndex={0}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Fehlende Pflichtdokumente
+              </CardTitle>
+              <AlertTriangle className="h-4 w-4 text-warn-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warn-600">
+                {kpis.missingRequiredDocs}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/app/subcontractors" className="block">
+          <Card className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" tabIndex={0}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                In Prüfung
+              </CardTitle>
+              <Clock className="h-4 w-4 text-info-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-info-600">
+                {kpis.inReview}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/app/subcontractors" className="block">
+          <Card className="cursor-pointer transition-colors hover:bg-muted/50 focus:ring-2 focus:ring-primary focus:outline-none" tabIndex={0}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Laufen ab (≤30 Tage)
+              </CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-warn-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warn-600">
+                {kpis.expiring}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Tables */}
@@ -216,11 +282,11 @@ export default function Dashboard() {
                       <TableCell className="text-sm">
                         {item.contractor.company_name}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-orange-600 border-orange-600">
-                          {formatDate(item.validUntil)}
-                        </Badge>
-                      </TableCell>
+                       <TableCell>
+                         <Badge variant="outline" className="text-warn-600 border-warn-600/20">
+                           {formatDate(item.validUntil)}
+                         </Badge>
+                       </TableCell>
                       <TableCell>
                         <Button variant="outline" size="sm" asChild>
                           <Link to={`/app/subcontractors/${item.contractor.id}`}>
@@ -237,9 +303,17 @@ export default function Dashboard() {
                 Keine ablaufenden Dokumente
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+           </CardContent>
+         </Card>
+       </div>
+
+       {/* NewSubcontractorWizard Dialog */}
+       {showNewSubcontractorWizard && (
+         <NewSubcontractorWizard 
+           isOpen={showNewSubcontractorWizard}
+           onClose={() => setShowNewSubcontractorWizard(false)}
+         />
+       )}
+     </div>
+   );
+ }
