@@ -4,10 +4,6 @@ export const EMAIL_CONFIG = {
     from: 'invitations@subfix.de',
     replyTo: 'support@subfix.de'
   },
-  reminders: {
-    from: 'reminders@subfix.de', 
-    replyTo: 'support@subfix.de'
-  },
   reviews: {
     from: 'reviews@subfix.de',
     replyTo: 'support@subfix.de'

@@ -87,7 +87,7 @@ export const WORDING = {
   // Legacy properties for backward compatibility
   productName: "subfix",
   pitchOneLiner: "Nachunterlagen automatisch einsammeln – nur das, was wirklich Pflicht ist.",
-  pitchSubline: "Nachunternehmer (Subunternehmer) per Link einladen. Die App fordert ausschließlich Pflichtnachweise an, erinnert automatisch und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.",
+  pitchSubline: "Nachunternehmer (Subunternehmer) per Link einladen. Die App fordert ausschließlich Pflichtnachweise an und zeigt klar, was fehlt – einfach, zeitsparend und rechtssicher.",
   categoryLabel: "Nachweise-Manager für Nachunternehmer (Subunternehmer)",
   valuePillars: ["Einfachheit", "Zeitersparnis", "Rechtssicherheit", "Nur Pflichten"],
   
@@ -100,7 +100,7 @@ export const WORDING = {
   info: {
     onlyRequiredWarn: "Nur Pflichtnachweise werden angefordert und als fehlend gewarnt.",
     globalActive: "Engagements sind optional – die Nachweisprüfung läuft auch global.",
-    monthlyAuto: "Monatliche Pflichten werden automatisch angefordert und erinnert."
+    monthlyAuto: "Monatliche Pflichten werden automatisch angefordert."
   },
   
   email: {
@@ -121,47 +121,5 @@ export const WORDING = {
   cta: {
     getStarted: "Jetzt starten",
     startTrial: "Kostenlos testen"
-  },
-  
-  // Legacy package wizard properties for backward compatibility
-  packageWizard: {
-    de: 'Dokumentenpaket wählen',
-    en: 'Choose Document Package'
-  },
-  selectPackage: {
-    de: 'Paket auswählen',
-    en: 'Select Package'
-  },
-  customizeDocuments: {
-    de: 'Dokumente anpassen',
-    en: 'Customize Documents'
-  },
-  invitationSummary: {
-    de: 'Zusammenfassung',
-    en: 'Summary'
-  },
-  sendInvitation: {
-    de: 'Einladung senden',
-    en: 'Send Invitation'
-  },
-  fullControl: {
-    de: 'Wählen Sie ein vorkonfiguriertes Paket oder passen Sie es individuell an',
-    en: 'Choose a pre-configured package or customize it individually'
-  },
-  documentRequired: {
-    de: 'Pflicht',
-    en: 'Required'
-  },
-  documentOptional: {
-    de: 'Optional',
-    en: 'Optional'
-  },
-  requiredDocuments: {
-    de: 'Pflichtdokumente',
-    en: 'Required Documents'
-  },
-  optionalDocuments: {
-    de: 'Optionale Dokumente',
-    en: 'Optional Documents'
   }
 } as const;

@@ -102,19 +102,6 @@ class TelemetryService {
     }, userId, tenantId);
   }
 
-  trackReminderSent(
-    requirementId: string,
-    subcontractorId: string,
-    reminderType: string,
-    tenantId?: string
-  ) {
-    this.track('ReminderSent', {
-      requirement_id: requirementId,
-      subcontractor_id: subcontractorId,
-      reminder_type: reminderType,
-    }, undefined, tenantId);
-  }
-
   trackSubcontractorActivated(
     subcontractorId: string,
     userId?: string,
