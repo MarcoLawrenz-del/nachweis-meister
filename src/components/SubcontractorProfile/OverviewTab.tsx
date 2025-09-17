@@ -29,6 +29,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
+import { aggregateContractorStatus, type ContractorDocument } from "@/services/contractors";
+import { isExpiring } from "@/utils/validity";
 
 interface OverviewTabProps {
   kpis: KPIData;
@@ -38,31 +40,21 @@ interface OverviewTabProps {
   onActionClick: (action: string, requirementId?: string) => void;
   onUpdateProfile: (updates: any) => Promise<boolean>;
   projectId?: string;
+  docs?: ContractorDocument[];
 }
 
-export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId }: OverviewTabProps) {
+export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId, docs = [] }: OverviewTabProps) {
   const navigate = useNavigate();
   const { projectId: urlProjectId, id: urlSubId } = useParams();
-  const subId = urlSubId!; // TODO: subId aus props falls verfügbar
-  const wording = getWording('de'); // Can be made dynamic based on user preference
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const subId = urlSubId!;
+  const wording = getWording('de');
 
-  // Calculate KPIs from requirements instead of using hardcoded values
-  const actualKpis = {
-    missing: requirements.filter(r => r.status === 'missing').length,
-    submitted: requirements.filter(r => r.status === 'submitted').length,
-    in_review: requirements.filter(r => r.status === 'in_review').length,
-    valid: requirements.filter(r => r.status === 'valid').length,
-    rejected: requirements.filter(r => r.status === 'rejected').length,
-    expiring: requirements.filter(r => r.status === 'expiring').length,
-    expired: requirements.filter(r => r.status === 'expired').length
-  };
-  // Calculate completion percentage
-  const totalMandatory = requirements.filter(r => r.document_types.required_by_default).length;
-  const completedMandatory = requirements.filter(r => 
-    r.document_types.required_by_default && r.status === 'valid'
-  ).length;
-  const completionPercentage = totalMandatory > 0 ? (completedMandatory / totalMandatory) * 100 : 0;
+  // Calculate KPIs from ContractorDocument[]
+  const missing = docs.filter(d => d.requirement === "required" && ["missing", "rejected", "expired"].includes(d.status)).length;
+  const reviewing = docs.filter(d => ["submitted", "in_review"].includes(d.status)).length;
+  const expiring = docs.filter(d => d.status === "accepted" && d.validUntil && isExpiring(new Date(d.validUntil), 30)).length;
+  const valid = docs.filter(d => d.status === "accepted" && (!d.validUntil || !isExpiring(new Date(d.validUntil), 30))).length;
+  const agg = aggregateContractorStatus(docs);
 
   const getNextAction = (requirement: RequirementWithDocument) => {
     switch (requirement.status) {
@@ -124,7 +116,7 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
 
   return (
     <div className="space-y-6">
-      {/* Header with Package Wizard CTA */}
+      {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Übersicht</h2>
@@ -142,10 +134,19 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
             {wording.overview.headerCta}
           </Button>
         )}
-        {/* TODO: projectId aus echtem Kontext befüllen, bis dahin Fallback "demo-project". */}
       </div>
 
-      {/* KPI Overview */}
+      {/* Complete Banner */}
+      {agg === "complete" && (
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription className="text-green-800">
+            🎉 Alles vollständig! Alle erforderlichen Dokumente sind eingereicht und gültig.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="flex items-center p-4">
@@ -154,22 +155,8 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
                 <XCircle className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">{wording.overview.missing}</p>
-                <p className="text-2xl font-bold text-red-600">{actualKpis.missing}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center p-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-yellow-100 rounded-full">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{wording.overview.expiring}</p>
-                <p className="text-2xl font-bold text-yellow-600">{actualKpis.expiring + actualKpis.expired}</p>
+                <p className="text-sm font-medium">Fehlend</p>
+                <p className="text-2xl font-bold text-red-600">{missing}</p>
               </div>
             </div>
           </CardContent>
@@ -182,8 +169,22 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">{wording.overview.inReview}</p>
-                <p className="text-2xl font-bold text-blue-600">{actualKpis.in_review + actualKpis.submitted}</p>
+                <p className="text-sm font-medium">In Prüfung</p>
+                <p className="text-2xl font-bold text-blue-600">{reviewing}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center p-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-100 rounded-full">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Läuft ab</p>
+                <p className="text-2xl font-bold text-yellow-600">{expiring}</p>
               </div>
             </div>
           </CardContent>
@@ -196,52 +197,13 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium">{wording.overview.valid}</p>
-                <p className="text-2xl font-bold text-green-600">{actualKpis.valid}</p>
+                <p className="text-sm font-medium">Gültig</p>
+                <p className="text-2xl font-bold text-green-600">{valid}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Compliance Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-              {wording.overview.progress}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Pflichtdokumente ({completedMandatory} von {totalMandatory})
-              </span>
-              <span className="text-sm font-medium">
-                {Math.round(completionPercentage)}%
-              </span>
-            </div>
-            <Progress value={completionPercentage} className="h-3" />
-            
-            {completionPercentage === 100 ? (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription className="text-green-800">
-                  ✅ Alle Pflichtdokumente sind vollständig und gültig!
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  {totalMandatory - completedMandatory} Pflichtdokument(e) fehlen oder sind ungültig.
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Was fehlt jetzt? Section */}
       {priorityRequirements.length > 0 ? (
