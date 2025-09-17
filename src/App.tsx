@@ -35,13 +35,10 @@ const Dienstleister = lazy(() => import("./pages/Dienstleister"));
 const AGB = lazy(() => import("./pages/AGB"));
 const Kontakt = lazy(() => import("./pages/Kontakt"));
 
-const ReviewQueue = lazy(() => import("./pages/ReviewQueue"));
-const Reminders = lazy(() => import("./pages/Reminders"));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));
 const Settings = lazy(() => import("./pages/Settings"));
-const RolesAccess = lazy(() => import("./pages/RolesAccess"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));

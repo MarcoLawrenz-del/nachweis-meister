@@ -681,7 +681,7 @@ export default function Dashboard() {
                 )}
               </div>
               <Button size="lg" className="bg-danger hover:bg-danger/90" asChild>
-                <Link to={ROUTES.reviewQueue}>
+                <Link to={ROUTES.contractors}>
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   Rechtliche Risiken bearbeiten
                 </Link>
@@ -795,9 +795,9 @@ export default function Dashboard() {
                   </Link>
                 </Button>
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>
-                  <Link to={ROUTES.projects}>
+                  <Link to={ROUTES.contractors}>
                     <FolderOpen className="w-4 h-4 mr-2" />
-                    Projekte ansehen
+                    Nachunternehmer ansehen
                   </Link>
                 </Button>
               </div>
