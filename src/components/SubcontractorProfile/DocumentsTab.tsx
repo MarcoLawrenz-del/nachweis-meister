@@ -33,12 +33,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { setDocumentStatus, getContractor } from "@/services/contractors";
-import { sendReminderMissing } from "@/services/email";
+import { sendReminderMissingLegacy as sendReminderMissing, getEmailErrorMessage } from "@/services/email";
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta, getDocs } from "@/services/contractorDocs.store";
+import { getContractorMeta, getDocs, setContractorMeta } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
@@ -165,16 +165,24 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         return displayName(d.documentTypeId, docType?.label || '', d.customName, d.label);
       });
     
-    await sendReminderMissing({ 
-      contractorId, 
-      email: contractorEmail ?? "",
-      missingDocs
-    });
-    
-    toast({
-      title: "Erinnerung versendet",
-      description: `${missingDocs.length} Dokument(e) angefordert`
-    });
+    try {
+      await sendReminderMissing({ 
+        contractorId, 
+        email: contractorEmail ?? "",
+        missingDocs
+      });
+      
+      toast({
+        title: "Erinnerung versendet",
+        description: `${missingDocs.length} Dokument(e) angefordert`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fehler beim Senden",
+        description: getEmailErrorMessage(error),
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSendReminder = async () => {
@@ -209,23 +217,26 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     }
 
     try {
-      await sendReminderMissing({
+      const result = await sendReminderMissing({
         contractorId: contractorId,
         email: email,
         missingDocs: missingDocs,
         message: `Bitte reichen Sie die folgenden fehlenden Dokumente nach: ${missingDocs.join(', ')}`
       });
       
+      // Update lastRequestedAt after successful send
+      setContractorMeta(contractorId, { lastRequestedAt: new Date().toISOString() });
+      
       toast({
-        title: "Erinnerung versendet",
+        title: result.isStub ? "Im Demo-Modus gesendet (Stub)" : "Erinnerung versendet",
         description: `Erinnerung für ${missingDocs.length} Dokument(e) an ${email} gesendet.`,
         variant: "default"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.warn('Failed to send reminder:', error);
       toast({
         title: "Fehler beim Senden",
-        description: "Erinnerung konnte nicht gesendet werden.",
+        description: getEmailErrorMessage(error),
         variant: "destructive"
       });
     }

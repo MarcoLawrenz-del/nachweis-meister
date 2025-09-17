@@ -32,7 +32,7 @@ import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
 import { PACKAGE_PROFILES, seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
-import { sendInvitation } from "@/services/email";
+import { sendInvitationLegacy as sendInvitation } from "@/services/email";
 import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
 
 const FormSchema = z.object({

@@ -247,10 +247,12 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
 
   const sendReminder = async (requirementIds?: string[]) => {
     try {
+      const magicLink = `${window.location.origin}/upload?cid=${subcontractorId}`;
       await sendReminderMissing({
-        contractorId: subcontractorId,
-        email: "", 
-        missingDocs: requirementIds || []
+        to: "", 
+        missingDocs: requirementIds || [],
+        contractorName: "Nachunternehmer",
+        magicLink: magicLink
       });
 
       toast({

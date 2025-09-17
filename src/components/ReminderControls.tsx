@@ -67,11 +67,13 @@ export default function ReminderControls({
       setLoading(true);
 
       if (action === 'immediate') {
-      // Send immediate reminder via stub
+      // Send immediate reminder via new interface
+      const magicLink = `${window.location.origin}/upload?cid=${subcontractorId}`;
       await sendReminderMissing({
-        contractorId: subcontractorId,
-        email: "", // Email will be fetched in the stub
-        missingDocs: [requirementId]
+        to: "", // Email will be fetched in the implementation
+        missingDocs: [requirementId],
+        contractorName: "Nachunternehmer",
+        magicLink: magicLink
       });
 
         toast({

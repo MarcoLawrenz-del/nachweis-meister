@@ -4,7 +4,7 @@ import RequirementSelector from "@/components/RequirementSelector";
 import { getDocs, setDocs, setContractorMeta } from "@/services/contractorDocs.store";
 import { getContractor } from "@/services/contractors";
 import type { ContractorDocument, Requirement } from "@/services/contractors";
-import { sendInvitation } from "@/services/email";
+import { sendInvitationLegacy as sendInvitation, getEmailErrorMessage } from "@/services/email";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -176,17 +176,28 @@ export default function RequestDocumentsDialog({
           .replace("{{magic_link}}", link)
           .replace("{{name}}", contractor?.company_name || "");
           
-        await sendInvitation({ 
-          contractorId, 
-          email: email, 
-          message: personalizedMessage,
-          contractorName: contractor?.company_name
-        });
-        
-        toast({ 
-          title: "Einladung gesendet", 
-          description: email 
-        });
+        try {
+          const result = await sendInvitation({ 
+            contractorId, 
+            email: email, 
+            message: personalizedMessage,
+            contractorName: contractor?.company_name
+          });
+          
+          // Update lastRequestedAt after successful send
+          setContractorMeta(contractorId, { lastRequestedAt: now });
+          
+          toast({ 
+            title: result.isStub ? "Im Demo-Modus gesendet (Stub)" : "Einladung gesendet", 
+            description: email 
+          });
+        } catch (error: any) {
+          toast({
+            title: "Fehler beim Senden",
+            description: getEmailErrorMessage(error),
+            variant: "destructive"
+          });
+        }
       } else {
         console.warn("Cannot send invitation: contractor email not available");
       }

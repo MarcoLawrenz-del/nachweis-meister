@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { seedDocumentsForContractor } from "@/services/contractors";
-import { sendInvitation } from "@/services/email";
+import { sendInvitationLegacy as sendInvitation } from "@/services/email";
 import { exportContractorBundle } from "@/utils/export";
 
 export default function QARunner(){

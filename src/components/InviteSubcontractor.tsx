@@ -73,15 +73,13 @@ Mit freundlichen Grüßen`
 
       if (inviteError) throw inviteError;
 
-      // Send invitation via stub
+      // Send invitation via new interface
+      const magicLink = `${window.location.origin}/upload/${token}`;
       await sendInvitation({
-        contractorId: projectSubId,
-        email: subcontractorEmail,
-        subject: inviteData.subject,
-        message: inviteData.message.replace('{UPLOAD_LINK}', 
-          `${window.location.origin}/upload/${token}`
-        ),
-        contractorName: subcontractorName
+        to: subcontractorEmail,
+        inviteMessage: inviteData.message.replace('{UPLOAD_LINK}', magicLink),
+        contractorName: subcontractorName,
+        magicLink: magicLink
       });
 
       toast({
