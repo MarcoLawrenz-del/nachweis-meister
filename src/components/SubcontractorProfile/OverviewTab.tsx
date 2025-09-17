@@ -62,11 +62,11 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'missing':
-        return { label: 'Fehlend', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
+        return { label: 'Fehlend', variant: 'destructive' as const, className: 'bg-warn-50 text-warn-600 border-warn-600/20' };
       case 'rejected':
-        return { label: 'Abgelehnt', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
+        return { label: 'Abgelehnt', variant: 'destructive' as const, className: 'bg-danger-50 text-danger-600 border-danger-600/20' };
       case 'expired':
-        return { label: 'Abgelaufen', variant: 'destructive' as const, className: 'bg-red-100 text-red-800 border-red-200' };
+        return { label: 'Abgelaufen', variant: 'destructive' as const, className: 'bg-danger-50 text-danger-600 border-danger-600/20' };
       default:
         return { label: 'Unbekannt', variant: 'outline' as const, className: '' };
     }

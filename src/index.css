@@ -1,84 +1,315 @@
-@import './styles/tokens.css';
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
-@tailwind components; 
+@tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ============= SUBFIX DESIGN SYSTEM (SevDesk-inspired) ============= */
+/* GOAL: Rechtssicherheit, Vertrauen, Klarheit */
 
-/* Import screenshot specific styles */
-@import './styles/screenshot.css';
+:root {
+  /* ========== NEUTRALS (Foundation) ========== */
+  --surface: 0 0% 100%;           /* #FFFFFF - Pure white backgrounds */
+  --surface-muted: 216 20% 97%;   /* #F7F8FA - Subtle muted surfaces */
+  --border: 213 17% 90%;          /* #E6E8EC - Clean borders */
+  --text: 222 32% 10%;            /* #111318 - Primary text */
+  --text-muted: 216 20% 39%;      /* #5B6472 - Secondary text */
 
-/* Import button fixes for sharp rendering */
-@import './styles/button-fixes.css';
+  /* ========== BRAND (Warm, professional red - use sparingly) ========== */
+  --brand-50: 8 82% 96%;          /* #FDEBE9 - Lightest brand tint */
+  --brand-100: 8 73% 91%;         /* #F9D7D2 - Light brand tint */
+  --brand-200: 8 70% 82%;         /* #F3B9B3 - Medium light brand */
+  --brand-300: 8 66% 74%;         /* #EC9A92 - Medium brand */
+  --brand-400: 8 68% 65%;         /* #E37365 - Medium dark brand */
+  --brand-500: 7 73% 56%;         /* #E14B3B - Primary CTA */
+  --brand-600: 7 60% 50%;         /* #C83E31 - Hover state */
+  --brand-700: 7 59% 41%;         /* #A7342A - Active state */
 
+  /* ========== SECTION TINTS (Subtle backgrounds, max 1 per section) ========== */
+  --tint-blue-50: 223 100% 97%;   /* #F2F6FF - Blue section tint */
+  --tint-sand-50: 35 100% 95%;    /* #FFF8EE - Sand section tint */
+  --tint-mint-50: 152 41% 96%;    /* #F3FBF7 - Mint section tint */
+
+  /* ========== SEMANTIC COLORS ========== */
+  --success-50: 146 44% 94%;      /* #EAF6F1 - Success background */
+  --success-600: 158 61% 34%;     /* #1E8E63 - Success text/icon */
+  
+  --info-50: 223 80% 95%;         /* #EEF3FE - Info background */
+  --info-600: 223 80% 56%;        /* #2F6FED - Info text/icon */
+  
+  --warn-50: 40 100% 95%;         /* #FFF6E9 - Warning background */
+  --warn-600: 35 64% 46%;         /* #C98220 - Warning text/icon */
+  
+  --danger-50: 8 82% 96%;         /* #FDEBE9 - Danger background (brand-based) */
+  --danger-600: 7 62% 47%;        /* #C2372F - Danger text/icon */
+
+  /* ========== TYPOGRAPHY SCALE ========== */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --letter-spacing-tight: -0.01em;
+
+  /* Font sizes and line heights */
+  --text-h1: 3rem;      /* 48px */
+  --text-h1-lh: 3.5rem; /* 56px */
+  --text-h2: 2.25rem;   /* 36px */
+  --text-h2-lh: 2.75rem; /* 44px */
+  --text-h3: 1.75rem;   /* 28px */
+  --text-h3-lh: 2.25rem; /* 36px */
+  --text-body: 1rem;    /* 16px */
+  --text-body-lh: 1.5rem; /* 24px */
+  --text-small: 0.875rem; /* 14px */
+  --text-small-lh: 1.25rem; /* 20px */
+
+  /* ========== LAYOUT TOKENS ========== */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --shadow-sm: 0 1px 2px rgba(17, 19, 24, 0.06);
+  --shadow-md: 0 3px 10px rgba(17, 19, 24, 0.08);
+
+  --container-max: 1200px;
+  --grid-gap: 24px;
+
+  /* ========== INTERACTION STATES ========== */
+  --focus-ring: 2px solid hsl(var(--info-600));
+  --focus-offset: 2px;
+  --transition-smooth: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ========== SHADCN COMPATIBILITY MAPPINGS ========== */
+  --background: var(--surface);
+  --foreground: var(--text);
+  --primary: var(--brand-500);
+  --primary-foreground: 0 0% 100%;
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--surface-muted);
+  --accent-foreground: var(--text);
+  --destructive: var(--danger-600);
+  --destructive-foreground: 0 0% 100%;
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --input: var(--border);
+  --ring: var(--info-600);
+  --radius: var(--radius-lg);
+  
+  /* Sidebar compatibility */
+  --sidebar-background: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--brand-500);
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: var(--surface-muted);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--info-600);
+}
+
+/* ========== DARK MODE (Professional) ========== */
+.dark {
+  --surface: 222 32% 7%;          /* #0D0F14 - Dark background */
+  --surface-muted: 222 32% 10%;   /* #151821 - Dark muted surface */
+  --border: 222 20% 20%;          /* #2E323D - Dark borders */
+  --text: 0 0% 95%;               /* #F2F2F2 - Light text */
+  --text-muted: 216 20% 65%;      /* #9CA3B0 - Muted light text */
+  
+  --background: var(--surface);
+  --foreground: var(--text);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--text-muted);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--text);
+}
+
+/* ========== BASE STYLES ========== */
 @layer base {
-  /* Use semantic tokens from tokens.css */
-  
-  /* Base element styles */
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
-  
+
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: hsl(var(--surface));
+    color: hsl(var(--text));
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    letter-spacing: var(--letter-spacing-tight);
   }
 
-  /* Typography using design tokens */
   h1 {
-    @apply text-h1 font-bold;
+    font-size: var(--text-h1);
+    line-height: var(--text-h1-lh);
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-tight);
+    color: hsl(var(--text));
   }
-  
+
   h2 {
-    @apply text-h2 font-semibold;
+    font-size: var(--text-h2);
+    line-height: var(--text-h2-lh);
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-tight);
+    color: hsl(var(--text));
   }
-  
+
   h3 {
-    @apply text-h3 font-medium;
-  }
-  
-  p {
-    @apply text-body;
+    font-size: var(--text-h3);
+    line-height: var(--text-h3-lh);
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-tight);
+    color: hsl(var(--text));
   }
 }
 
+/* ========== COMPONENT CLASSES ========== */
 @layer components {
-  /* Button variants using brand colors */
-  .btn-primary {
-    @apply bg-brand-primary text-brand-on-primary hover:bg-brand-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
-  }
-  
-  .btn-secondary {
-    @apply bg-brand-accent text-brand-on-accent hover:bg-brand-accent/90;
+  .card-base {
+    background-color: hsl(var(--surface));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-6);
+    border: 1px solid hsl(var(--border));
   }
 
-  /* Status indicators using monochrome brand colors */
-  .status-success {
-    @apply bg-brand-primary-100 text-brand-primary-700 border border-brand-primary-200;
+  .button-primary {
+    background-color: hsl(var(--brand-500));
+    color: white;
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    font-weight: 500;
+    font-size: var(--text-small);
+    line-height: var(--text-small-lh);
+    transition: all var(--transition-smooth);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
   }
-  
-  .status-warning {
-    @apply bg-brand-accent-100 text-brand-accent-700 border border-brand-accent-200;
+
+  .button-primary:hover {
+    background-color: hsl(var(--brand-600));
   }
-  
-  .status-error {
-    @apply bg-brand-primary-800 text-white border border-brand-primary-800;
+
+  .button-primary:active {
+    background-color: hsl(var(--brand-700));
   }
-  
-  /* Card styles */
-  .card {
-    @apply bg-card border border-border rounded-lg shadow-sm;
+
+  .button-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
-  
-  /* Focus styles */
-  .focus-visible-only:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2;
+
+  .button-secondary {
+    background-color: hsl(var(--surface-muted));
+    color: hsl(var(--text));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-sm);
+    padding: var(--space-3) var(--space-4);
+    font-weight: 500;
+    font-size: var(--text-small);
+    line-height: var(--text-small-lh);
+    transition: all var(--transition-smooth);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .button-secondary:hover {
+    background-color: hsl(var(--border));
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* STATUS BADGES */
+  .badge-missing {
+    background-color: hsl(var(--warn-50));
+    color: hsl(var(--warn-600));
+    border: 1px solid hsl(var(--warn-600) / 0.2);
+    border-radius: var(--radius-sm);
+    padding: calc(var(--space-1) * 0.5) var(--space-2);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+
+  .badge-expiring {
+    background-color: hsl(var(--info-50));
+    color: hsl(var(--info-600));
+    border: 1px solid hsl(var(--info-600) / 0.2);
+    border-radius: var(--radius-sm);
+    padding: calc(var(--space-1) * 0.5) var(--space-2);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+
+  .badge-valid {
+    background-color: hsl(var(--success-50));
+    color: hsl(var(--success-600));
+    border: 1px solid hsl(var(--success-600) / 0.2);
+    border-radius: var(--radius-sm);
+    padding: calc(var(--space-1) * 0.5) var(--space-2);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+
+  .badge-danger {
+    background-color: hsl(var(--danger-50));
+    color: hsl(var(--danger-600));
+    border: 1px solid hsl(var(--danger-600) / 0.2);
+    border-radius: var(--radius-sm);
+    padding: calc(var(--space-1) * 0.5) var(--space-2);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+
+  /* SECTION BACKGROUNDS */
+  .section-blue {
+    background-color: hsl(var(--tint-blue-50));
+  }
+
+  .section-sand {
+    background-color: hsl(var(--tint-sand-50));
+  }
+
+  .section-mint {
+    background-color: hsl(var(--tint-mint-50));
+  }
+
+  /* TABLE STYLES */
+  .table-row:hover {
+    background-color: hsl(var(--surface-muted));
+  }
+
+  /* FOCUS STYLES */
+  .focus-ring:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
   }
 }
 
+/* ========== UTILITIES ========== */
 @layer utilities {
+  .container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+  }
+
   /* Screen reader only content */
   .sr-only {
     position: absolute;
@@ -91,15 +322,19 @@
     white-space: nowrap;
     border: 0;
   }
-  
-  /* High contrast mode support */
-  .high-contrast {
-    @apply contrast-125;
+
+  /* MESSAGING PLACEHOLDERS */
+  .messaging-placeholder::before {
+    content: "<<<" attr(data-slot) ">>>";
+    color: hsl(var(--text-muted));
+    font-style: italic;
   }
-  
-  /* Reduced motion support */
+
+  /* REMOVE ANIMATIONS FOR REDUCED MOTION */
   @media (prefers-reduced-motion: reduce) {
-    .motion-reduce * {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;

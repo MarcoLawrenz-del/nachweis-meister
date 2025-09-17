@@ -411,15 +411,12 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                     </TableCell>
                     
                     <TableCell>
-                      <Badge 
-                        variant={doc.requirement === 'required' ? 'default' : 'secondary'}
-                        className={doc.requirement === 'required' 
-                          ? 'bg-red-100 text-red-800 border-red-200' 
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
-                        }
-                      >
-                        {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
-                      </Badge>
+                <Badge 
+                  variant="outline" 
+                  className="bg-warn-50 text-warn-600 border-warn-600/20"
+                >
+                  {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
+                </Badge>
                     </TableCell>
                     
                     <TableCell>
@@ -429,13 +426,13 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                           {expired ? 'Abgelaufen' : expiring ? 'Läuft ab' : statusConfig.label}
                         </Badge>
                         {expiring && !expired && (
-                          <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                          <Badge variant="outline" className="text-warn-600 border-warn-600/20">
                             Läuft ab
                           </Badge>
                         )}
                       </div>
                       {doc.rejectionReason && (
-                        <div className="text-sm text-red-600 mt-1">
+                        <div className="text-sm text-danger-600 mt-1">
                           {doc.rejectionReason}
                         </div>
                       )}
