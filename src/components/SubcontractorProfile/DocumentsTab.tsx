@@ -84,11 +84,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
 
   // Handle accept document
   const handleAccept = async (doc: any) => {
-    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId)!;
+    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
     let validUntil = validityDates[doc.documentTypeId];
     
     // Auto-calculate validity if not set
-    if (!validUntil && docType.validity.kind !== "none") {
+    if (!validUntil && docType?.validity && docType.validity.kind !== "none") {
       const computed = computeValidUntil(docType.validity);
       validUntil = computed ? computed.toISOString().split('T')[0] : null;
     }
@@ -100,7 +100,6 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       validUntil
     });
     
-    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
     const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName);
     
     toast({
