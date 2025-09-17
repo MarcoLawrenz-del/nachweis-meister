@@ -182,11 +182,15 @@ export const WORDING = {
   // Legacy terms for compatibility
   terms: {
     subcontractors: "Nachunternehmer",
+    subcontractor: "Nachunternehmer", 
     projects: "Projekte",
-    documents: "Dokumente"
+    documents: "Dokumente",
+    inReview: "In Prüfung",
+    requiredDoc: "Pflichtdokument"
   },
   
   cta: {
-    getStarted: "Jetzt starten"
+    getStarted: "Jetzt starten",
+    startTrial: "Kostenlos testen"
   }
 };
