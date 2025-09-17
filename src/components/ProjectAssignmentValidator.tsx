@@ -28,7 +28,7 @@ interface SubcontractorValidation {
   company_name: string;
   status: 'active' | 'inactive';
   compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
-  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+    company_type: string;
   validation: ValidationResult | null;
   loading: boolean;
 }
@@ -39,7 +39,7 @@ interface ProjectAssignmentValidatorProps {
     company_name: string;
     status: 'active' | 'inactive';
     compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
-    company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+    company_type: string;
   }>;
   projectId: string;
   projectName: string;
@@ -189,14 +189,7 @@ export function ProjectAssignmentValidator({
     }
   };
 
-  const getCompanyTypeLabel = (type: string) => {
-    switch (type) {
-      case 'gbr': return 'GbR';
-      case 'baubetrieb': return 'Baubetrieb';
-      case 'einzelunternehmen': return 'Einzelunternehmen';
-      default: return type;
-    }
-  };
+  // legacy removed
 
   const getValidationIcon = (validation: ValidationResult | null) => {
     if (!validation) return <Clock className="h-4 w-4 text-muted-foreground" />;
@@ -279,7 +272,7 @@ export function ProjectAssignmentValidator({
                       <h4 className="font-medium">{subcontractor.company_name}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Badge variant="outline" className="text-xs">
-                          {getCompanyTypeLabel(subcontractor.company_type)}
+                          {subcontractor.company_type}
                         </Badge>
                         <span>•</span>
                         <ComplianceStatusBadge 

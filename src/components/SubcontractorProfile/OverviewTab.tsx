@@ -394,7 +394,7 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Settings className="h-5 w-5" />
-                  Erweiterte Compliance-Einstellungen
+                  Erweiterte Einstellungen
                   <Badge variant="secondary" className="text-xs">Optional</Badge>
                 </div>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />

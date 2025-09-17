@@ -46,7 +46,7 @@ interface NewSubcontractorData {
   phone: string;
   address: string;
   country_code: string;
-  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+  company_type: string;
   notes: string;
 }
 
@@ -79,7 +79,7 @@ export function NewSubcontractorWizard({
     phone: '',
     address: '',
     country_code: 'DE',
-    company_type: 'baubetrieb',
+    company_type: 'standard',
     notes: ''
   });
 
@@ -117,7 +117,7 @@ export function NewSubcontractorWizard({
         phone: '',
         address: '',
         country_code: 'DE',
-        company_type: 'baubetrieb',
+        company_type: 'standard',
         notes: ''
       });
       setCurrentStep(1);
@@ -313,16 +313,15 @@ export function NewSubcontractorWizard({
                 <Label htmlFor="company_type">Unternehmensform</Label>
                 <Select
                   value={subcontractorData.company_type}
-                  onValueChange={(value: 'gbr' | 'baubetrieb' | 'einzelunternehmen') => 
+                  onValueChange={(value: string) => 
                     setSubcontractorData(prev => ({ ...prev, company_type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Unternehmensform wählen" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="gbr">GbR</SelectItem>
-                    <SelectItem value="baubetrieb">Baubetrieb</SelectItem>
-                    <SelectItem value="einzelunternehmen">Einzelunternehmen</SelectItem>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="dienstleister">Dienstleister</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

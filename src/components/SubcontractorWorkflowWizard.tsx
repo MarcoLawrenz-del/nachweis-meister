@@ -34,7 +34,7 @@ interface WorkflowStep {
 interface SubcontractorWorkflow {
   id: string;
   company_name: string;
-  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+  company_type: string;
   status: 'active' | 'inactive';
   compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
   contact_email: string;
@@ -170,7 +170,7 @@ export function SubcontractorWorkflowWizard({
       setWorkflow({
         id: subcontractor.id,
         company_name: subcontractor.company_name,
-        company_type: subcontractor.company_type as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
+        company_type: subcontractor.company_type,
         status: subcontractor.status as 'active' | 'inactive',
         compliance_status: subcontractor.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon',
         contact_email: subcontractor.contact_email,
@@ -245,14 +245,7 @@ export function SubcontractorWorkflowWizard({
     }
   };
 
-  const getCompanyTypeLabel = (type: string) => {
-    switch (type) {
-      case 'gbr': return 'Gesellschaft bürgerlichen Rechts (GbR)';
-      case 'baubetrieb': return 'Baubetrieb / Dienstleister';
-      case 'einzelunternehmen': return 'Einzelunternehmen (Solo)';
-      default: return type;
-    }
-  };
+  // legacy removed
 
   const getStepIcon = (step: WorkflowStep) => {
     const IconComponent = step.icon;
@@ -294,7 +287,7 @@ export function SubcontractorWorkflowWizard({
                 Nachunternehmer-Workflow: {workflow.company_name}
               </CardTitle>
               <CardDescription>
-                {getCompanyTypeLabel(workflow.company_type)} • {workflow.contact_email}
+                {workflow.company_type} • {workflow.contact_email}
               </CardDescription>
             </div>
             <ComplianceStatusBadge 
@@ -397,7 +390,7 @@ export function SubcontractorWorkflowWizard({
               Dokumente-Management
             </CardTitle>
             <CardDescription>
-              Laden Sie alle rechtlich erforderlichen Dokumente für die Unternehmensform "{getCompanyTypeLabel(workflow.company_type)}" hoch.
+              Laden Sie alle rechtlich erforderlichen Dokumente für diese Unternehmensform hoch.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -45,7 +45,7 @@ interface Subcontractor {
   phone: string | null;
   address: string | null;
   country_code: string;
-  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+  company_type: string;
   notes: string | null;
   created_at: string;
   status: 'active' | 'inactive';
@@ -138,7 +138,7 @@ export default function Subcontractors() {
           phone: sub.phone,
           address: sub.address,  
           country_code: sub.country_code,
-          company_type: sub.company_type as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
+          company_type: sub.company_type,
           notes: sub.notes,
           created_at: sub.created_at,
           status: sub.status as 'active' | 'inactive',
@@ -323,9 +323,7 @@ export default function Subcontractors() {
                         <div>
                           <div className="font-medium">{subcontractor.company_name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {subcontractor.company_type === 'gbr' && 'GbR'}
-                            {subcontractor.company_type === 'baubetrieb' && 'Baubetrieb'}
-                            {subcontractor.company_type === 'einzelunternehmen' && 'Einzelunternehmen'}
+                            {subcontractor.company_type}
                           </div>
                         </div>
                       </TableCell>

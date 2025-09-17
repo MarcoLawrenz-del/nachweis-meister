@@ -82,7 +82,7 @@ export function ComplianceFlags({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5" />
-          Compliance-Einstellungen
+          Erweiterte Einstellungen
         </CardTitle>
         <CardDescription>
           Diese Einstellungen bestimmen, welche Dokumente für diesen Nachunternehmer erforderlich sind.

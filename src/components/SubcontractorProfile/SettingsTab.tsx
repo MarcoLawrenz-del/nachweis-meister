@@ -155,9 +155,8 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="einzelunternehmen">Einzelunternehmen</SelectItem>
-                  <SelectItem value="gbr">GbR</SelectItem>
-                  <SelectItem value="baubetrieb">Baubetrieb</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="dienstleister">Dienstleister</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -273,7 +272,7 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
               <Button variant="ghost" className="w-full justify-between p-0 h-auto">
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="h-5 w-5" />
-                  Erweiterte Compliance-Einstellungen (optional)
+                  Erweiterte Einstellungen (optional)
                 </CardTitle>
                 <ChevronDown className={`h-4 w-4 transition-transform ${showComplianceSettings ? 'rotate-180' : ''}`} />
               </Button>

@@ -35,7 +35,7 @@ interface ComplianceFlowStep {
 interface SubcontractorData {
   id: string;
   company_name: string;
-  company_type: 'gbr' | 'baubetrieb' | 'einzelunternehmen';
+  company_type: string;
   status: 'active' | 'inactive';
   compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
   contact_email: string;
@@ -77,7 +77,7 @@ export function ComplianceFlow({
       if (subError) throw subError;
       setSubcontractor({
         ...subData,
-        company_type: subData.company_type as 'gbr' | 'baubetrieb' | 'einzelunternehmen',
+        company_type: subData.company_type,
         status: subData.status as 'active' | 'inactive',
         compliance_status: subData.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon'
       });

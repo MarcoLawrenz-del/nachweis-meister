@@ -10,7 +10,7 @@ export type RequirementStatus =
 
 export type ComplianceStatus = 'compliant' | 'non_compliant' | 'expiring_soon';
 
-export type CompanyType = 'einzelunternehmen' | 'gbr' | 'baubetrieb';
+export type CompanyType = 'standard' | 'dienstleister';
 
 export type DocumentFrequency = 'once' | 'annual' | 'monthly';
 
