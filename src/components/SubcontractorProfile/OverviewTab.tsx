@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   AlertTriangle, 
   Clock, 
@@ -12,7 +14,11 @@ import {
   Eye,
   RotateCcw,
   FileText,
-  Calendar
+  Calendar,
+  TrendingUp,
+  ChevronDown,
+  Settings,
+  User
 } from 'lucide-react';
 import { KPIData, RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { RequirementStatus } from '@/types/compliance';
@@ -23,18 +29,23 @@ import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { routes } from '@/lib/routes';
+import { ComplianceFlags } from '@/components/ComplianceFlags';
 
 interface OverviewTabProps {
   kpis: KPIData;
   requirements: RequirementWithDocument[];
+  reviewHistory: any[];
+  profile: any;
   onActionClick: (action: string, requirementId?: string) => void;
+  onUpdateProfile: (updates: any) => Promise<boolean>;
   projectId?: string;
 }
 
-export function OverviewTab({ kpis, requirements, onActionClick, projectId }: OverviewTabProps) {
+export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId }: OverviewTabProps) {
   const navigate = useNavigate();
   const { id: subId } = useParams<{ id: string }>();
   const wording = getWording('de'); // Can be made dynamic based on user preference
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   // Calculate KPIs from requirements instead of using hardcoded values
   const actualKpis = {
@@ -318,6 +329,103 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
           </div>
         </CardContent>
       </Card>
+      
+      {/* Recent Activity Timeline */}
+      {reviewHistory && reviewHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Letzte Aktivitäten
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {reviewHistory.slice(0, 5).map((activity, index) => {
+                const activityConfig = {
+                  approved: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-100', label: 'Genehmigt' },
+                  rejected: { icon: XCircle, color: 'text-red-600', bg: 'bg-red-100', label: 'Abgelehnt' },
+                  submitted: { icon: Upload, color: 'text-blue-600', bg: 'bg-blue-100', label: 'Eingereicht' },
+                  default: { icon: Clock, color: 'text-gray-600', bg: 'bg-gray-100', label: 'Aktivität' }
+                };
+                
+                const config = activityConfig[activity.status as keyof typeof activityConfig] || activityConfig.default;
+                const ActivityIcon = config.icon;
+                
+                return (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className={`p-2 rounded-full ${config.bg}`}>
+                      <ActivityIcon className={`h-4 w-4 ${config.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">{config.label}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {formatDistanceToNow(new Date(activity.created_at), { 
+                            addSuffix: true, 
+                            locale: de 
+                          })}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {activity.document_name || 'Dokument'} - {activity.reviewer_name || 'System'}
+                      </p>
+                      {activity.notes && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">
+                          {activity.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Advanced Compliance Settings (Collapsible) */}
+      <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Erweiterte Compliance-Einstellungen
+                  <Badge variant="secondary" className="text-xs">Optional</Badge>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
+              <Alert className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Warnung:</strong> Diese Einstellungen sind nur für Sonderfälle gedacht. 
+                  Änderungen können zu unvollständigen Compliance-Prüfungen führen.
+                </AlertDescription>
+              </Alert>
+              
+              {profile && (
+                <ComplianceFlags
+                  subcontractorId={profile.id}
+                  currentFlags={{
+                    requires_employees: profile.requires_employees,
+                    has_non_eu_workers: profile.has_non_eu_workers,
+                    employees_not_employed_in_germany: profile.employees_not_employed_in_germany
+                  }}
+                  onFlagsUpdate={() => {
+                    // Flags update will trigger automatic requirement recalculation
+                  }}
+                />
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     </div>
   );
 }

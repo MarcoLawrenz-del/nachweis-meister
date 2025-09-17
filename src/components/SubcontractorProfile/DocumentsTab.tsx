@@ -22,7 +22,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Send
 } from 'lucide-react';
 import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { RequirementStatus } from '@/types/compliance';
@@ -33,16 +34,22 @@ import { routes } from '@/lib/routes';
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
+  emailLogs: any[];
   onAction: (action: string, requirementId: string) => void;
+  onReview: (requirementId: string, action: 'approve' | 'reject', data: any) => Promise<boolean>;
+  onSendReminder: (requirementIds?: string[]) => Promise<boolean>;
   projectId?: string;
 }
 
-export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTabProps) {
+export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSendReminder, projectId }: DocumentsTabProps) {
   const navigate = useNavigate();
   const { id: subId } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RequirementStatus | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<'all' | 'mandatory' | 'optional'>('all');
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'submitted' | 'in_review' | 'valid' | 'rejected'>('all');
+  const [showReminderPanel, setShowReminderPanel] = useState(false);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
 
   // Filter requirements
   const filteredRequirements = requirements.filter(req => {
@@ -58,8 +65,24 @@ export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTab
                        (typeFilter === 'mandatory' && req.document_types.required_by_default) ||
                        (typeFilter === 'optional' && !req.document_types.required_by_default);
     
-    return matchesSearch && matchesStatus && matchesType;
+    // Review filter (for review workflow integration)
+    const matchesReview = reviewFilter === 'all' || req.status === reviewFilter;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesReview;
   });
+
+  // Handle reminder sending
+  const handleSendReminder = async () => {
+    setIsSendingReminder(true);
+    try {
+      await onSendReminder();
+      setShowReminderPanel(false);
+    } catch (error) {
+      console.error('Failed to send reminder:', error);
+    } finally {
+      setIsSendingReminder(false);
+    }
+  };
 
   // Status configuration
   const getStatusConfig = (status: RequirementStatus) => {
@@ -221,10 +244,21 @@ export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTab
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filter & Suche
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filter & Suche
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReminderPanel(true)}
+              className="gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Erinnerung senden
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
@@ -263,6 +297,29 @@ export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTab
                 <SelectItem value="optional">Optional</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Review Filter Chips */}
+          <div className="flex items-center gap-2 mt-4">
+            <span className="text-sm font-medium">Prüfstatus:</span>
+            <div className="flex gap-2">
+              {[
+                { value: 'all', label: 'Alle' },
+                { value: 'submitted', label: 'Eingereicht' },
+                { value: 'in_review', label: 'In Prüfung' },
+                { value: 'valid', label: 'Gültig' },
+                { value: 'rejected', label: 'Abgelehnt' }
+              ].map((filter) => (
+                <Badge
+                  key={filter.value}
+                  variant={reviewFilter === filter.value ? 'default' : 'outline'}
+                  className="cursor-pointer hover:bg-primary/80"
+                  onClick={() => setReviewFilter(filter.value as any)}
+                >
+                  {filter.label}
+                </Badge>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -392,6 +449,72 @@ export function DocumentsTab({ requirements, onAction, projectId }: DocumentsTab
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Reminder Panel Dialog */}
+      {showReminderPanel && (
+        <Card className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Send className="h-5 w-5" />
+                    Erinnerung senden
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowReminderPanel(false)}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Möchten Sie eine Erinnerung für ausstehende Dokumente senden?
+                  </p>
+                  <div className="text-sm">
+                    <strong>Ausstehende Dokumente:</strong>
+                    <ul className="mt-2 space-y-1">
+                      {requirements
+                        .filter(req => ['missing', 'submitted', 'expired'].includes(req.status))
+                        .slice(0, 3)
+                        .map(req => (
+                          <li key={req.id} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            {req.document_types.name_de}
+                          </li>
+                        ))}
+                      {requirements.filter(req => ['missing', 'submitted', 'expired'].includes(req.status)).length > 3 && (
+                        <li className="text-muted-foreground">
+                          ... und {requirements.filter(req => ['missing', 'submitted', 'expired'].includes(req.status)).length - 3} weitere
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowReminderPanel(false)}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button
+                    onClick={handleSendReminder}
+                    disabled={isSendingReminder}
+                  >
+                    {isSendingReminder ? 'Sendet...' : 'Erinnerung senden'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

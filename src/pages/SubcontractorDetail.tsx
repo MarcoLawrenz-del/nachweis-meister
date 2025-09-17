@@ -12,10 +12,6 @@ import { de } from 'date-fns/locale';
 // Tab components
 import { OverviewTab } from '@/components/SubcontractorProfile/OverviewTab';
 import { DocumentsTab } from '@/components/SubcontractorProfile/DocumentsTab';
-import { ReviewsTab } from '@/components/SubcontractorProfile/ReviewsTab';
-import { RemindersTab } from '@/components/SubcontractorProfile/RemindersTab';
-import { ActivityTab } from '@/components/SubcontractorProfile/ActivityTab';
-import { SettingsTab } from '@/components/SubcontractorProfile/SettingsTab';
 
 export default function SubcontractorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -93,7 +89,7 @@ export default function SubcontractorDetail() {
 
       {/* Tab Navigation */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview" className="flex items-center gap-2" data-testid="tab-uebersicht">
             <Building2 className="h-4 w-4" />
             Übersicht
@@ -102,28 +98,14 @@ export default function SubcontractorDetail() {
             <FileText className="h-4 w-4" />
             Dokumente
           </TabsTrigger>
-          <TabsTrigger value="reviews" className="flex items-center gap-2" data-testid="tab-pruefungen">
-            <Eye className="h-4 w-4" />
-            Prüfungen
-          </TabsTrigger>
-          <TabsTrigger value="reminders" className="flex items-center gap-2" data-testid="tab-erinnerungen">
-            <Send className="h-4 w-4" />
-            Erinnerungen
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center gap-2" data-testid="tab-aktivitaet">
-            <Activity className="h-4 w-4" />
-            Aktivität
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2" data-testid="tab-einstellungen">
-            <Settings className="h-4 w-4" />
-            Einstellungen
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <OverviewTab 
             kpis={kpis}
             requirements={requirements}
+            reviewHistory={reviewHistory}
+            profile={profile}
             projectId="demo-project" // Placeholder project ID
             onActionClick={(action, requirementId) => {
               if (action === 'view_document' && requirementId) {
@@ -137,12 +119,14 @@ export default function SubcontractorDetail() {
                 navigate(`/requirements/${requirementId}`);
               }
             }}
+            onUpdateProfile={updateProfile}
           />
         </TabsContent>
 
         <TabsContent value="documents">
           <DocumentsTab 
             requirements={requirements}
+            emailLogs={emailLogs}
             projectId="demo-project" // Placeholder project ID
             onAction={(action, requirementId) => {
               if (action === 'view_document') {
@@ -160,34 +144,8 @@ export default function SubcontractorDetail() {
                 console.log('Request renewal for requirement:', requirementId);
               }
             }}
-          />
-        </TabsContent>
-
-        <TabsContent value="reviews">
-          <ReviewsTab 
-            requirements={requirements}
             onReview={reviewRequirement}
-          />
-        </TabsContent>
-
-        <TabsContent value="reminders">
-          <RemindersTab 
-            emailLogs={emailLogs}
             onSendReminder={sendReminder}
-          />
-        </TabsContent>
-
-        <TabsContent value="activity">
-          <ActivityTab 
-            reviewHistory={reviewHistory}
-          />
-        </TabsContent>
-
-        <TabsContent value="settings">
-          <SettingsTab 
-            profile={profile}
-            projectId="demo-project" // Placeholder project ID
-            onUpdateProfile={updateProfile}
           />
         </TabsContent>
       </Tabs>
