@@ -103,8 +103,8 @@ const App = () => (
                         </Suspense>
                       </RequireAuth>
                     }>
-                      {/* Index leitet immer auf Dashboard */}
-                      <Route index element={<Navigate to={ROUTES.dashboard} replace />} />
+                      {/* Index leitet auf Subcontractors */}
+                      <Route index element={<Navigate to="/app/subcontractors" replace />} />
                       <Route path="dashboard" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <Dashboard />
@@ -146,8 +146,8 @@ const App = () => (
                     } />
 
                     {/* Root and global fallback */}
-                    <Route path="/" element={<Navigate to="/app" replace />} />
-                    <Route path="*" element={<Navigate to="/app" replace />} />
+                    <Route path="/" element={<Navigate to="/app/subcontractors" replace />} />
+                    <Route path="*" element={<Navigate to="/app/subcontractors" replace />} />
                   </Routes>
                 </Suspense>
               </div>

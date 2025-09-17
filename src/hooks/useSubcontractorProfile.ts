@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { RequirementStatus, ComplianceStatus, SubcontractorFlags } from '@/types/compliance';
+import { RequirementStatus, ComplianceStatus } from '@/types/compliance';
 import { useToast } from '@/hooks/use-toast';
 import { sendReminderMissing } from '@/services/email';
-import { getContractor, updateContractor, type ContractorDocument } from '@/services/contractors';
+import { getContractor, updateContractor } from '@/services/contractors.store';
 import { useContractorDocuments } from '@/hooks/useContractorDocuments';
 
 export interface SubcontractorProfileData {
@@ -80,137 +80,112 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
-  // Use the hook at the component level
   const documents = useContractorDocuments(subcontractorId) || [];
 
-  // Fetch subcontractor profile
-  const fetchProfile = async () => {
-    try {
-      const contractor = getContractor(subcontractorId);
-      if (!contractor) {
-        throw new Error('Nachunternehmer nicht gefunden');
-      }
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
       
-      // Convert contractor data to profile format
-      const profileData: SubcontractorProfileData = {
-        id: contractor.id,
-        company_name: contractor.company_name,
-        contact_name: contractor.contact_name || null,
-        contact_email: contractor.email,
-        phone: contractor.phone || null,
-        address: contractor.address || null,
-        country_code: 'DE', // Default value since it's not in local contractor type
-        company_type: 'baubetrieb', // Default value since it's not in local contractor type
-        status: contractor.active ? 'active' : 'inactive',
-        compliance_status: 'non_compliant' as ComplianceStatus,
-        notes: contractor.notes || null,
-        requires_employees: null, // Default value since it's not in local contractor type
-        has_non_eu_workers: null, // Default value since it's not in local contractor type
-        employees_not_employed_in_germany: null, // Default value since it's not in local contractor type
-        created_at: contractor.created_at,
-        updated_at: new Date().toISOString()
-      };
-      
-      setProfile(profileData);
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      toast({
-        title: "Fehler beim Laden des Profils",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+      try {
+        // Load profile from local storage
+        const contractor = getContractor(subcontractorId);
+        if (!contractor) {
+          throw new Error('Nachunternehmer nicht gefunden');
+        }
+        
+        const profileData: SubcontractorProfileData = {
+          id: contractor.id,
+          company_name: contractor.company_name,
+          contact_name: contractor.contact_name || null,
+          contact_email: contractor.email,
+          phone: contractor.phone || null,
+          address: contractor.address || null,
+          country_code: 'DE',
+          company_type: 'baubetrieb',
+          status: contractor.active ? 'active' : 'inactive',
+          compliance_status: 'non_compliant' as ComplianceStatus,
+          notes: contractor.notes || null,
+          requires_employees: null,
+          has_non_eu_workers: null,
+          employees_not_employed_in_germany: null,
+          created_at: contractor.created_at,
+          updated_at: new Date().toISOString()
+        };
+        
+        setProfile(profileData);
 
-  // Fetch requirements with documents
-  const fetchRequirements = async () => {
-    try {
-      // Convert documents to requirements format for compatibility
-      const requirementsData: RequirementWithDocument[] = documents.map(doc => ({
-        id: `req-${doc.docTypeId}`,
-        status: doc.status as RequirementStatus,
-        due_date: null,
-        valid_from: doc.validFrom || null,
-        valid_to: doc.validTo || null,
-        submitted_at: doc.status === 'submitted' ? new Date().toISOString() : null,
-        assigned_reviewer_id: null,
-        rejection_reason: doc.rejectionReason || null,
-        escalated: false,
-        escalated_at: null,
-        escalation_reason: null,
-        last_reminded_at: null,
-        review_priority: 'normal',
-        project_sub_id: `ps-${subcontractorId}`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        document_type_id: doc.docTypeId,
-        document_types: {
-          id: doc.docTypeId,
-          name_de: doc.name || doc.docTypeId,
-          code: doc.docTypeId,
-          description_de: null,
-          required_by_default: doc.requirement === 'required'
-        },
-        documents: doc.fileUrl ? [{
-          id: `file-${doc.docTypeId}`,
-          file_name: doc.fileName || `${doc.name}.pdf`,
-          file_url: doc.fileUrl,
+        // Convert documents to requirements format
+        const requirementsData: RequirementWithDocument[] = documents.map(doc => ({
+          id: `req-${doc.docTypeId}`,
+          status: doc.status as RequirementStatus,
+          due_date: null,
           valid_from: doc.validFrom || null,
           valid_to: doc.validTo || null,
-          uploaded_at: new Date().toISOString()
-        }] : []
-      }));
-      
-      setRequirements(requirementsData);
+          submitted_at: doc.status === 'submitted' ? new Date().toISOString() : null,
+          assigned_reviewer_id: null,
+          rejection_reason: doc.rejectionReason || null,
+          escalated: false,
+          escalated_at: null,
+          escalation_reason: null,
+          last_reminded_at: null,
+          review_priority: 'normal',
+          project_sub_id: `ps-${subcontractorId}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          document_type_id: doc.docTypeId,
+          document_types: {
+            id: doc.docTypeId,
+            name_de: doc.name || doc.docTypeId,
+            code: doc.docTypeId,
+            description_de: null,
+            required_by_default: doc.requirement === 'required'
+          },
+          documents: doc.fileUrl ? [{
+            id: `file-${doc.docTypeId}`,
+            file_name: doc.fileName || `${doc.name}.pdf`,
+            file_url: doc.fileUrl,
+            valid_from: doc.validFrom || null,
+            valid_to: doc.validTo || null,
+            uploaded_at: new Date().toISOString()
+          }] : []
+        }));
+        
+        setRequirements(requirementsData);
 
-      // Calculate KPIs
-      const kpiData: KPIData = {
-        missing: 0, submitted: 0, in_review: 0, valid: 0, expiring: 0, expired: 0, rejected: 0
-      };
+        // Calculate KPIs
+        const kpiData: KPIData = {
+          missing: 0, submitted: 0, in_review: 0, valid: 0, expiring: 0, expired: 0, rejected: 0
+        };
 
-      requirementsData.forEach(req => {
-        if (req.status in kpiData) {
-          kpiData[req.status as keyof KPIData]++;
-        }
-      });
+        requirementsData.forEach(req => {
+          if (req.status in kpiData) {
+            kpiData[req.status as keyof KPIData]++;
+          }
+        });
 
-      setKPIs(kpiData);
-    } catch (error: any) {
-      console.error('Error fetching requirements:', error);
-      toast({
-        title: "Fehler beim Laden der Anforderungen",
-        description: error.message,
-        variant: "destructive",
-      });
+        setKPIs(kpiData);
+        setEmailLogs([]);
+        setReviewHistory([]);
+        
+      } catch (error: any) {
+        console.error('Error loading profile data:', error);
+        toast({
+          title: "Fehler beim Laden",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (subcontractorId) {
+      loadData();
     }
-  };
+  }, [subcontractorId, documents]);
 
-  // Fetch email logs - simplified for local storage
-  const fetchEmailLogs = async () => {
-    try {
-      // For local storage, we don't have detailed email logs
-      // Set empty array for now
-      setEmailLogs([]);
-    } catch (error: any) {
-      console.error('Error fetching email logs:', error);
-    }
-  };
-
-  // Fetch review history - simplified for local storage  
-  const fetchReviewHistory = async () => {
-    try {
-      // For local storage, we don't have detailed review history
-      // Set empty array for now
-      setReviewHistory([]);
-    } catch (error: any) {
-      console.error('Error fetching review history:', error);
-    }
-  };
-
-  // Update subcontractor profile
   const updateProfile = async (updates: Partial<SubcontractorProfileData>) => {
     try {
-      // Update the contractor in local storage
       const success = updateContractor(subcontractorId, {
         company_name: updates.company_name,
         contact_name: updates.contact_name || undefined,
@@ -244,7 +219,6 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     }
   };
 
-  // Approve/reject requirement - simplified for local storage
   const reviewRequirement = async (
     requirementId: string, 
     action: 'approve' | 'reject', 
@@ -255,15 +229,10 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     }
   ) => {
     try {
-      // For local storage implementation, we would need to update the document status
-      // This is a simplified version
-      console.log(`${action} requirement ${requirementId}`, data);
-
       toast({
         title: action === 'approve' ? "Dokument genehmigt" : "Dokument abgelehnt",
         description: "Die Prüfung wurde erfolgreich abgeschlossen.",
       });
-
       return true;
     } catch (error: any) {
       console.error('Error reviewing requirement:', error);
@@ -276,16 +245,13 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     }
   };
 
-  // Send immediate reminder
   const sendReminder = async (requirementIds?: string[]) => {
     try {
       await sendReminderMissing({
         contractorId: subcontractorId,
-        email: "", // Email will be fetched in the stub  
+        email: "", 
         missingDocs: requirementIds || []
       });
-
-      await fetchEmailLogs(); // Refresh logs
 
       toast({
         title: "Erinnerung gesendet",
@@ -304,30 +270,6 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     }
   };
 
-  // Load all data
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      await Promise.all([
-        fetchProfile(),
-        fetchRequirements(),
-        fetchEmailLogs()
-      ]);
-      setIsLoading(false);
-    };
-
-    if (subcontractorId) {
-      loadData();
-    }
-  }, [subcontractorId, documents]); // Add documents as dependency
-
-  // Load review history after requirements are loaded
-  useEffect(() => {
-    if (requirements.length > 0) {
-      fetchReviewHistory();
-    }
-  }, [requirements.length]);
-
   return {
     profile,
     requirements,
@@ -339,11 +281,7 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     reviewRequirement,
     sendReminder,
     refetchData: async () => {
-      await Promise.all([
-        fetchProfile(),
-        fetchRequirements(),
-        fetchEmailLogs()
-      ]);
+      // Refetch would be handled by the useEffect dependency on documents
     }
   };
 };

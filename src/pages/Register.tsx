@@ -33,10 +33,7 @@ export default function Register() {
       return;
     }
 
-    const { error } = await signUp(formData.email, formData.password, {
-      name: formData.name,
-      tenant_name: formData.tenantName
-    });
+    const { error } = await signUp();
     
     if (error) {
       setError('Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut.');

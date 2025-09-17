@@ -29,10 +29,7 @@ export default function Setup() {
 
     setLoading(true);
     try {
-      const { error } = await completeSetup({
-        name: name.trim(),
-        companyName: companyName.trim()
-      });
+      const { error } = await completeSetup();
 
       if (error) {
         toast({

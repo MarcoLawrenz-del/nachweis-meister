@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from './useAppAuth';
+import { listContractors } from '@/services/contractors.store';
 
 export interface KPIData {
   total_subcontractors: number;
@@ -37,13 +37,14 @@ export function useRealtimeKPIs() {
       setIsLoading(true);
       setError(null);
 
-      // For local auth, return default/empty KPIs to avoid Supabase calls
-      console.log('📊 useRealtimeKPIs: Using local auth - returning default values');
+      // Calculate KPIs from local contractor store
+      const contractors = listContractors();
+      const activeContractors = contractors.filter(c => c.active);
       
-      setKpis({
-        total_subcontractors: 0,
-        active_subcontractors: 0,
-        inactive_subcontractors: 0,
+      const kpiData: KPIData = {
+        total_subcontractors: contractors.length,
+        active_subcontractors: activeContractors.length,
+        inactive_subcontractors: contractors.length - activeContractors.length,
         total_requirements: 0,
         missing_requirements: 0,
         submitted_requirements: 0,
@@ -55,15 +56,17 @@ export function useRealtimeKPIs() {
         compliance_rate: 0,
         last_updated: new Date().toISOString(),
         // Legacy support
-        total: 0,
+        total: contractors.length,
         expired: 0,
         expiring: 0,
         valid: 0,
         complianceRate: 0,
-      });
+      };
+      
+      setKpis(kpiData);
     } catch (err) {
-      console.error('Error setting default KPIs:', err);
-      setError(err instanceof Error ? err.message : 'Failed to set default KPIs');
+      console.error('Error calculating KPIs:', err);
+      setError(err instanceof Error ? err.message : 'Failed to calculate KPIs');
     } finally {
       setIsLoading(false);
     }
@@ -72,15 +75,10 @@ export function useRealtimeKPIs() {
   useEffect(() => {
     if (!profile?.tenant_id) return;
 
-    // Initial fetch
     fetchKPIs();
-
-    // For local auth, skip real-time subscriptions to avoid Supabase calls
-    console.log('📊 useRealtimeKPIs: Skipping real-time subscriptions for local auth');
     
-    return () => {
-      // No cleanup needed for local auth
-    };
+    // No real-time updates needed for local storage
+    return () => {};
   }, [profile?.tenant_id]);
 
   return {
