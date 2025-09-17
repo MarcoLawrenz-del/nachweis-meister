@@ -408,13 +408,13 @@ export default function Landing() {
                 <Button variant="outline" className="flex items-center gap-2" asChild>
                   <Link to="/lp/shk">
                     <Briefcase className="w-4 h-4" />
-                    SHK-Betriebe
+                    SHK-Unternehmen
                   </Link>
                 </Button>
                 <Button variant="outline" className="flex items-center gap-2" asChild>
                   <Link to="/lp/elektro">
                     <Zap className="w-4 h-4" />
-                    Elektro-Betriebe
+                    Elektro-Unternehmen
                   </Link>
                 </Button>
               </div>
@@ -507,7 +507,7 @@ export default function Landing() {
                   </div>
                   <div className="text-left">
                     <p className="font-semibold">Meyer & Sohn GmbH</p>
-                    <p className="text-muted-foreground">SHK-Betrieb (12 MA)</p>
+                    <p className="text-muted-foreground">seit 2018</p>
                   </div>
                 </div>
               </CardContent>
@@ -586,7 +586,7 @@ export default function Landing() {
                   Meyer & Sohn GmbH
                 </div>
                 <div className="text-muted-foreground">
-                  SHK-Betrieb (12 MA)
+                  seit 2018
                 </div>
               </div>
             </div>

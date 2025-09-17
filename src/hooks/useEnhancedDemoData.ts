@@ -69,7 +69,7 @@ const demoSubcontractors = [
     company_type: 'unternehmen' as const,
     compliance_status: 'expiring_soon' as const,
     status: 'active' as const, // ACTIVE + WITH POSTING (Entsendung)
-    notes: 'Entsendungsbetrieb aus Polen. Specialisiert auf Maurerarbeiten.',
+    notes: 'Entsendung aus Polen. Spezialisiert auf Maurerarbeiten.',
     country_code: 'PL',
     requires_employees: true,
     has_non_eu_workers: false,

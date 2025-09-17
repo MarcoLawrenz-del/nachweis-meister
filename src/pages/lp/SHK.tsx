@@ -3,15 +3,15 @@ import { UseCasePage } from '@/components/UseCasePage';
 export default function SHK() {
   return (
     <UseCasePage
-      title="Pflichtnachweise für SHK-Betriebe automatisch einsammeln"
+      title="Pflichtnachweise für SHK-Unternehmen automatisch einsammeln"
       intro="Nur relevante Pflichtnachweise. Automatische Erinnerungen. Branchen-spezifisch optimiert."
-      metaTitle="SHK Pflichtnachweise — automatisch einsammeln für SHK-Betriebe"
-      metaDescription="Pflichtnachweise für SHK-Betriebe automatisch verwalten. Nur relevante Nachweise, automatische Erinnerungen, rechtssicher. 14 Tage kostenlos testen."
+      metaTitle="SHK Pflichtnachweise — automatisch einsammeln für SHK-Unternehmen"
+      metaDescription="Pflichtnachweise für SHK-Unternehmen automatisch verwalten. Nur relevante Nachweise, automatische Erinnerungen, rechtssicher. 14 Tage kostenlos testen."
       
       steps={[
         {
           title: "Einladen",
-          description: "SHK-Betriebe per Link einladen"
+          description: "SHK-Unternehmen per Link einladen"
         },
         {
           title: "Hochladen", 
@@ -58,8 +58,8 @@ export default function SHK() {
           answer: "Ja, branchen-spezifische Zertifikate und Qualifikationen werden automatisch überwacht."
         },
         {
-          question: "Funktioniert das auch für kleinere SHK-Betriebe?",
-          answer: "Ja, der Starter-Plan ist speziell für kleinere Betriebe mit wenigen Subunternehmern."
+          question: "Funktioniert das auch für kleinere SHK-Unternehmen?",
+          answer: "Ja, der Starter-Plan ist speziell für kleinere Unternehmen mit wenigen Subunternehmern."
         },
         {
           question: "Was bei Arbeiten an Gasanlagen?",

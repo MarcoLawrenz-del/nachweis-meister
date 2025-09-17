@@ -109,8 +109,8 @@ export const mockSubcontractors: Subcontractor[] = [
   {
     id: '3',
     name: 'Thomas Weber',
-    company: 'Malerbetrieb Weber',
-    email: 'thomas@malerbetrieb-weber.de',
+    company: 'Weber GmbH',
+    email: 'thomas@weber-gmbh.de',
     phone: '+49 89 11223344',
     address: 'Leopoldstraße 78, 80802 München',
     createdAt: '2024-02-20',

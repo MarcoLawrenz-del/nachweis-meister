@@ -3,15 +3,15 @@ import { UseCasePage } from '@/components/UseCasePage';
 export default function Elektro() {
   return (
     <UseCasePage
-      title="Pflichtnachweise für Elektro-Betriebe automatisch einsammeln"
+      title="Pflichtnachweise für Elektro-Unternehmen automatisch einsammeln"
       intro="Nur relevante Pflichtnachweise. Automatische Erinnerungen. Elektro-spezifisch optimiert."
-      metaTitle="Elektro Pflichtnachweise — automatisch einsammeln für Elektro-Betriebe"
-      metaDescription="Pflichtnachweise für Elektro-Betriebe automatisch verwalten. Nur relevante Nachweise, automatische Erinnerungen, rechtssicher. 14 Tage kostenlos testen."
+      metaTitle="Elektro Pflichtnachweise — automatisch einsammeln für Elektro-Unternehmen"
+      metaDescription="Pflichtnachweise für Elektro-Unternehmen automatisch verwalten. Nur relevante Nachweise, automatische Erinnerungen, rechtssicher. 14 Tage kostenlos testen."
       
       steps={[
         {
           title: "Einladen",
-          description: "Elektro-Betriebe per Link einladen"
+          description: "Elektro-Unternehmen per Link einladen"
         },
         {
           title: "Hochladen", 
@@ -62,8 +62,8 @@ export default function Elektro() {
           answer: "Spezielle Qualifikationen für PV, Blitzschutz etc. werden entsprechend dem Projektumfang abgefragt."
         },
         {
-          question: "Funktioniert das auch für kleinere Elektro-Betriebe?",
-          answer: "Ja, der Starter-Plan ist ideal für kleinere Betriebe mit wenigen Subunternehmern."
+          question: "Funktioniert das auch für kleinere Elektro-Unternehmen?",
+          answer: "Ja, der Starter-Plan ist ideal für kleinere Unternehmen mit wenigen Subunternehmern."
         }
       ]}
       
