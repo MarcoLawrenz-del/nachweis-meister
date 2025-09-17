@@ -55,7 +55,7 @@ export default function System() {
                   </div>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-warn-50 text-warn-600 border-warn-600/20">
+              <Badge variant="outline" className="bg-info-50 text-info-600 border-info-600/20">
                 {settings.system.demoMode ? 'Aktiv' : 'Inaktiv'}
               </Badge>
             </div>
@@ -105,7 +105,7 @@ export default function System() {
               
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <span className="text-sm font-medium">E-Mail Versand</span>
-                <Badge variant="outline" className="bg-warn-50 text-warn-600 border-warn-600/20">
+                <Badge variant="outline" className="bg-info-50 text-info-600 border-info-600/20">
                   Stub (Demo)
                 </Badge>
               </div>

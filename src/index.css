@@ -42,6 +42,15 @@
   --danger-50: 8 82% 96%;         /* #FDEBE9 - Danger background (brand-based) */
   --danger-600: 7 62% 47%;        /* #C2372F - Danger text/icon */
 
+  /* ========== DUTY/REQUIREMENT BADGES (Subtle, AA-compliant) ========== */
+  --duty-required-bg: 40 100% 94%; /* #FFF4E5 - Subtle required background */
+  --duty-required-text: 28 100% 27%; /* #8A4B00 - Required text */
+  --duty-required-border: 40 100% 87%; /* #FFE1BF - Required border */
+
+  --duty-optional-bg: 216 20% 97%; /* #F7F8FA - Subtle optional background */
+  --duty-optional-text: 216 20% 39%; /* #5B6472 - Optional text */
+  --duty-optional-border: 213 17% 90%; /* #E6E8EC - Optional border */
+
   /* ========== TYPOGRAPHY SCALE ========== */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
   --letter-spacing-tight: -0.01em;
@@ -234,6 +243,27 @@
   .button-secondary:hover {
     background-color: hsl(var(--border));
     box-shadow: var(--shadow-sm);
+  }
+
+  /* DUTY/REQUIREMENT BADGES */
+  .badge-duty-required {
+    background-color: hsl(var(--duty-required-bg));
+    color: hsl(var(--duty-required-text));
+    border: 1px solid hsl(var(--duty-required-border));
+    border-radius: 9999px;
+    padding: 2px var(--space-2);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-duty-optional {
+    background-color: hsl(var(--duty-optional-bg));
+    color: hsl(var(--duty-optional-text));
+    border: 1px solid hsl(var(--duty-optional-border));
+    border-radius: 9999px;
+    padding: 2px var(--space-2);
+    font-size: 12px;
+    font-weight: 600;
   }
 
   /* STATUS BADGES */

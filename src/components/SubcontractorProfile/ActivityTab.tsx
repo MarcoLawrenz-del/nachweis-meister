@@ -24,42 +24,42 @@ export function ActivityTab({ reviewHistory }: ActivityTabProps) {
   // Get activity icon and color
   const getActivityConfig = (action: string) => {
     const configs = {
-      approved: { 
-        icon: CheckCircle, 
-        color: 'text-green-600',
-        bg: 'bg-green-100',
-        label: 'Genehmigt'
-      },
-      rejected: { 
-        icon: XCircle, 
-        color: 'text-red-600',
-        bg: 'bg-red-100',
-        label: 'Abgelehnt'
-      },
-      submitted: { 
-        icon: Upload, 
-        color: 'text-blue-600',
-        bg: 'bg-blue-100',
-        label: 'Eingereicht'
-      },
-      assigned: { 
-        icon: UserPlus, 
-        color: 'text-purple-600',
-        bg: 'bg-purple-100',
-        label: 'Zugewiesen'
-      },
+        approved: { 
+          icon: CheckCircle, 
+          color: 'text-success-600',
+          bg: 'bg-success-50',
+          label: 'Genehmigt'
+        },
+        rejected: { 
+          icon: XCircle, 
+          color: 'text-danger-600',
+          bg: 'bg-danger-50',
+          label: 'Abgelehnt'
+        },
+        submitted: { 
+          icon: Upload, 
+          color: 'text-info-600',
+          bg: 'bg-info-50',
+          label: 'Eingereicht'
+        },
+        assigned: { 
+          icon: UserPlus, 
+          color: 'text-text-muted',
+          bg: 'bg-surface-muted',
+          label: 'Zugewiesen'
+        },
       escalated: { 
         icon: AlertTriangle, 
-        color: 'text-orange-600',
-        bg: 'bg-orange-100',
+        color: 'text-warn-600',
+        bg: 'bg-warn-50',
         label: 'Eskaliert'
       },
-      updated: { 
-        icon: FileText, 
-        color: 'text-gray-600',
-        bg: 'bg-gray-100',
-        label: 'Aktualisiert'
-      }
+        updated: { 
+          icon: FileText, 
+          color: 'text-text-muted',
+          bg: 'bg-surface-muted',
+          label: 'Aktualisiert'
+        }
     };
     
     return configs[action] || configs.updated;

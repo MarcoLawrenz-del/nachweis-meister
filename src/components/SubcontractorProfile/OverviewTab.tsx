@@ -115,9 +115,9 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
 
       {/* No Required Documents Message */}
       {!hasRequired && (
-        <Alert className="border-blue-200 bg-blue-50">
+        <Alert className="border-info-50 bg-info-50">
           <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="text-blue-800">
+          <AlertDescription className="text-info-600">
             Noch keine Pflichtdokumente angefordert.
           </AlertDescription>
         </Alert>
@@ -142,12 +142,12 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
         <Card>
           <CardContent className="flex items-center p-4">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-full">
-                <Clock className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-info-50 rounded-full">
+                <Clock className="h-5 w-5 text-info-600" />
               </div>
               <div>
                 <p className="text-sm font-medium">In Prüfung</p>
-                <p className="text-2xl font-bold text-blue-600">{reviewing}</p>
+                <p className="text-2xl font-bold text-info-600">{reviewing}</p>
               </div>
             </div>
           </CardContent>
@@ -156,12 +156,12 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
         <Card>
           <CardContent className="flex items-center p-4">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-yellow-100 rounded-full">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <div className="p-2 bg-warn-50 rounded-full">
+                <AlertTriangle className="h-5 w-5 text-warn-600" />
               </div>
               <div>
                 <p className="text-sm font-medium">Läuft ab</p>
-                <p className="text-2xl font-bold text-yellow-600">{expiring}</p>
+                <p className="text-2xl font-bold text-warn-600">{expiring}</p>
               </div>
             </div>
           </CardContent>
@@ -170,57 +170,56 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
         <Card>
           <CardContent className="flex items-center p-4">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-100 rounded-full">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-success-50 rounded-full">
+                <CheckCircle className="h-5 w-5 text-success-600" />
               </div>
               <div>
                 <p className="text-sm font-medium">Gültig</p>
-                <p className="text-2xl font-bold text-green-600">{valid}</p>
+                <p className="text-2xl font-bold text-success-600">{valid}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Next Steps - Specific Missing Required Documents */}
+      {/* Nächste Schritte - Clean neutral design */}
       {nextSteps.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              Nächste Schritte
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <section className="bg-surface border border-border rounded-lg shadow-sm">
+          <header className="px-6 py-4 border-b border-border">
+            <h3 className="text-lg font-semibold text-text">Nächste Schritte</h3>
+            <p className="text-sm text-text-muted mt-1">Fehlende Pflichtdokumente anfordern</p>
+          </header>
+          <ul className="divide-y divide-border">
             {nextSteps.map((step) => {
               const statusInfo = getStatusInfo(step.status);
               return (
-                <div
-                  key={step.id}
-                  className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200"
-                >
-                  <div className="flex-1 flex items-center gap-3">
-                    <div>
-                      <h3 className="font-medium">{step.name}</h3>
-                      <Badge variant={statusInfo.variant} className={statusInfo.className}>
-                        {statusInfo.label}
-                      </Badge>
+                <li key={step.id} className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-text">{step.name}</div>
+                      <div className="mt-2">
+                        <Badge variant="outline" className={statusInfo.className}>
+                          {statusInfo.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowRequestDialog(true)}
+                        className="gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Anfordern
+                      </Button>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowRequestDialog(true)}
-                    className="gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Anfordern
-                  </Button>
-                </div>
+                </li>
               );
             })}
-          </CardContent>
-        </Card>
+          </ul>
+        </section>
       )}
 
       {/* Request Documents Dialog */}

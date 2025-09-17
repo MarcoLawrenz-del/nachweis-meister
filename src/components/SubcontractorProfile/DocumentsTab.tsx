@@ -286,37 +286,37 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         label: 'Fehlend', 
         variant: 'outline' as const, 
         icon: XCircle, 
-        className: 'text-red-600 border-red-200' 
+        className: 'bg-warn-50 text-warn-600 border-warn-600/20' 
       },
       submitted: { 
         label: 'Eingereicht', 
         variant: 'outline' as const, 
         icon: Upload, 
-        className: 'text-blue-600 border-blue-200' 
+        className: 'bg-info-50 text-info-600 border-info-600/20' 
       },
       in_review: { 
         label: 'In Prüfung', 
         variant: 'outline' as const, 
         icon: FileText, 
-        className: 'text-blue-800 border-blue-300' 
+        className: 'bg-info-50 text-info-600 border-info-600/20' 
       },
       accepted: { 
         label: 'Angenommen', 
         variant: 'default' as const, 
         icon: CheckCircle, 
-        className: 'bg-green-100 text-green-800 border-green-200' 
+        className: 'bg-success-50 text-success-600 border-success-600/20' 
       },
       rejected: { 
         label: 'Abgelehnt', 
         variant: 'destructive' as const, 
         icon: XCircle, 
-        className: 'bg-red-100 text-red-800' 
+        className: 'bg-danger-50 text-danger-600 border-danger-600/20' 
       },
       expired: { 
         label: 'Abgelaufen', 
         variant: 'destructive' as const, 
         icon: AlertTriangle, 
-        className: 'bg-red-100 text-red-800' 
+        className: 'bg-danger-50 text-danger-600 border-danger-600/20' 
       }
     };
     
@@ -447,14 +447,13 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                       </div>
                     </TableCell>
                     
-                    <TableCell>
-                <Badge 
-                  variant="outline" 
-                  className="bg-warn-50 text-warn-600 border-warn-600/20"
-                >
-                  {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
-                </Badge>
-                    </TableCell>
+                     <TableCell>
+                       <Badge 
+                         variant={doc.requirement === 'required' ? 'dutyRequired' : 'dutyOptional'}
+                       >
+                         {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
+                       </Badge>
+                     </TableCell>
                     
                     <TableCell>
                       <div className="flex items-center gap-2">

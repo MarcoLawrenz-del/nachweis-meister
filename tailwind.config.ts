@@ -81,6 +81,20 @@ const config: Config = {
           600: "hsl(var(--danger-600))"
         },
 
+        /* ========== DUTY/REQUIREMENT COLORS ========== */
+        duty: {
+          required: {
+            bg: "hsl(var(--duty-required-bg))",
+            text: "hsl(var(--duty-required-text))",
+            border: "hsl(var(--duty-required-border))"
+          },
+          optional: {
+            bg: "hsl(var(--duty-optional-bg))",
+            text: "hsl(var(--duty-optional-text))",
+            border: "hsl(var(--duty-optional-border))"
+          }
+        },
+
         /* ========== SHADCN THEME MAPPING ========== */
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

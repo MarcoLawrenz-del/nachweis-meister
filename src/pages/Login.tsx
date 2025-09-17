@@ -37,11 +37,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-surface rounded-2xl shadow-xl p-8 border border-border">
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-            <LogIn className="h-5 w-5 text-orange-600" />
+          <div className="h-10 w-10 rounded-xl bg-brand-50 flex items-center justify-center">
+            <LogIn className="h-5 w-5 text-brand-600" />
           </div>
           <h1 className="text-xl font-semibold">Anmelden</h1>
         </div>
@@ -96,7 +96,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-orange-600 text-white py-2.5 font-medium hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-xl bg-brand-500 text-white py-2.5 font-medium hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Anmelden..." : "Anmelden"}
           </button>
