@@ -16,11 +16,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAppAuth } from "@/hooks/useAppAuth";
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/config/brand";
 import { Logo } from "@/components/Brand/Logo";
 import { ROUTES } from "@/lib/ROUTES";
+import { signOut } from "@/services/auth";
+import { useNavigate } from "react-router-dom";
 
 const mainItems = [
   { title: "Dashboard", url: ROUTES.dashboard, icon: BarChart3, testId: "nav-dashboard" },
@@ -32,8 +33,8 @@ const settingsItems: any[] = [];
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
-  const { signOut } = useAppAuth();
 
   // Check if we're in demo mode
   const isDemo = currentPath.startsWith('/demo');
@@ -52,7 +53,8 @@ export function AppSidebar() {
 
   const handleSignOut = async () => {
     if (!isDemo) {
-      await signOut();
+      signOut();
+      navigate("/login");
     }
   };
 

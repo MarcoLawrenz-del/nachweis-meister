@@ -1,11 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { useAppAuth } from '@/hooks/useAppAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { Logo } from '@/components/Brand/Logo';
 import { TrialBanner } from '@/components/TrialBanner';
+import { getSession, signOut } from '@/services/auth';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +17,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AppLayout() {
-  const { profile, signOut } = useAppAuth();
+  const navigate = useNavigate();
+  const session = getSession();
+  const user = session?.user;
 
   const handleSignOut = async () => {
-    await signOut();
+    signOut();
+    navigate("/login");
   };
 
   return (
@@ -39,18 +43,15 @@ export function AppLayout() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">{profile?.name}</span>
+                  <span className="hidden sm:inline">{user?.name || "User"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{profile?.name}</p>
+                    <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {profile?.email}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      Rolle: {profile?.role}
+                      {user?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>

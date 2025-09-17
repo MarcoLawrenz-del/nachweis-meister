@@ -14,8 +14,7 @@ import { SCREENSHOTS } from '@/content/screenshots';
 import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
 import { PlayIcon } from "@/components/ui/PlayIcon";
 import { ScreenshotRow } from "@/components/marketing/ScreenshotRow";
-import { useAuthContext } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { getSession } from '@/services/auth';
 import { toast } from 'sonner';
 
 interface PricingPlan {
@@ -92,15 +91,16 @@ const pricingPlans: PricingPlan[] = [
 ];
 
 export default function Landing() {
-  const { user } = useAuthContext();
   const navigate = useNavigate();
+  const session = getSession();
+  const user = session?.user;
   const [isCreatingCheckout, setIsCreatingCheckout] = useState<string | null>(null);
 
   const handleStartTrial = () => {
     if (user) {
       navigate(ROUTES.dashboard);
     } else {
-      navigate('/register');
+      navigate('/login');
     }
   };
 
@@ -111,32 +111,13 @@ export default function Landing() {
     }
 
     if (!user) {
-      navigate('/register');
+      navigate('/login');
       return;
     }
 
-    try {
-      setIsCreatingCheckout(plan.name);
-      
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          priceId: plan.stripePrice,
-          successUrl: `${window.location.origin}${ROUTES.dashboard}?success=true`,
-          cancelUrl: `${window.location.origin}/#pricing`
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Fehler beim Erstellen der Zahlung. Bitte versuchen Sie es erneut.');
-    } finally {
-      setIsCreatingCheckout(null);
-    }
+    // For demo purposes, just show a message instead of actual Stripe integration
+    toast.success(`${plan.name} Plan ausgewählt! (Demo-Modus)`);
+    navigate(ROUTES.dashboard);
   };
 
   return (
