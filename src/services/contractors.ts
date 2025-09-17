@@ -1,3 +1,6 @@
+// Contractor CRUD operations - thin wrapper around store
+export { listContractors, getContractor, createContractor, updateContractor, deleteContractor } from "./contractors.store";
+
 // P2: Extended types for tri-state requirements and document status
 export type Requirement = "required" | "optional" | "hidden";
 export type DocStatus = "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired";

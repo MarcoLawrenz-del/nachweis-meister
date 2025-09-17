@@ -16,7 +16,6 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { NewSubcontractorWizard } from '@/components/NewSubcontractorWizard';
-import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
@@ -36,19 +35,12 @@ import {
   Eye,
   Circle
 } from 'lucide-react';
-import { aggregateContractorStatusById } from "@/services/contractors";
+import { aggregateContractorStatusById, listContractors, deleteContractor } from "@/services/contractors";
+import type { Contractor } from "@/services/contractors.store";
 
-interface Subcontractor {
-  id: string;
-  company_name: string;
-  contact_name: string | null;
-  contact_email: string;
-  phone: string | null;
-  address: string | null;
-  country_code: string;
-  company_type: string;
-  notes: string | null;
-  created_at: string;
+interface Subcontractor extends Contractor {
+  contact_email: string; // alias for email
+  country_code: string; // alias for country
   status: 'active' | 'inactive';
   compliance_status: 'compliant' | 'non_compliant' | 'expiring_soon';
   project_count: number;
@@ -69,91 +61,56 @@ export default function Subcontractors() {
   useEffect(() => {
     if (isDemo) {
       debug.log('🎯 Subcontractors: Using demo data');
-      setSubcontractors(demoSubcontractors);
+      // Convert demo data to match new interface
+      const convertedDemo = demoSubcontractors.map(sub => ({
+        ...sub,
+        email: sub.contact_email,
+        active: sub.status === 'active',
+        contact_email: sub.contact_email,
+        country_code: sub.country_code
+      })) as Subcontractor[];
+      setSubcontractors(convertedDemo);
       setLoading(false);
       return;
     }
     
-    if (profile) {
-      fetchSubcontractors();
-    }
-  }, [profile, isDemo]);
+    fetchSubcontractors();
+  }, [isDemo]);
 
   useEffect(() => {
     const filtered = subcontractors.filter(sub =>
       sub.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (sub.contact_name && sub.contact_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      sub.contact_email.toLowerCase().includes(searchTerm.toLowerCase())
+      sub.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredSubcontractors(filtered);
   }, [subcontractors, searchTerm]);
 
   const fetchSubcontractors = async () => {
-    if (!profile) return;
-
     try {
       setLoading(true);
       
-      if (!profile.tenant_id) {
-        setSubcontractors([]);
-        setLoading(false);
-        return;
-      }
-      
-      const { data: subcontractorsData, error } = await supabase
-        .from('subcontractors')
-        .select(`
-          id,
-          company_name,
-          contact_name,
-          contact_email,
-          phone,
-          address,
-          country_code,
-          company_type,
-          notes,
-          created_at,
-          status,
-          compliance_status,
-          project_subs (
-            id,
-            requirements (
-              status
-            )
-          )
-        `)
-        .eq('tenant_id', profile.tenant_id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const processedSubcontractors = subcontractorsData?.map(sub => {
-        const allRequirements = sub.project_subs.flatMap(ps => ps.requirements);
-        const criticalIssues = allRequirements.filter(req => req.status === 'expired' || req.status === 'missing').length;
-
+      const contractors = listContractors();
+      const processedSubcontractors = contractors.map(contractor => {
+        const status = aggregateContractorStatusById(contractor.id);
+        
         return {
-          id: sub.id,
-          company_name: sub.company_name,
-          contact_name: sub.contact_name,
-          contact_email: sub.contact_email,
-          phone: sub.phone,
-          address: sub.address,  
-          country_code: sub.country_code,
-          company_type: sub.company_type,
-          notes: sub.notes,
-          created_at: sub.created_at,
-          status: sub.status as 'active' | 'inactive',
-          compliance_status: sub.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon',
-          project_count: sub.project_subs.length,
-          critical_issues: criticalIssues
-        };
-      }) || [];
+          ...contractor,
+          contact_email: contractor.email,
+          country_code: contractor.country || '',
+          status: contractor.active ? 'active' as const : 'inactive' as const,
+          compliance_status: status === 'complete' ? 'compliant' as const : 
+                           status === 'attention' ? 'expiring_soon' as const : 'non_compliant' as const,
+          project_count: 0,
+          critical_issues: status === 'missing' ? 1 : 0
+        } as Subcontractor;
+      });
 
       setSubcontractors(processedSubcontractors);
-    } catch (error) {
-      console.error('Error fetching subcontractors:', error);
+    } catch (error: any) {
+      console.error('Error loading contractors:', error);
       toast({
-        title: "Fehler",
+        title: "Fehler beim Laden",
         description: "Nachunternehmer konnten nicht geladen werden.",
         variant: "destructive"
       });
@@ -180,12 +137,7 @@ export default function Subcontractors() {
     if (!confirm(`Möchten Sie ${subcontractor.company_name} wirklich löschen?`)) return;
 
     try {
-      const { error } = await supabase
-        .from('subcontractors')
-        .delete()
-        .eq('id', subcontractor.id);
-
-      if (error) throw error;
+      deleteContractor(subcontractor.id);
 
       toast({
         title: "Nachunternehmer gelöscht",
@@ -194,7 +146,7 @@ export default function Subcontractors() {
 
       fetchSubcontractors();
     } catch (error: any) {
-      console.error('Error deleting subcontractor:', error);
+      console.error('Error deleting contractor:', error);
       toast({
         title: "Fehler",
         description: "Nachunternehmer konnte nicht gelöscht werden.",

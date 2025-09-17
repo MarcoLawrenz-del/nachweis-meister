@@ -26,13 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, ArrowRight, Send, CheckCircle2, Package, Mail } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
-import { PACKAGE_PROFILES, seedDocumentsForContractor } from "@/services/contractors";
+import { PACKAGE_PROFILES, seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
 import { sendInvitation } from "@/services/email";
 
 const FormSchema = z.object({
@@ -152,88 +151,75 @@ export function NewSubcontractorWizard({
   const handleSubmit = async () => {
     if (!profile) return;
 
-    let subcontractorId: string | undefined;
+    let contractorId: string | undefined;
 
     try {
       setSubmitting(true);
 
-      // Step 1: Create or update subcontractor
       const subData = {
-        tenant_id: profile.tenant_id || null,
         company_name: subcontractorData.company_name,
-        contact_name: subcontractorData.contact_name || null,
-        contact_email: subcontractorData.contact_email,
-        phone: subcontractorData.phone || null,
-        address: subcontractorData.address || null,
-        country_code: subcontractorData.country_code,
-        company_type: 'unternehmen',
-        notes: subcontractorData.notes || null
+        contact_name: subcontractorData.contact_name || undefined,
+        email: subcontractorData.contact_email,
+        phone: subcontractorData.phone || undefined,
+        address: subcontractorData.address || undefined,
+        country: subcontractorData.country_code || undefined,
+        notes: subcontractorData.notes || undefined
       };
 
       if (editingSubcontractor) {
         // Update existing subcontractor
-        const { error } = await supabase
-          .from('subcontractors')
-          .update(subData)
-          .eq('id', editingSubcontractor.id);
-
-        if (error) throw error;
-        subcontractorId = editingSubcontractor.id;
+        const contractor = updateContractor(editingSubcontractor.id, subData);
+        contractorId = contractor.id;
 
         toast({
-          title: "Nachunternehmer aktualisiert",
+          title: "Änderungen gespeichert",
           description: `${subcontractorData.company_name} wurde erfolgreich aktualisiert.`
         });
 
+        // Navigate to contractor detail page
+        navigate(ROUTES.contractor(contractorId));
         onClose();
         if (onSuccess) onSuccess();
-        return;
-        } else {
-          // Create new subcontractor
-          const { data: newSub, error } = await supabase
-            .from('subcontractors')
-            .insert(subData)
-            .select()
-            .single();
+      } else {
+        // Create new subcontractor
+        const contractor = createContractor(subData);
+        contractorId = contractor.id;
 
-          if (error) throw error;
-          subcontractorId = newSub.id;
+        // Seed documents for contractor
+        await seedDocumentsForContractor(contractorId, selectedPackageId, requirements);
 
-          // Seed documents for contractor
-          await seedDocumentsForContractor(subcontractorId, selectedPackageId, requirements);
+        // First toast: Nachunternehmer erstellt
+        toast({
+          title: "Nachunternehmer erstellt",
+          description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
+        });
 
-          // First toast: Nachunternehmer erstellt
-          toast({
-            title: "Nachunternehmer erstellt",
-            description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
+        // Send invitation if email is provided
+        if (subcontractorData.contact_email && sendInvitationFlag) {
+          await sendInvitation({ contractorId: contractorId, email: subcontractorData.contact_email, message });
+          // Second toast: Einladung gesendet
+          toast({ 
+            title: "Einladung gesendet", 
+            description: subcontractorData.contact_email 
           });
-
-          // Send invitation if email is provided
-          if (subcontractorData.contact_email && sendInvitationFlag) {
-            await sendInvitation({ contractorId: subcontractorId, email: subcontractorData.contact_email, message });
-            // Second toast: Einladung gesendet
-            toast({ 
-              title: "Einladung gesendet", 
-              description: subcontractorData.contact_email 
-            });
-          }
-
-          // Navigate to contractor detail page
-          navigate(ROUTES.contractor(subcontractorId));
-          onClose();
-          if (onSuccess) onSuccess();
         }
 
+        // Navigate to contractor detail page
+        navigate(ROUTES.contractor(contractorId));
+        onClose();
+        if (onSuccess) onSuccess();
+      }
+
     } catch (error: any) {
-      console.error('Error creating subcontractor:', error);
+      console.error('Error creating/updating subcontractor:', error);
       
       // Don't show error toast if subcontractor was successfully created
-      if (typeof subcontractorId === 'undefined') {
+      if (typeof contractorId === 'undefined') {
         toast({
           title: "Fehler",
           description: error.message.includes('duplicate') 
             ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
-            : "Nachunternehmer konnte nicht gespeichert werden.",
+            : editingSubcontractor ? "Nachunternehmer konnte nicht aktualisiert werden." : "Nachunternehmer konnte nicht gespeichert werden.",
           variant: "destructive"
         });
       }
