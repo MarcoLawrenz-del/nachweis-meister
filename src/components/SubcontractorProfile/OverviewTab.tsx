@@ -29,9 +29,10 @@ import { getWording } from '@/lib/wording';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useParams } from 'react-router-dom';
-import { aggregateContractorStatus, type ContractorDocument } from "@/services/contractors";
+import { aggregateContractorStatusById, type ContractorDocument } from "@/services/contractors";
 import { isExpiring } from "@/utils/validity";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
+import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 
 interface OverviewTabProps {
   kpis: KPIData;
@@ -41,14 +42,16 @@ interface OverviewTabProps {
   onActionClick: (action: string, requirementId?: string) => void;
   onUpdateProfile: (updates: any) => Promise<boolean>;
   projectId?: string;
-  docs?: ContractorDocument[];
 }
 
-export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId, docs = [] }: OverviewTabProps) {
+export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActionClick, onUpdateProfile, projectId }: OverviewTabProps) {
   const { id: urlSubId } = useParams();
   const subId = urlSubId!;
   const wording = getWording('de');
   const [showRequestDialog, setShowRequestDialog] = useState(false);
+  
+  // Get docs from store
+  const docs = useContractorDocuments(subId);
 
   // Calculate KPIs from ContractorDocument[]
   const missing = docs.filter(d => d.requirement === "required" && ["missing", "rejected", "expired"].includes(d.status)).length;
@@ -57,7 +60,7 @@ export function OverviewTab({ kpis, requirements, reviewHistory, profile, onActi
   const valid = docs.filter(d => d.status === "accepted" && (!d.validUntil || !isExpiring(new Date(d.validUntil), 30))).length;
   const requiredCount = docs.filter(d => d.requirement === "required").length;
   const showComplete = requiredCount > 0 && missing === 0 && reviewing === 0 && expiring === 0 && valid > 0;
-  const agg = aggregateContractorStatus(docs);
+  const agg = aggregateContractorStatusById(subId);
 
   const getNextAction = (requirement: RequirementWithDocument) => {
     switch (requirement.status) {

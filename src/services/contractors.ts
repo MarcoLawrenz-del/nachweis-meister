@@ -50,6 +50,7 @@ export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
 } as const;
 
 import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
+import { isExpiring } from "@/utils/validity";
 
 export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>) {
   const profile = customRequirements || (PACKAGE_PROFILES[packageId] ?? {});
@@ -117,17 +118,30 @@ export async function setDocumentStatus(input: {
   return input;
 }
 
+export type Aggregate = "complete" | "attention" | "missing";
+export function aggregateContractorStatusById(contractorId:string): Aggregate {
+  const docs = getDocs(contractorId);
+  const required = docs.filter(d => d.requirement==="required");
+  if (required.length===0) return "missing";
+  const hasMissing = required.some(d => ["missing","rejected","expired"].includes(d.status));
+  const hasReview  = docs.some(d => ["submitted","in_review"].includes(d.status));
+  const hasExpiring = docs.some(d => d.status==="accepted" && d.validUntil && isExpiring(new Date(d.validUntil),30));
+  if (hasMissing) return "missing";
+  if (hasReview || hasExpiring) return "attention";
+  return "complete";
+}
+
 export function aggregateContractorStatus(docs: ContractorDocument[]): "complete" | "attention" | "missing" {
   if (!docs || docs.length === 0) return "missing";
   
   const requiredDocs = docs.filter(doc => doc.requirement === "required");
   if (requiredDocs.length === 0) return "missing";
   
-  const acceptedCount = requiredDocs.filter(doc => doc.status === "accepted").length;
-  const attentionStatuses = ["submitted", "in_review", "expired"];
-  const hasAttention = requiredDocs.some(doc => attentionStatuses.includes(doc.status));
+  const hasMissing = requiredDocs.some(d => ["missing","rejected","expired"].includes(d.status));
+  const hasReview = docs.some(d => ["submitted","in_review"].includes(d.status));
+  const hasExpiring = docs.some(d => d.status==="accepted" && d.validUntil && isExpiring(new Date(d.validUntil),30));
   
-  if (acceptedCount === requiredDocs.length) return "complete";
-  if (hasAttention || acceptedCount > 0) return "attention";
-  return "missing";
+  if (hasMissing) return "missing";
+  if (hasReview || hasExpiring) return "attention";
+  return "complete";
 }

@@ -34,7 +34,7 @@ import {
   CheckCircle,
   Eye
 } from 'lucide-react';
-import { aggregateContractorStatus } from "@/services/contractors";
+import { aggregateContractorStatusById } from "@/services/contractors";
 
 interface Subcontractor {
   id: string;
@@ -350,9 +350,7 @@ export default function Subcontractors() {
                       </TableCell>
                       <TableCell>
                         {(() => {
-                          // Mock document data for aggregation - in real implementation this would come from API
-                          const docs = []; // ContractorDocument[] would be fetched for this contractor
-                          const agg = aggregateContractorStatus(docs);
+                          const agg = aggregateContractorStatusById(subcontractor.id);
                           const chip = agg === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800"} :
                                       agg === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800"} :
                                                            {label: "Fehlt", class: "bg-red-100 text-red-800"};
