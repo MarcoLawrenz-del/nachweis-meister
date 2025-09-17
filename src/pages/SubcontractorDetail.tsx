@@ -79,10 +79,6 @@ export default function SubcontractorDetail() {
                 Seit {format(new Date(profile.created_at), 'dd.MM.yyyy', { locale: de })}
               </span>
             </div>
-            <div className="flex items-center">
-              <Building2 className="h-4 w-4 mr-1" />
-              <span className="text-sm capitalize">{profile.company_type}</span>
-            </div>
           </div>
         </div>
       </div>

@@ -317,11 +317,11 @@ export default function Subcontractors() {
                 <TableBody>
                   {filteredSubcontractors.map((subcontractor) => (
                     <TableRow key={subcontractor.id} className="hover:bg-muted/50">
-                      <TableCell>
+                       <TableCell>
                         <div>
                           <div className="font-medium">{subcontractor.company_name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {subcontractor.company_type}
+                            Seit {new Date(subcontractor.created_at).toLocaleDateString('de-DE')}
                           </div>
                         </div>
                       </TableCell>
