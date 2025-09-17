@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -15,23 +17,19 @@ import {
 import { 
   FileText, 
   Search, 
-  Filter, 
-  Download,
-  Eye,
+  Filter,
   Upload,
-  Clock,
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Send
 } from 'lucide-react';
 import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
-import { RequirementStatus } from '@/types/compliance';
-import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
-import { exportContractorBundle } from '@/utils/export';
+import { DOCUMENT_TYPES } from "@/config/documentTypes";
+import { setDocumentStatus } from "@/services/contractors";
+import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
+import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -40,60 +38,96 @@ interface DocumentsTabProps {
   onReview: (requirementId: string, action: 'approve' | 'reject', data: any) => Promise<boolean>;
   onSendReminder: (requirementIds?: string[]) => Promise<boolean>;
   projectId?: string;
-  profile?: any; // Add profile for export functionality
+  profile?: any;
+  contractorId: string;
 }
 
-export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSendReminder, projectId, profile }: DocumentsTabProps) {
+export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSendReminder, projectId, profile, contractorId }: DocumentsTabProps) {
   const navigate = useNavigate();
   const { id: subId } = useParams<{ id: string }>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<RequirementStatus | 'all'>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'mandatory' | 'optional'>('all');
-  const [reviewFilter, setReviewFilter] = useState<'all' | 'submitted' | 'in_review' | 'valid' | 'rejected'>('all');
-  const [showReminderPanel, setShowReminderPanel] = useState(false);
-  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showRejectDialog, setShowRejectDialog] = useState<{ documentTypeId: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectMessage, setRejectMessage] = useState('');
+  const [validityDates, setValidityDates] = useState<Record<string, string>>({});
+  
+  // Load docs from store
+  const docs = useContractorDocuments(contractorId);
 
-  // Filter requirements
-  const filteredRequirements = requirements.filter(req => {
+  // Filter documents
+  const filteredDocs = docs.filter(doc => {
+    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+    if (!docType) return false;
+    
     // Search filter
-    const matchesSearch = req.document_types.name_de.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         req.document_types.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = docType.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         docType.id.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Status filter
-    const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || doc.status === statusFilter;
     
-    // Type filter
-    const matchesType = typeFilter === 'all' || 
-                       (typeFilter === 'mandatory' && req.document_types.required_by_default) ||
-                       (typeFilter === 'optional' && !req.document_types.required_by_default);
-    
-    // Review filter (for review workflow integration)
-    const matchesReview = reviewFilter === 'all' || req.status === reviewFilter;
-    
-    return matchesSearch && matchesStatus && matchesType && matchesReview;
+    return matchesSearch && matchesStatus;
   });
 
-  // Handle reminder sending
-  const handleSendReminder = async () => {
-    setIsSendingReminder(true);
-    try {
-      await onSendReminder();
-      setShowReminderPanel(false);
-    } catch (error) {
-      console.error('Failed to send reminder:', error);
-    } finally {
-      setIsSendingReminder(false);
+  // Handle accept document
+  const handleAccept = async (doc: any) => {
+    const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId)!;
+    let validUntil = validityDates[doc.documentTypeId];
+    
+    // Auto-calculate validity if not set
+    if (!validUntil && docType.validity.kind !== "none") {
+      const computed = computeValidUntil(docType.validity);
+      validUntil = computed ? computed.toISOString().split('T')[0] : null;
     }
+    
+    await setDocumentStatus({
+      contractorId,
+      documentTypeId: doc.documentTypeId,
+      status: "accepted",
+      validUntil
+    });
   };
 
-  // Handle export bundle
-  const handleExportBundle = async () => {
-    const contractorName = profile?.company_name || 'Nachunternehmer';
-    await exportContractorBundle({ contractorName, documents: [] });
+  // Handle reject document
+  const handleReject = async () => {
+    if (!showRejectDialog) return;
+    
+    await setDocumentStatus({
+      contractorId,
+      documentTypeId: showRejectDialog.documentTypeId,
+      status: "rejected",
+      reason: rejectReason
+    });
+    
+    console.info("[stub] sendRejection", { 
+      contractorId, 
+      documentTypeId: showRejectDialog.documentTypeId, 
+      reason: rejectReason, 
+      message: rejectMessage 
+    });
+    
+    setShowRejectDialog(null);
+    setRejectReason('');
+    setRejectMessage('');
+  };
+
+  // Handle request again
+  const handleRequestAgain = async (doc: any) => {
+    await setDocumentStatus({
+      contractorId,
+      documentTypeId: doc.documentTypeId,
+      status: "missing"
+    });
+    
+    console.info("[stub] sendReminderMissing", { 
+      contractorId, 
+      documentTypeId: doc.documentTypeId 
+    });
   };
 
   // Status configuration
-  const getStatusConfig = (status: RequirementStatus) => {
+  const getStatusConfig = (status: string) => {
     const configs = {
       missing: { 
         label: 'Fehlend', 
@@ -110,11 +144,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       in_review: { 
         label: 'In Prüfung', 
         variant: 'outline' as const, 
-        icon: Clock, 
+        icon: FileText, 
         className: 'text-blue-800 border-blue-300' 
       },
-      valid: { 
-        label: 'Gültig', 
+      accepted: { 
+        label: 'Angenommen', 
         variant: 'default' as const, 
         icon: CheckCircle, 
         className: 'bg-green-100 text-green-800 border-green-200' 
@@ -125,12 +159,6 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         icon: XCircle, 
         className: 'bg-red-100 text-red-800' 
       },
-      expiring: { 
-        label: 'Läuft ab', 
-        variant: 'outline' as const, 
-        icon: AlertTriangle, 
-        className: 'text-yellow-600 border-yellow-200' 
-      },
       expired: { 
         label: 'Abgelaufen', 
         variant: 'destructive' as const, 
@@ -139,112 +167,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       }
     };
     
-    return configs[status];
-  };
-
-  // Get available actions for each requirement with proper state transitions
-  const getActions = (requirement: RequirementWithDocument) => {
-    const actions = [];
-    
-    switch (requirement.status) {
-      case 'missing':
-        // Only allow upload request - no review option for missing documents
-        actions.push({
-          label: 'Upload anfordern',
-          action: () => onAction('request_upload', requirement.id),
-          variant: 'default' as const,
-          icon: Upload
-        });
-        break;
-        
-      case 'submitted':
-        // Document submitted - can be reviewed or viewed
-        actions.push({
-          label: 'Prüfen & Details',
-          action: () => onAction('review', requirement.id),
-          variant: 'outline' as const,
-          icon: Eye
-        });
-        if (requirement.documents.length > 0) {
-          actions.push({
-            label: 'Anzeigen',
-            action: () => onAction('view_document', requirement.id),
-            variant: 'ghost' as const,
-            icon: FileText
-          });
-        }
-        break;
-        
-      case 'in_review':
-        // Currently in review - can be reviewed or viewed
-        actions.push({
-          label: 'Prüfen & Details',
-          action: () => onAction('review', requirement.id),
-          variant: 'default' as const,
-          icon: Eye
-        });
-        if (requirement.documents.length > 0) {
-          actions.push({
-            label: 'Anzeigen',
-            action: () => onAction('view_document', requirement.id),
-            variant: 'ghost' as const,
-            icon: FileText
-          });
-        }
-        break;
-        
-      case 'valid':
-        // Valid document - can only be viewed
-        if (requirement.documents.length > 0) {
-          actions.push({
-            label: 'Anzeigen',
-            action: () => onAction('view_document', requirement.id),
-            variant: 'outline' as const,
-            icon: FileText
-          });
-        }
-        break;
-        
-      case 'rejected':
-        // Rejected - transitions back to missing, request new upload
-        actions.push({
-          label: 'Korrektur anfordern',
-          action: () => onAction('request_correction', requirement.id),
-          variant: 'destructive' as const,
-          icon: XCircle
-        });
-        break;
-        
-      case 'expiring':
-        // Expiring - request renewal
-        actions.push({
-          label: 'Verlängerung anfordern',
-          action: () => onAction('request_renewal', requirement.id),
-          variant: 'outline' as const,
-          icon: Clock
-        });
-        if (requirement.documents.length > 0) {
-          actions.push({
-            label: 'Anzeigen',
-            action: () => onAction('view_document', requirement.id),
-            variant: 'ghost' as const,
-            icon: FileText
-          });
-        }
-        break;
-        
-      case 'expired':
-        // Expired - request new upload (transitions to missing)
-        actions.push({
-          label: 'Neu anfordern',
-          action: () => onAction('request_upload', requirement.id),
-          variant: 'default' as const,
-          icon: Upload
-        });
-        break;
-    }
-    
-    return actions;
+    return configs[status as keyof typeof configs] || configs.missing;
   };
 
   return (
@@ -257,26 +180,6 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               <Filter className="h-5 w-5" />
               Filter & Suche
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportBundle}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                ZIP Export
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowReminderPanel(true)}
-                className="gap-2"
-              >
-                <Send className="h-4 w-4" />
-                Erinnerung senden
-              </Button>
-            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -293,52 +196,20 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               </div>
             </div>
             
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Alle</SelectItem>
                 <SelectItem value="missing">Fehlend</SelectItem>
+                <SelectItem value="submitted">Eingereicht</SelectItem>
                 <SelectItem value="in_review">In Prüfung</SelectItem>
-                <SelectItem value="valid">Gültig</SelectItem>
+                <SelectItem value="accepted">Angenommen</SelectItem>
+                <SelectItem value="rejected">Abgelehnt</SelectItem>
                 <SelectItem value="expired">Abgelaufen</SelectItem>
               </SelectContent>
             </Select>
-            
-            <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as any)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Typ" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Typen</SelectItem>
-                <SelectItem value="mandatory">Pflichtdokumente</SelectItem>
-                <SelectItem value="optional">Optional</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Review Filter Chips */}
-          <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm font-medium">Prüfstatus:</span>
-            <div className="flex gap-2">
-              {[
-                { value: 'all', label: 'Alle' },
-                { value: 'submitted', label: 'Eingereicht' },
-                { value: 'in_review', label: 'In Prüfung' },
-                { value: 'valid', label: 'Gültig' },
-                { value: 'rejected', label: 'Abgelehnt' }
-              ].map((filter) => (
-                <Badge
-                  key={filter.value}
-                  variant={reviewFilter === filter.value ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/80"
-                  onClick={() => setReviewFilter(filter.value as any)}
-                >
-                  {filter.label}
-                </Badge>
-              ))}
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -349,7 +220,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Dokumente ({filteredRequirements.length})
+              Dokumente ({filteredDocs.length})
             </div>
           </CardTitle>
         </CardHeader>
@@ -357,7 +228,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nachweis</TableHead>
+                <TableHead>Dokument</TableHead>
                 <TableHead>Pflicht/Optional</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Gültig bis</TableHead>
@@ -365,26 +236,32 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRequirements.map((requirement) => {
-                const statusConfig = getStatusConfig(requirement.status);
-                const actions = getActions(requirement);
+              {filteredDocs.map((doc) => {
+                const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+                if (!docType) return null;
+                
+                const statusConfig = getStatusConfig(doc.status);
                 const StatusIcon = statusConfig.icon;
-                const latestDocument = requirement.documents[0]; // Most recent document
+                
+                // Check validity states
+                const validUntilDate = doc.validUntil ? new Date(doc.validUntil) : null;
+                const expired = validUntilDate && isExpired(validUntilDate);
+                const expiring = validUntilDate && !expired && isExpiring(validUntilDate, 30);
 
                 return (
-                  <TableRow key={requirement.id}>
+                  <TableRow key={doc.documentTypeId}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{requirement.document_types.name_de}</div>
+                        <div className="font-medium">{docType.label}</div>
                         <div className="text-sm text-muted-foreground">
-                          {requirement.document_types.code}
+                          {docType.id}
                         </div>
                       </div>
                     </TableCell>
                     
                     <TableCell>
-                      <Badge variant={requirement.document_types.required_by_default ? 'default' : 'outline'}>
-                        {requirement.document_types.required_by_default ? 'Pflicht' : 'Optional'}
+                      <Badge variant={doc.requirement === 'required' ? 'default' : 'outline'}>
+                        {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
                       </Badge>
                     </TableCell>
                     
@@ -392,147 +269,131 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                       <div className="flex items-center gap-2">
                         <StatusIcon className="h-4 w-4" />
                         <Badge variant={statusConfig.variant} className={statusConfig.className}>
-                          {statusConfig.label}
+                          {expired ? 'Abgelaufen' : expiring ? 'Läuft ab' : statusConfig.label}
                         </Badge>
+                        {expiring && !expired && (
+                          <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                            Läuft ab
+                          </Badge>
+                        )}
                       </div>
-                      {requirement.rejection_reason && (
+                      {doc.rejectionReason && (
                         <div className="text-sm text-red-600 mt-1">
-                          {requirement.rejection_reason}
+                          {doc.rejectionReason}
                         </div>
                       )}
                     </TableCell>
                     
                     <TableCell>
-                      {requirement.valid_to ? (
-                        <div className="text-sm">
-                          {format(new Date(requirement.valid_to), 'dd.MM.yyyy', { locale: de })}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
+                      <Input
+                        type="date"
+                        value={validityDates[doc.documentTypeId] || (doc.validUntil ? doc.validUntil.split('T')[0] : '')}
+                        onChange={(e) => setValidityDates(prev => ({ ...prev, [doc.documentTypeId]: e.target.value }))}
+                        className="w-40"
+                      />
                     </TableCell>
                     
-                     <TableCell>
-                        <div className="flex gap-2">
-                          {actions.map((action, index) => {
-                            const Icon = action.icon;
-                            return (
-                              <Button
-                                key={index}
-                                variant={action.variant}
-                                size="sm"
-                                onClick={action.action}
-                                className="flex items-center gap-1"
-                              >
-                                <Icon className="h-3 w-3" />
-                                {action.label}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {doc.status === 'submitted' || doc.status === 'in_review' ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAccept(doc)}
+                              className="flex items-center gap-1"
+                            >
+                              <CheckCircle className="h-3 w-3" />
+                              Annehmen
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setShowRejectDialog({ documentTypeId: doc.documentTypeId })}
+                              className="flex items-center gap-1"
+                            >
+                              <XCircle className="h-3 w-3" />
+                              Ablehnen
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRequestAgain(doc)}
+                            className="flex items-center gap-1"
+                          >
+                            <Upload className="h-3 w-3" />
+                            Erneut anfordern
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}
               
-               {filteredRequirements.length === 0 && requirements.length === 0 && (
-                 <TableRow>
-                   <TableCell colSpan={5} className="text-center py-12">
-                     <div className="flex flex-col items-center gap-4">
-                       <FileText className="h-12 w-12 text-muted-foreground" />
-                       <div className="text-center">
-                         <h3 className="text-lg font-medium mb-2">Noch keine Dokumente angefordert</h3>
-                         <p className="text-muted-foreground mb-4">
-                           Wählen Sie ein Dokumentenpaket aus, um Anforderungen zu erstellen.
-                         </p>
-                           <Button 
-                             onClick={() => navigate(ROUTES.subPackage(projectId!, subId))}
-                             className="gap-2"
-                           >
-                           <Upload className="h-4 w-4" />
-                           Dokumente anfordern
-                         </Button>
-                       </div>
-                     </div>
-                   </TableCell>
-                 </TableRow>
-               )}
-               {filteredRequirements.length === 0 && requirements.length > 0 && (
-                 <TableRow>
-                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                     Keine Dokumente mit den aktuellen Filtern gefunden.
-                   </TableCell>
-                 </TableRow>
-               )}
+              {filteredDocs.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-4">
+                      <FileText className="h-12 w-12 text-muted-foreground" />
+                      <div className="text-center">
+                        <h3 className="text-lg font-medium mb-2">Keine Dokumente gefunden</h3>
+                        <p className="text-muted-foreground">
+                          {docs.length === 0 ? 'Noch keine Dokumente angefordert.' : 'Keine Dokumente entsprechen den aktuellen Filtern.'}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
       
-      {/* Reminder Panel Dialog */}
-      {showReminderPanel && (
-        <Card className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Send className="h-5 w-5" />
-                    Erinnerung senden
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowReminderPanel(false)}
-                  >
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Möchten Sie eine Erinnerung für ausstehende Dokumente senden?
-                  </p>
-                  <div className="text-sm">
-                    <strong>Ausstehende Dokumente:</strong>
-                    <ul className="mt-2 space-y-1">
-                      {requirements
-                        .filter(req => ['missing', 'submitted', 'expired'].includes(req.status))
-                        .slice(0, 3)
-                        .map(req => (
-                          <li key={req.id} className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            {req.document_types.name_de}
-                          </li>
-                        ))}
-                      {requirements.filter(req => ['missing', 'submitted', 'expired'].includes(req.status)).length > 3 && (
-                        <li className="text-muted-foreground">
-                          ... und {requirements.filter(req => ['missing', 'submitted', 'expired'].includes(req.status)).length - 3} weitere
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-                
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowReminderPanel(false)}
-                  >
-                    Abbrechen
-                  </Button>
-                  <Button
-                    onClick={handleSendReminder}
-                    disabled={isSendingReminder}
-                  >
-                    {isSendingReminder ? 'Sendet...' : 'Erinnerung senden'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </Card>
+      {/* Reject Dialog */}
+      {showRejectDialog && (
+        <Dialog open={!!showRejectDialog} onOpenChange={() => setShowRejectDialog(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Dokument ablehnen</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Grund der Ablehnung *</label>
+                <Textarea
+                  placeholder="Bitte geben Sie den Grund für die Ablehnung an..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Zusätzliche Nachricht (optional)</label>
+                <Textarea
+                  placeholder="Weitere Hinweise für den Nachunternehmer..."
+                  value={rejectMessage}
+                  onChange={(e) => setRejectMessage(e.target.value)}
+                  rows={2}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowRejectDialog(null)}>
+                Abbrechen
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleReject}
+                disabled={!rejectReason.trim()}
+              >
+                Ablehnen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
