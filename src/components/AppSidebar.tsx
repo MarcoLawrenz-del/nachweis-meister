@@ -1,14 +1,9 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   BarChart3,
-  Building2,
   Users,
-  FileCheck,
   Settings,
-  FolderOpen,
-  Shield,
-  LogOut,
-  Bell
+  LogOut
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,14 +25,10 @@ import { ROUTES } from "@/lib/ROUTES";
 const mainItems = [
   { title: "Dashboard", url: ROUTES.dashboard, icon: BarChart3, testId: "nav-dashboard" },
   { title: "Beauftragte Firmen", url: ROUTES.contractors, icon: Users, testId: "nav-firmen" },
-  { title: "Prüfen", url: ROUTES.reviewQueue, icon: FileCheck, testId: "nav-pruefen" },
-  { title: "Erinnerungen", url: ROUTES.reminders, icon: Bell, testId: "nav-erinnerungen" },
-];
-
-const settingsItems = [
-  { title: "Rollen & Zugriffe", url: ROUTES.rolesAccess, icon: Shield, testId: "nav-rollen" },
   { title: "Einstellungen", url: ROUTES.settings, icon: Settings, testId: "nav-einstellungen" },
 ];
+
+const settingsItems: any[] = [];
 
 export function AppSidebar() {
   const location = useLocation();
@@ -50,11 +41,6 @@ export function AppSidebar() {
 
   // Adjust URLs based on demo mode
   const adjustedMainItems = mainItems.map(item => ({
-    ...item,
-    url: item.url.replace('/app', baseUrl)
-  }));
-
-  const adjustedSettingsItems = settingsItems.map(item => ({
     ...item,
     url: item.url.replace('/app', baseUrl)
   }));
@@ -108,20 +94,6 @@ export function AppSidebar() {
           <SidebarGroupLabel>System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {adjustedSettingsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={getNavCls(isActive(item.url))}
-                      data-testid={item.testId}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Button 

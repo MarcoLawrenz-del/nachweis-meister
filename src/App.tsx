@@ -175,111 +175,10 @@ const App = () => (
                 <div id="main-content">
                   <Suspense fallback={<LoadingSpinner />}>
                     <Routes>
-                      {/* Root route - redirect to appropriate page */}
-                      <Route path="/" element={<RootRoute />} />
-                      
-                      {/* Public routes */}
-                      <Route path="/login" element={
-                        <PublicRoute>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <Login />
-                          </Suspense>
-                        </PublicRoute>
-                      } />
-                      <Route path="/register" element={
-                        <PublicRoute>
-                          <Suspense fallback={<LoadingSpinner />}>
-                            <Register />
-                          </Suspense>
-                        </PublicRoute>
-                      } />
-                      <Route path="/accept-invitation" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <AcceptInvitation />
-                        </Suspense>
-                      } />
-                      
-                      {/* Public pricing page */}
-                      <Route path="/pricing" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Pricing />
-                        </Suspense>
-                      } />
-                      
-                      {/* Use-Case Landing Pages */}
-                      <Route path="/lp/a1-entsendung" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <A1Entsendung />
-                        </Suspense>
-                      } />
-                      <Route path="/lp/soka-bau-nachweise" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <SokaBau />
-                        </Suspense>
-                      } />
-                      <Route path="/lp/freistellungsbescheinigung-48b" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Freistellungsbescheinigung />
-                        </Suspense>
-                      } />
-                      
-                      {/* Vertical Landing Pages */}
-                      <Route path="/lp/shk" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <SHK />
-                        </Suspense>
-                      } />
-                      <Route path="/lp/elektro" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Elektro />
-                        </Suspense>
-                      } />
-                      
-                      {/* Magic link wizard (no auth required) */}
-                      <Route path="/invite/:token" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <MagicLinkWizard />
-                        </Suspense>
-                      } />
-                      
-                       {/* Public document upload (no auth required) */}
-                       <Route path="/upload/:token" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <PublicUpload />
-                         </Suspense>
-                       } />
-                      
-                      {/* Test route */}
-                      <Route path="/test-upload" element={
-                        <div style={{
-                          minHeight: '100vh',
-                          backgroundColor: '#10b981',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '2rem',
-                          fontFamily: 'system-ui'
-                        }}>
-                          ✅ UPLOAD-ROUTE FUNKTIONIERT!
-                        </div>
-                      } />
-                      
-                      {/* Public Demo Route */}
-                      <Route path="/public-demo" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <PublicDemo />
-                        </Suspense>
-                      } />
-                      
-                      {/* Comprehensive Demo Route */}
-                      <Route path="/demo/*" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <Demo />
-                        </Suspense>
-                      } />
-                      
-                      {/* Protected routes */}
+                      {/* Root → dashboard */}
+                      <Route path="/" element={<Navigate to={ROUTES.dashboard} replace />} />
+
+                      {/* App-Scope */}
                       <Route path="/app" element={
                         <ProtectedRoute>
                           <Suspense fallback={<LoadingSpinner />}>
@@ -287,112 +186,39 @@ const App = () => (
                           </Suspense>
                         </ProtectedRoute>
                       }>
-                        <Route index element={<Navigate to="dashboard" replace />} />
-                         <Route path="dashboard" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <Dashboard />
-                           </Suspense>
-                         } />
-                         <Route path="projects" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <Projects />
-                           </Suspense>
-                         } />
-                         <Route path="projects/:id" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <ProjectDetail />
-                           </Suspense>
-                         } />
-                         <Route path="subcontractors" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <Subcontractors />
-                           </Suspense>
-                          } />
-                           <Route path="subcontractors/:id" element={
-                             <Suspense fallback={<LoadingSpinner />}>
-                               <SubcontractorDetail />
-                             </Suspense>
-                           } />
-                           <Route path="projects/:projectId/subs/:subId" element={
-                             <Suspense fallback={<LoadingSpinner />}>
-                               <SubcontractorDetail />
-                             </Suspense>
-                           } />
-                           <Route path="projects/:projectId/subs/:subId/package" element={
-                            <Suspense fallback={<LoadingSpinner />}>
-                              <PackageWizard />
-                            </Suspense>
-                          } />
-                         <Route path="requirements/:projectSubId" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <RequirementsDetail />
-                           </Suspense>
-                         } />
-                         <Route path="documents/:documentId" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <DocumentDetail />
-                           </Suspense>
-                         } />
-                         <Route path="review" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <ReviewQueue />
-                           </Suspense>
-                         } />
-                         <Route path="reminders" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <Reminders />
-                           </Suspense>
-                         } />
-                         <Route path="settings" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <Settings />
-                           </Suspense>
-                         } />
-                          <Route path="roles-access" element={
-                            <Suspense fallback={<LoadingSpinner />}>
-                              <RolesAccess />
-                            </Suspense>
-                          } />
-                          <Route path="package-wizard/:projectId/:subcontractorId" element={
-                            <Suspense fallback={<LoadingSpinner />}>
-                              <PackageWizard />
-                            </Suspense>
-                          } />
-                        </Route>
-                       
-                        {/* Legal pages */}
-                        <Route path="/impressum" element={
+                        {/* Index leitet immer auf Dashboard */}
+                        <Route index element={<Navigate to={ROUTES.dashboard} replace />} />
+                        <Route path="dashboard" element={
                           <Suspense fallback={<LoadingSpinner />}>
-                            <Impressum />
+                            <Dashboard />
                           </Suspense>
                         } />
-                        <Route path="/datenschutz" element={
+                        <Route path="subcontractors" element={
                           <Suspense fallback={<LoadingSpinner />}>
-                            <Datenschutz />
+                            <Subcontractors />
                           </Suspense>
                         } />
-                        <Route path="/dienstleister" element={
+                        <Route path="subcontractors/:id" element={
                           <Suspense fallback={<LoadingSpinner />}>
-                            <Dienstleister />
+                            <SubcontractorDetail />
                           </Suspense>
                         } />
-                        <Route path="/agb" element={
+                        <Route path="projects/:projectId/subs/:subId/package" element={
                           <Suspense fallback={<LoadingSpinner />}>
-                            <AGB />
+                            <PackageWizard />
                           </Suspense>
                         } />
-                        <Route path="/kontakt" element={
+                        <Route path="einstellungen" element={
                           <Suspense fallback={<LoadingSpinner />}>
-                            <Kontakt />
+                            <Settings />
                           </Suspense>
                         } />
-                      
-                      {/* Catch all */}
-                      <Route path="*" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <NotFound />
-                        </Suspense>
-                      } />
+                        {/* Fallback 404 im App-Scope */}
+                        <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
+                      </Route>
+
+                      {/* Globaler Fallback */}
+                      <Route path="*" element={<Navigate to={ROUTES.dashboard} replace />} />
                     </Routes>
                   </Suspense>
                 </div>
