@@ -18,10 +18,10 @@ import {
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuthContext();
+  const { user, logout } = useAuthContext();
 
   const handleSignOut = async () => {
-    signOut();
+    logout();
     navigate("/login");
   };
 

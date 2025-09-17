@@ -10,7 +10,8 @@ import { A11yProvider, SkipLink } from "./components/A11yProvider";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ROUTES } from "@/lib/ROUTES";
 import Landing from "./pages/Landing";
-import { AuthProvider, RequireAuth } from "@/auth/AuthContext";
+import { AuthProvider } from "@/auth/AuthContext";
+import { RequireAuth } from "@/auth/RequireAuth";
 
 // Lazy Loading für Performance-Optimierung
 const AppLayout = lazy(() => import("./components/AppLayout").then(module => ({ default: module.AppLayout })));
@@ -96,7 +97,7 @@ const App = () => (
                         </Suspense>
                       } />
 
-                      {/* App-Scope - Protected */}
+                       {/* App-Scope - Protected */}
                       <Route path="/app/*" element={
                         <RequireAuth>
                           <Suspense fallback={<LoadingSpinner />}>

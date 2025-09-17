@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
+import { AuthProvider } from "@/auth/AuthContext";
 
 // Screenshot mode detection
 if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screenshot') === '1') {
@@ -12,6 +13,8 @@ if (typeof window !== 'undefined' && new URLSearchParams(window.location.search)
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="subfix-ui-theme">
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </ThemeProvider>
 );

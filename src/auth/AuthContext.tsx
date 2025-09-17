@@ -1,12 +1,14 @@
-import React, {createContext, useContext, useEffect, useMemo, useState} from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { verifyPassword } from "./users.store";
 
-type User = { id: string; email: string; name?: string };
+export type User = { id: string; email: string; name: string; createdAt?: string };
+
 type AuthCtx = {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, name?: string) => Promise<void>;
-  signOut: () => void;
+  isAuthenticated: boolean;
+  loginWithPassword: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 };
 
 const LS_KEY = "subfix.auth.user.v1";
@@ -20,27 +22,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) setUser(JSON.parse(raw));
+      if (raw) {
+        const userData = JSON.parse(raw);
+        setUser({
+          ...userData,
+          createdAt: userData.createdAt || new Date().toISOString()
+        });
+      }
     } catch {}
     setLoading(false);
   }, []);
 
-  const signIn = async (email: string, name?: string) => {
-    const u: User = {
-      id: crypto?.randomUUID?.() ?? String(Date.now()),
-      email,
-      name: name || email.split("@")[0]
+  const loginWithPassword = async (email: string, password: string) => {
+    const result = await verifyPassword(email, password);
+    
+    if (!result.ok || !result.user) {
+      throw new Error("E-Mail oder Passwort falsch");
+    }
+    
+    const userData: User = {
+      ...result.user,
+      createdAt: new Date().toISOString()
     };
-    localStorage.setItem(LS_KEY, JSON.stringify(u));
-    setUser(u);
+    
+    localStorage.setItem(LS_KEY, JSON.stringify(userData));
+    setUser(userData);
   };
 
-  const signOut = () => {
+  const logout = () => {
     localStorage.removeItem(LS_KEY);
     setUser(null);
   };
 
-  const value = useMemo(() => ({ user, loading, signIn, signOut }), [user, loading]);
+  const isAuthenticated = useMemo(() => user !== null, [user]);
+
+  const value = useMemo(() => ({ 
+    user, 
+    loading, 
+    isAuthenticated,
+    loginWithPassword, 
+    logout 
+  }), [user, loading, isAuthenticated]);
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
@@ -48,13 +71,4 @@ export const useAuthContext = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuthContext must be used within an AuthProvider");
   return ctx;
-};
-
-// Route-Guard: schützt alle /app Routen
-export const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuthContext();
-  const location = useLocation();
-  if (loading) return null; // oder ein Loader
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
-  return <>{children}</>;
 };
