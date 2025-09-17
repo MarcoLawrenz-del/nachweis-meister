@@ -42,6 +42,47 @@ export function upsertDoc(id: string, doc: ContractorDocument) {
   setDocs(id, [...cur]);
 }
 
+export function markUploaded(args: {
+  contractorId: string;
+  type: string;
+  file: { name: string; type: string; size: number; dataUrl: string };
+  uploadedBy: 'admin' | 'contractor';
+  accept?: boolean;
+  validUntil?: string | null;
+}) {
+  const { contractorId, type, file, uploadedBy, accept = false, validUntil } = args;
+  const cur = getDocs(contractorId);
+  const doc = cur.find(d => d.documentTypeId === type);
+  
+  if (!doc) return;
+  
+  let finalValidUntil = validUntil;
+  if (accept && !validUntil) {
+    // Auto-compute validity if accepting without explicit date
+    const { computeValidUntil } = require('@/utils/validity');
+    const { DOCUMENT_TYPES } = require('@/config/documentTypes');
+    const docType = DOCUMENT_TYPES.find(dt => dt.id === type);
+    if (docType?.validity) {
+      const computed = computeValidUntil(docType.validity);
+      finalValidUntil = computed?.toISOString() || null;
+    }
+  }
+  
+  const updatedDoc = {
+    ...doc,
+    status: accept ? 'accepted' : 'submitted',
+    fileName: file.name,
+    fileType: file.type,
+    fileSize: file.size,
+    fileUrl: file.dataUrl,
+    uploadedBy,
+    uploadedAt: new Date().toISOString(),
+    validUntil: finalValidUntil,
+  };
+  
+  upsertDoc(contractorId, updatedDoc);
+}
+
 export function subscribe(id: string, fn: () => void) { 
   const s = listeners.get(id) ?? new Set(); 
   s.add(fn); 

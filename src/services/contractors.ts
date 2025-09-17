@@ -14,6 +14,12 @@ export type ContractorDocument = {
   rejectionReason?: string | null;
   customName?: string; // For custom documents with docTypeId starting with 'custom:'
   label?: string; // Display label for custom documents (preserves original with umlauts)
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
+  fileUrl?: string; // data URL (demo)
+  uploadedBy?: 'admin' | 'contractor';
+  uploadedAt?: string; // ISO
 };
 
 // Map der (vorläufig) konfigurierten Anforderungen je Paket:

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import { getDocs, getDocs as getContractorDocs } from "@/services/contractorDocs.store";
+import { getDocs, markUploaded } from "@/services/contractorDocs.store";
 import { setDocumentStatus } from "@/services/contractors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,8 @@ export default function PublicUploadDemo() {
   useEffect(() => {
     if (!contractorId) return;
 
-    // Get existing contractor documents to determine requirements
-    const existingDocs = getContractorDocs(contractorId);
+    // Get existing contractor documents to determine requirements and upload status
+    const existingDocs = getDocs(contractorId);
     
     const relevantDocuments = DOCUMENT_TYPES
       .map(dt => {
@@ -47,7 +47,7 @@ export default function PublicUploadDemo() {
           requirement: requirement as "required" | "optional",
           file: null,
           validUntil: "",
-          uploaded: false
+          uploaded: existingDoc?.status === 'submitted' || existingDoc?.status === 'accepted' || existingDoc?.status === 'in_review'
         };
       })
       .filter((doc): doc is DocumentUpload => doc !== null);
@@ -80,7 +80,7 @@ export default function PublicUploadDemo() {
     setIsSubmitting(true);
 
     try {
-      const uploadsToProcess = documents.filter(doc => doc.file);
+      const uploadsToProcess = documents.filter(doc => doc.file && !doc.uploaded);
       
       if (uploadsToProcess.length === 0) {
         toast({
@@ -93,20 +93,27 @@ export default function PublicUploadDemo() {
       }
 
       for (const doc of uploadsToProcess) {
-        const dateISO = doc.validUntil || null;
-        
-        await setDocumentStatus({
-          contractorId,
-          documentTypeId: doc.id,
-          status: "submitted",
-          validUntil: dateISO
-        });
-
-        console.info("[demo] upload", { 
-          contractorId, 
-          documentTypeId: doc.id, 
-          validUntil: dateISO 
-        });
+        if (doc.file) {
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resolve) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(doc.file!);
+          });
+          
+          markUploaded({
+            contractorId,
+            type: doc.id,
+            file: {
+              name: doc.file.name,
+              type: doc.file.type,
+              size: doc.file.size,
+              dataUrl
+            },
+            uploadedBy: 'contractor',
+            accept: false,
+            validUntil: doc.validUntil || null
+          });
+        }
       }
 
       // Mark documents as uploaded

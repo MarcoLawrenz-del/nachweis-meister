@@ -38,7 +38,7 @@ import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta, getDocs, setContractorMeta } from "@/services/contractorDocs.store";
+import { getContractorMeta, getDocs, setContractorMeta, markUploaded } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
@@ -237,6 +237,43 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       toast({
         title: "Fehler beim Senden",
         description: getEmailErrorMessage(error),
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle admin file upload
+  const handleAdminFileUpload = async (doc: any, file: File) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        markUploaded({
+          contractorId,
+          type: doc.documentTypeId,
+          file: {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            dataUrl
+          },
+          uploadedBy: 'admin',
+          accept: false
+        });
+        
+        const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+        const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
+        
+        toast({
+          title: "Datei hochgeladen",
+          description: `${docName} wurde hochgeladen und ist in Prüfung.`,
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast({
+        title: "Upload-Fehler",
+        description: "Die Datei konnte nicht hochgeladen werden.",
         variant: "destructive"
       });
     }
@@ -464,47 +501,75 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                       )}
                     </TableCell>
                     
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {doc.status === 'submitted' || doc.status === 'in_review' ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAccept(doc)}
-                              className="flex items-center gap-1"
-                            >
-                              <CheckCircle className="h-3 w-3" />
-                              Annehmen
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                const defaultReason = `Das eingereichte ${docName} entspricht nicht den Anforderungen. Bitte reichen Sie ein korrigiertes Dokument ein.`;
-                                setRejectReason(defaultReason);
-                                setRejectMessage('');
-                                setShowRejectDialog({ documentTypeId: doc.documentTypeId });
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              <XCircle className="h-3 w-3" />
-                              Ablehnen
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRequestAgain(doc)}
-                            className="flex items-center gap-1"
-                          >
-                            <Upload className="h-3 w-3" />
-                            Erneut anfordern
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex gap-2">
+                         {/* Upload button for admin */}
+                         {['missing', 'rejected', 'expired', 'submitted'].includes(doc.status) && (
+                           <div className="relative">
+                             <input
+                               type="file"
+                               id={`upload-${doc.documentTypeId}`}
+                               accept="application/pdf,image/*"
+                               onChange={(e) => {
+                                 const file = e.target.files?.[0];
+                                 if (file) {
+                                   handleAdminFileUpload(doc, file);
+                                   e.target.value = ''; // Reset input
+                                 }
+                               }}
+                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                             />
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="flex items-center gap-1"
+                               onClick={() => document.getElementById(`upload-${doc.documentTypeId}`)?.click()}
+                             >
+                               <Upload className="h-3 w-3" />
+                               Hochladen
+                             </Button>
+                           </div>
+                         )}
+                         
+                         {doc.status === 'submitted' || doc.status === 'in_review' ? (
+                           <>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => handleAccept(doc)}
+                               className="flex items-center gap-1"
+                             >
+                               <CheckCircle className="h-3 w-3" />
+                               Annehmen
+                             </Button>
+                             <Button
+                               variant="destructive"
+                               size="sm"
+                               onClick={() => {
+                                 const defaultReason = `Das eingereichte ${docName} entspricht nicht den Anforderungen. Bitte reichen Sie ein korrigiertes Dokument ein.`;
+                                 setRejectReason(defaultReason);
+                                 setRejectMessage('');
+                                 setShowRejectDialog({ documentTypeId: doc.documentTypeId });
+                               }}
+                               className="flex items-center gap-1"
+                             >
+                               <XCircle className="h-3 w-3" />
+                               Ablehnen
+                             </Button>
+                           </>
+                         ) : doc.status === 'missing' || doc.status === 'rejected' || doc.status === 'expired' ? (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleRequestAgain(doc)}
+                             className="flex items-center gap-1"
+                           >
+                             <Upload className="h-3 w-3" />
+                             Erneut anfordern
+                           </Button>
+                         ) : null}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 );
               })}
