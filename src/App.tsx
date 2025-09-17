@@ -306,13 +306,18 @@ const App = () => (
                            <Suspense fallback={<LoadingSpinner />}>
                              <Subcontractors />
                            </Suspense>
-                         } />
-                          <Route path="subcontractors/:id" element={
-                            <Suspense fallback={<LoadingSpinner />}>
-                              <SubcontractorDetail />
-                            </Suspense>
                           } />
-                          <Route path="projects/:projectId/subs/:subId/package" element={
+                           <Route path="subcontractors/:id" element={
+                             <Suspense fallback={<LoadingSpinner />}>
+                               <SubcontractorDetail />
+                             </Suspense>
+                           } />
+                           <Route path="projects/:projectId/subs/:subId" element={
+                             <Suspense fallback={<LoadingSpinner />}>
+                               <SubcontractorDetail />
+                             </Suspense>
+                           } />
+                           <Route path="projects/:projectId/subs/:subId/package" element={
                             <Suspense fallback={<LoadingSpinner />}>
                               <PackageWizard />
                             </Suspense>

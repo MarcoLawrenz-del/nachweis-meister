@@ -22,6 +22,7 @@ import { getWording } from '@/lib/wording';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
+import { routes } from '@/lib/routes';
 
 interface OverviewTabProps {
   kpis: KPIData;
@@ -123,7 +124,7 @@ export function OverviewTab({ kpis, requirements, onActionClick, projectId }: Ov
         {projectId && (
           <Button
             variant="outline"
-            onClick={() => navigate(`/projects/${projectId}/subs/${subId}/package`)}
+            onClick={() => navigate(routes.subPackage(projectId, subId))}
             className="gap-2"
           >
             <FileText className="h-4 w-4" />
