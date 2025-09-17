@@ -21,8 +21,12 @@ export function AppLayout() {
   const { signIn, signOut, user } = useAuthContext();
 
   const handleSignOut = async () => {
-    signOut();
-    navigate("/login");
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
