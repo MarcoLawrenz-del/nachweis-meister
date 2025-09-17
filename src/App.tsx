@@ -9,6 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider, useAuthContext } from "./contexts/AuthContext";
 import { A11yProvider, SkipLink } from "./components/A11yProvider";
 import { ErrorBoundary } from "./components/ui/error-boundary";
+import { ROUTES } from "@/lib/ROUTES";
 import Landing from "./pages/Landing";
 
 // Lazy Loading für Performance-Optimierung
@@ -104,7 +105,7 @@ function RootRoute() {
   }
   
   // Authenticated with profile - go to app
-  return <Navigate to="/app/dashboard" replace />;
+  return <Navigate to={ROUTES.dashboard} replace />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -142,7 +143,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (user && profile) {
-    return <Navigate to="/app/dashboard" replace />;
+    return <Navigate to={ROUTES.dashboard} replace />;
   }
   
   return <>{children}</>;

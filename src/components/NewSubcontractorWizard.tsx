@@ -29,7 +29,7 @@ import { usePackages, type DocumentSelection } from '@/hooks/usePackages';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
-import { routes } from '@/lib/routes';
+import { ROUTES } from '@/lib/ROUTES';
 
 interface NewSubcontractorData {
   company_name: string;
@@ -301,7 +301,7 @@ export function NewSubcontractorWizard({
           if (onSuccess) onSuccess();
 
           // Navigate to subcontractor detail → documents tab
-          navigate(routes.subDocuments(demoProject.id, subcontractorId));
+          navigate(ROUTES.subDocuments(demoProject.id, subcontractorId));
         } else {
           // No demo project found, just complete the creation
           toast({

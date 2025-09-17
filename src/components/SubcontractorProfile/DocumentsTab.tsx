@@ -30,7 +30,7 @@ import { RequirementStatus } from '@/types/compliance';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useNavigate, useParams } from 'react-router-dom';
-import { routes } from '@/lib/routes';
+import { ROUTES } from '@/lib/ROUTES';
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -426,10 +426,10 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                          <p className="text-muted-foreground mb-4">
                            Wählen Sie ein Dokumentenpaket aus, um Anforderungen zu erstellen.
                          </p>
-                          <Button 
-                            onClick={() => navigate(routes.subPackage(projectId!, subId))}
-                            className="gap-2"
-                          >
+                           <Button 
+                             onClick={() => navigate(ROUTES.subPackage(projectId!, subId))}
+                             className="gap-2"
+                           >
                            <Upload className="h-4 w-4" />
                            Dokumente anfordern
                          </Button>

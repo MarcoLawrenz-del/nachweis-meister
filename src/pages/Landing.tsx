@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Logo } from '@/components/Brand/Logo';
 import { Footer } from '@/components/Footer';
+import { ROUTES } from '@/lib/ROUTES';
 import { WORDING } from '@/content/wording';
 import { SCREENSHOTS } from '@/content/screenshots';
 import { Shield, FileText, Download, Clock, Users, Check, AlertTriangle, CheckCircle, Eye, Camera, Building2, Scale, Briefcase, Zap, ArrowRight, Star, BarChart3 } from "lucide-react";
@@ -197,7 +198,7 @@ export default function Landing() {
               <div className="flex items-center gap-3">
                 {user ? (
                   <Button asChild>
-                    <Link to="/app/dashboard">Dashboard</Link>
+                    <Link to={ROUTES.dashboard}>Dashboard</Link>
                   </Button>
                 ) : (
                   <>

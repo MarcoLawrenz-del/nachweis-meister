@@ -25,17 +25,18 @@ import { useAppAuth } from "@/hooks/useAppAuth";
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/config/brand";
 import { Logo } from "@/components/Brand/Logo";
+import { ROUTES } from "@/lib/ROUTES";
 
 const mainItems = [
-  { title: "Dashboard", url: "/app/dashboard", icon: BarChart3, testId: "nav-dashboard" },
-  { title: "Beauftragte Firmen", url: "/app/subcontractors", icon: Users, testId: "nav-firmen" },
-  { title: "Prüfen", url: "/app/review", icon: FileCheck, testId: "nav-pruefen" },
-  { title: "Erinnerungen", url: "/app/reminders", icon: Bell, testId: "nav-erinnerungen" },
+  { title: "Dashboard", url: ROUTES.dashboard, icon: BarChart3, testId: "nav-dashboard" },
+  { title: "Beauftragte Firmen", url: ROUTES.contractors, icon: Users, testId: "nav-firmen" },
+  { title: "Prüfen", url: ROUTES.reviewQueue, icon: FileCheck, testId: "nav-pruefen" },
+  { title: "Erinnerungen", url: ROUTES.reminders, icon: Bell, testId: "nav-erinnerungen" },
 ];
 
 const settingsItems = [
-  { title: "Rollen & Zugriffe", url: "/app/roles-access", icon: Shield, testId: "nav-rollen" },
-  { title: "Einstellungen", url: "/app/settings", icon: Settings, testId: "nav-einstellungen" },
+  { title: "Rollen & Zugriffe", url: ROUTES.rolesAccess, icon: Shield, testId: "nav-rollen" },
+  { title: "Einstellungen", url: ROUTES.settings, icon: Settings, testId: "nav-einstellungen" },
 ];
 
 export function AppSidebar() {

@@ -18,6 +18,7 @@ import {
 import { format, isBefore, addDays } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { BRAND } from '@/config/brand';
+import { ROUTES } from '@/lib/ROUTES';
 import { 
   Select,
   SelectContent,
@@ -342,7 +343,7 @@ export default function Dashboard() {
                 Fügen Sie Ihre ersten {WORDING.terms.subcontractor} hinzu und verwalten Sie deren Kontaktdaten.
               </p>
               <Button className="w-full" asChild>
-                <Link to="/app/subcontractors">
+                <Link to={ROUTES.contractors}>
                   <Users className="w-4 h-4 mr-2" />
                   {WORDING.terms.subcontractor} hinzufügen
                 </Link>
@@ -680,7 +681,7 @@ export default function Dashboard() {
                 )}
               </div>
               <Button size="lg" className="bg-danger hover:bg-danger/90" asChild>
-                <Link to="/app/review">
+                <Link to={ROUTES.reviewQueue}>
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   Rechtliche Risiken bearbeiten
                 </Link>
@@ -788,13 +789,13 @@ export default function Dashboard() {
               </p>
               <div className="flex gap-3">
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>
-                  <Link to="/app/subcontractors">
+                  <Link to={ROUTES.contractors}>
                     <Users className="w-4 h-4 mr-2" />
                     Alle {WORDING.terms.subcontractor} verwalten
                   </Link>
                 </Button>
                 <Button variant="outline" className="border-success/20 text-success hover:bg-success/10" asChild>
-                  <Link to="/app/projects">
+                  <Link to={ROUTES.projects}>
                     <FolderOpen className="w-4 h-4 mr-2" />
                     Projekte ansehen
                   </Link>

@@ -23,7 +23,7 @@ import { SubcontractorProfileData } from '@/hooks/useSubcontractorProfile';
 import { ComplianceFlags } from '@/components/ComplianceFlags';
 import { CompanyType } from '@/types/compliance';
 import { useNavigate, useParams } from 'react-router-dom';
-import { routes } from '@/lib/routes';
+import { ROUTES } from '@/lib/ROUTES';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface SettingsTabProps {
@@ -213,7 +213,7 @@ export function SettingsTab({ profile, onUpdateProfile, projectId }: SettingsTab
               </p>
             </div>
             <Button
-              onClick={() => navigate(routes.subPackage(projectId!, subId))}
+              onClick={() => navigate(ROUTES.subPackage(projectId!, subId))}
               className="gap-2 ml-4"
             >
               <Package className="h-4 w-4" />

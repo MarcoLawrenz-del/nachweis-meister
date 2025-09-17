@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Logo } from "./Logo";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/config/brand";
-import { Plus } from "lucide-react";
+import { Logo } from "./Logo";
+import { ROUTES } from "@/lib/ROUTES";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export function AppShell({ children }: AppShellProps) {
               asChild
               className="bg-brand-primary hover:bg-brand-primary/90 text-brand-on-primary"
             >
-              <Link to="/app/subcontractors/invite">
+              <Link to={`${ROUTES.contractors}/invite`}>
                 <Plus className="w-4 h-4 mr-2" />
                 {BRAND.terms.subcontractor} einladen
               </Link>
