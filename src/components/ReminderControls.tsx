@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendReminderMissing } from '@/services/email';
 import { 
   Play, 
   Pause, 
@@ -66,15 +67,11 @@ export default function ReminderControls({
       setLoading(true);
 
       if (action === 'immediate') {
-        // Send immediate reminder
-        const { error } = await supabase.functions.invoke('send-immediate-reminder', {
-          body: {
-            requirementId,
-            subcontractorId
-          }
-        });
-
-        if (error) throw error;
+      // Send immediate reminder via stub
+      await sendReminderMissing({
+        requirementId,
+        subcontractorId
+      });
 
         toast({
           title: "Sofortige Erinnerung gesendet",

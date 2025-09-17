@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Mail } from 'lucide-react';
+import { sendInvitation } from '@/services/email';
 
 interface InviteSubcontractorProps {
   projectSubId: string;
@@ -72,23 +73,17 @@ Mit freundlichen Grüßen`
 
       if (inviteError) throw inviteError;
 
-      // Send email via Edge Function
-      const { error: emailError } = await supabase.functions.invoke('send-invite-email', {
-        body: {
-          to: subcontractorEmail,
-          subject: inviteData.subject,
-          message: inviteData.message.replace('{UPLOAD_LINK}', 
-            `${window.location.origin}/upload/${token}`
-          ),
-          subcontractorName,
-          projectName
-        }
+      // Send invitation via stub
+      await sendInvitation({
+        contractorId: projectSubId,
+        email: subcontractorEmail,
+        subject: inviteData.subject,
+        message: inviteData.message.replace('{UPLOAD_LINK}', 
+          `${window.location.origin}/upload/${token}`
+        ),
+        subcontractorName,
+        projectName
       });
-
-      if (emailError) {
-        console.error('Email error:', emailError);
-        // Don't fail completely if email fails, user can still use the link manually
-      }
 
       toast({
         title: "Einladung gesendet",

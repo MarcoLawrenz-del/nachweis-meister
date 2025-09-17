@@ -14,17 +14,7 @@ export const useReviews = () => {
   const { toast } = useToast();
 
   const sendNotification = async (notificationData: any) => {
-    try {
-      const { error } = await supabase.functions.invoke('send-review-notification', {
-        body: notificationData
-      });
-      
-      if (error) {
-        console.error('Notification error:', error);
-      }
-    } catch (error) {
-      console.error('Failed to send notification:', error);
-    }
+    console.info("[stub] sendReviewNotification", notificationData);
   };
 
   const submitReview = async ({ requirementId, action, reason, escalationReason }: ReviewAction): Promise<boolean> => {

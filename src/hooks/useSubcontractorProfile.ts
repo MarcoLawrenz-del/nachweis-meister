@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RequirementStatus, ComplianceStatus, SubcontractorFlags } from '@/types/compliance';
 import { useToast } from '@/hooks/use-toast';
+import { sendReminderMissing } from '@/services/email';
 
 export interface SubcontractorProfileData {
   id: string;
@@ -265,14 +266,10 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
   // Send immediate reminder
   const sendReminder = async (requirementIds?: string[]) => {
     try {
-      const { error } = await supabase.functions.invoke('send-immediate-reminder', {
-        body: {
-          subcontractor_id: subcontractorId,
-          requirement_ids: requirementIds
-        }
+      await sendReminderMissing({
+        subcontractor_id: subcontractorId,
+        requirement_ids: requirementIds
       });
-
-      if (error) throw error;
 
       await fetchEmailLogs(); // Refresh logs
 
