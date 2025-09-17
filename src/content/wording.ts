@@ -115,6 +115,69 @@ export const WORDING = {
     globalActive: "Engagements sind optional – die Nachweisprüfung läuft auch global.",
     monthlyAuto: "Monatliche Pflichten werden automatisch angefordert und erinnert."
   },
+  
+  // Package wizard
+  packageWizard: {
+    de: 'Dokumentenpaket auswählen',
+    en: 'Select Document Package'
+  },
+  selectPackage: {
+    de: 'Paket auswählen',
+    en: 'Select Package'
+  },
+  standardPackage: {
+    de: 'Standard Paket',
+    en: 'Standard Package'
+  },
+  lightPackage: {
+    de: 'Light Paket', 
+    en: 'Light Package'
+  },
+  internationalPackage: {
+    de: 'Ausland Paket',
+    en: 'International Package'
+  },
+  customizeDocuments: {
+    de: 'Dokumente anpassen',
+    en: 'Customize Documents'
+  },
+  requiredDocuments: {
+    de: 'Pflichtdokumente',
+    en: 'Required Documents'
+  },
+  optionalDocuments: {
+    de: 'Optionale Dokumente',
+    en: 'Optional Documents'
+  },
+  documentRequired: {
+    de: 'Pflichtdokument',
+    en: 'Required Document'
+  },
+  documentOptional: {
+    de: 'Optional',
+    en: 'Optional'
+  },
+  selectedDocuments: {
+    de: 'Ausgewählte Dokumente',
+    en: 'Selected Documents'
+  },
+  sendInvitation: {
+    de: 'Einladung versenden',
+    en: 'Send Invitation'
+  },
+  invitationSummary: {
+    de: 'Einladungs-Zusammenfassung',
+    en: 'Invitation Summary'
+  },
+  documentsToRequest: {
+    de: 'Angeforderte Dokumente',
+    en: 'Requested Documents'
+  },
+  fullControl: {
+    de: 'Sie haben volle Kontrolle über die Dokumentenauswahl',
+    en: 'You have full control over document selection'
+  },
+  
   email: {
     inviteSubject: "Bitte Nachweise bereitstellen",
     inviteBody: "Guten Tag {{name}},\nfür den Auftrag {{projekt}} benötigen wir folgende Pflichtnachweise: {{liste}}.\nBitte laden Sie diese unter {{link}} hoch. Vielen Dank – subfix."

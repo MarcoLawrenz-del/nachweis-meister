@@ -333,6 +333,84 @@ export type Database = {
           },
         ]
       }
+      package_items: {
+        Row: {
+          created_at: string
+          document_type_id: string
+          id: string
+          is_required: boolean
+          package_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          document_type_id: string
+          id?: string
+          is_required?: boolean
+          package_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          document_type_id?: string
+          id?: string
+          is_required?: boolean
+          package_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_items_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description_de: string | null
+          description_en: string | null
+          id: string
+          name_de: string
+          name_en: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          id?: string
+          name_de: string
+          name_en: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          id?: string
+          name_de?: string
+          name_en?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       project_subs: {
         Row: {
           approved_at: string | null

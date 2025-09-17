@@ -38,6 +38,7 @@ const Reminders = lazy(() => import("./pages/Reminders"));
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));
+const PackageWizard = lazy(() => import("./pages/PackageWizard"));
 const Settings = lazy(() => import("./pages/Settings"));
 const RolesAccess = lazy(() => import("./pages/RolesAccess"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
@@ -336,12 +337,17 @@ const App = () => (
                              <Settings />
                            </Suspense>
                          } />
-                         <Route path="roles-access" element={
-                           <Suspense fallback={<LoadingSpinner />}>
-                             <RolesAccess />
-                           </Suspense>
-                       } />
-                       </Route>
+                          <Route path="roles-access" element={
+                            <Suspense fallback={<LoadingSpinner />}>
+                              <RolesAccess />
+                            </Suspense>
+                          } />
+                          <Route path="package-wizard/:projectId/:subcontractorId" element={
+                            <Suspense fallback={<LoadingSpinner />}>
+                              <PackageWizard />
+                            </Suspense>
+                          } />
+                        </Route>
                        
                         {/* Legal pages */}
                         <Route path="/impressum" element={
