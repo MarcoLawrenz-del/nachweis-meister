@@ -107,9 +107,11 @@ export function useSupabaseAuth() {
 
   const resetPassword = async (email: string) => {
     try {
-      // Note: Reset password functionality can be added later if needed
-      // For now, just return a stub
-      return { data: null, error: new Error('Password reset not implemented yet') as AuthError };
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?mode=reset`
+      });
+
+      return { data, error };
     } catch (error) {
       return { data: null, error: error as AuthError };
     }
