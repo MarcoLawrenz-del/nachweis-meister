@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   FileText, 
   Search, 
@@ -26,7 +27,9 @@ import {
   RotateCcw,
   Download,
   Eye,
-  Clock
+  Clock,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -43,6 +46,7 @@ import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
 import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
+import { exportContractorBundle } from "@/utils/export";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
@@ -66,6 +70,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const [rejectMessage, setRejectMessage] = useState('');
   const [validityDates, setValidityDates] = useState<Record<string, string>>({});
   const [previewDoc, setPreviewDoc] = useState<any>(null);
+  const [collapsedRejections, setCollapsedRejections] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   
   // Load docs from store
@@ -89,7 +94,80 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     return matchesSearch && matchesStatus;
   });
 
-  // Handle accept document
+  // Handle validity date change
+  const handleValidityDateChange = async (docTypeId: string, newDate: string) => {
+    try {
+      await setDocumentStatus({
+        contractorId,
+        documentTypeId: docTypeId,
+        status: "accepted",
+        validUntil: newDate
+      });
+      
+      setValidityDates(prev => ({ ...prev, [docTypeId]: newDate }));
+      
+      toast({
+        title: "Gültigkeitsdatum gespeichert",
+        description: "Das Datum wurde erfolgreich aktualisiert.",
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Das Datum konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    try {
+      const contractor = profile || getContractor(contractorId);
+      const contractorName = contractor?.company_name || contractor?.companyName || 'Unbekannt';
+      
+      // Get documents with file data
+      const documentsToExport = docs
+        .filter(doc => doc.fileUrl && doc.status === 'accepted')
+        .map(doc => {
+          const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
+          const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
+          
+          // Convert data URL to blob if available
+          let blob: Blob | undefined;
+          if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
+            const byteString = atob(doc.fileUrl.split(',')[1]);
+            const mimeString = doc.fileUrl.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+            blob = new Blob([ab], { type: mimeString });
+          }
+          
+          return {
+            name: `${docName}.${doc.fileType?.split('/')[1] || 'pdf'}`,
+            blob
+          };
+        });
+
+      await exportContractorBundle({
+        contractorName,
+        documents: documentsToExport
+      });
+      
+      toast({
+        title: "Export erfolgreich",
+        description: `${documentsToExport.length} Dokumente exportiert.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export-Fehler",
+        description: "Die Dokumente konnten nicht exportiert werden.",
+        variant: "destructive"
+      });
+    }
+  };
   const handleAccept = async (doc: any) => {
     const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
     let validUntil = validityDates[doc.documentTypeId];
@@ -405,7 +483,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                 <RotateCcw className="h-4 w-4" />
                 Erneut anfordern
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportieren
               </Button>
@@ -470,9 +548,35 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                         )}
                       </div>
                       {doc.rejectionReason && (
-                        <div className="text-sm text-danger-600 mt-1">
-                          {doc.rejectionReason}
-                        </div>
+                        <Collapsible 
+                          open={!collapsedRejections[doc.documentTypeId]} 
+                          onOpenChange={(open) => setCollapsedRejections(prev => ({ ...prev, [doc.documentTypeId]: !open }))}
+                        >
+                          <CollapsibleTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="mt-1 h-6 p-1 text-danger-600 hover:text-danger-700 hover:bg-danger-50"
+                            >
+                              {collapsedRejections[doc.documentTypeId] ? (
+                                <ChevronRight className="h-3 w-3 mr-1" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3 mr-1" />
+                              )}
+                              <span className="text-xs">
+                                {collapsedRejections[doc.documentTypeId] 
+                                  ? 'Ablehnungsgrund anzeigen' 
+                                  : 'Ablehnungsgrund verbergen'
+                                }
+                              </span>
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="text-sm text-danger-600 mt-1 p-2 bg-danger-50 rounded border border-danger-200">
+                              {doc.rejectionReason}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       )}
                     </TableCell>
                     
@@ -482,6 +586,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                           type="date"
                           value={validityDates[doc.documentTypeId] || (doc.validUntil ? doc.validUntil.split('T')[0] : '')}
                           onChange={(e) => setValidityDates(prev => ({ ...prev, [doc.documentTypeId]: e.target.value }))}
+                          onBlur={(e) => {
+                            if (e.target.value && e.target.value !== (doc.validUntil ? doc.validUntil.split('T')[0] : '')) {
+                              handleValidityDateChange(doc.documentTypeId, e.target.value);
+                            }
+                          }}
                           className="w-40"
                         />
                       ) : (
