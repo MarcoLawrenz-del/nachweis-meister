@@ -32,10 +32,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Initialize Supabase client (using anon key for read access)
+    // Initialize Supabase client (using service role key for RLS bypass)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { token }: ResolveMagicLinkRequest = await req.json();
