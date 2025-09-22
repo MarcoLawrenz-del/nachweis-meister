@@ -1,5 +1,6 @@
 import { setContractorMeta } from "./contractorDocs.store";
 import { supabase } from "@/integrations/supabase/client";
+import { createMagicLink, generateMagicLinkUrl } from "./magicLinks";
 
 export interface SendInvitationArgs {
   to: string;
@@ -16,10 +17,64 @@ export interface SendReminderMissingArgs {
 }
 
 export async function sendInvitation(args: SendInvitationArgs): Promise<{ isStub: boolean }> {
-  // For now, return stub mode for invitations - implement Edge Function if needed
+  // Legacy function - keep for compatibility
   console.info('[email:stub] sendInvitation', args);
   await new Promise(resolve => setTimeout(resolve, 500));
   return { isStub: true };
+}
+
+// New magic-link invitation function
+export async function sendMagicInvitation(args: {
+  contractorId: string;
+  email: string;
+  contractorName: string;
+  companyName: string;
+  requiredDocs: string[];
+}): Promise<{ isStub: boolean; magicLink?: string }> {
+  try {
+    // Create magic link token
+    const token = await createMagicLink(args.contractorId, args.email);
+    const magicLinkUrl = generateMagicLinkUrl(token);
+    
+    console.info('[email] Sending magic link invitation', { 
+      contractorId: args.contractorId, 
+      email: args.email,
+      magicLink: magicLinkUrl
+    });
+
+    // Try to send via Resend Edge Function
+    const { data, error } = await supabase.functions.invoke('send-reminder-email', {
+      body: {
+        to: args.email,
+        contractorName: args.contractorName,
+        companyName: args.companyName,
+        requiredDocs: args.requiredDocs,
+        magicLink: magicLinkUrl,
+        subject: `Bitte Unterlagen hochladen – ${args.companyName}`,
+        template: 'magic_invitation'
+      }
+    });
+
+    if (error) {
+      console.warn('Edge Function not available or failed, using stub mode:', error);
+      // Fall back to stub mode
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return { isStub: true, magicLink: magicLinkUrl };
+    }
+
+    console.log("Magic link invitation sent successfully:", data);
+    return { isStub: false, magicLink: magicLinkUrl };
+    
+  } catch (error: any) {
+    console.warn("Error sending magic link invitation, falling back to stub:", error);
+    
+    // Create magic link even if email fails
+    const token = await createMagicLink(args.contractorId, args.email);
+    const magicLinkUrl = generateMagicLinkUrl(token);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { isStub: true, magicLink: magicLinkUrl };
+  }
 }
 
 export async function sendReminderMissing(args: SendReminderMissingArgs): Promise<{ isStub: boolean }> {

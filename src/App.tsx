@@ -53,6 +53,7 @@ const RouteNotFound = lazy(() => import("./components/RouteNotFound"));
 const Demo = lazy(() => import("./pages/Demo"));
 const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 const PublicUploadDemo = lazy(() => import("./pages/PublicUploadDemo"));
+const PublicMagicUpload = lazy(() => import("./pages/public/PublicMagicUpload"));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -151,6 +152,13 @@ const App = () => (
                       <Route path="/upload" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <PublicUploadDemo />
+                        </Suspense>
+                      } />
+                      
+                      {/* Magic Link Upload - Public */}
+                      <Route path="/u/:token" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicMagicUpload />
                         </Suspense>
                       } />
 
