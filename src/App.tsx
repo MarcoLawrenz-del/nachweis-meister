@@ -54,6 +54,7 @@ const Demo = lazy(() => import("./pages/Demo"));
 const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 const PublicUploadDemo = lazy(() => import("./pages/PublicUploadDemo"));
 const PublicMagicUpload = lazy(() => import("./pages/public/PublicMagicUpload"));
+const DemoSubcontractorUpload = lazy(() => import("./pages/DemoSubcontractorUpload"));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -152,6 +153,13 @@ const App = () => (
                       <Route path="/upload" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <PublicUploadDemo />
+                        </Suspense>
+                      } />
+                      
+                      {/* Demo Upload Preview */}
+                      <Route path="/demo/upload" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <DemoSubcontractorUpload />
                         </Suspense>
                       } />
                       
