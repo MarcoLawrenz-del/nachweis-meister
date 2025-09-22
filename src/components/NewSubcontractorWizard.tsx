@@ -210,7 +210,7 @@ export function NewSubcontractorWizard({
       if (editingSubcontractor) {
         // Update existing subcontractor
         try {
-          const contractor = updateContractor(editingSubcontractor.id, subData);
+          const contractor = await updateContractor(editingSubcontractor.id, subData);
           
           toast({
             title: "Änderungen gespeichert",

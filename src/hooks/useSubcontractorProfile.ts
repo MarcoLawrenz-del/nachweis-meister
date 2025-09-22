@@ -109,6 +109,7 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
           requires_employees: null,
           has_non_eu_workers: null,
           employees_not_employed_in_germany: null,
+          active: contractor.active,
           created_at: contractor.created_at,
           updated_at: new Date().toISOString()
         };
