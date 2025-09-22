@@ -75,16 +75,19 @@ export function createContractor(data: Omit<Contractor, "id"|"created_at"|"activ
   return contractor;
 }
 
-export function updateContractor(id: string, patch: Partial<Contractor>): Contractor {
-  const existing = contractorsMap.get(id);
-  if (!existing) {
-    throw new Error(`Contractor with id ${id} not found`);
-  }
-  
-  const updated = { ...existing, ...patch };
-  contractorsMap.set(id, updated);
-  saveFromMap();
-  return updated;
+export function updateContractor(id: string, patch: Partial<Contractor>): Promise<Contractor> {
+  return new Promise((resolve, reject) => {
+    const existing = contractorsMap.get(id);
+    if (!existing) {
+      reject(new Error(`Contractor with id ${id} not found`));
+      return;
+    }
+    
+    const updated = { ...existing, ...patch };
+    contractorsMap.set(id, updated);
+    saveFromMap();
+    resolve(updated);
+  });
 }
 
 export function deleteContractor(id: string): void {

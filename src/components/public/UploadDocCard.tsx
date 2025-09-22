@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { hasExpiry } from "@/config/docValidity.defaults";
 
 interface DocumentUpload {
   id: string;
@@ -31,6 +33,7 @@ interface DocumentUpload {
   rejectionReason?: string;
   fileUrl?: string;
   fileName?: string;
+  userUnknownExpiry?: boolean;
 }
 
 interface UploadDocCardProps {
@@ -40,6 +43,7 @@ interface UploadDocCardProps {
   onRemove: () => void;
   onPreview: () => void;
   onValidUntilChange: (validUntil: string) => void;
+  onUnknownExpiryChange: (unknown: boolean) => void;
 }
 
 export function UploadDocCard({ 
@@ -48,7 +52,8 @@ export function UploadDocCard({
   onOpenCamera, 
   onRemove, 
   onPreview, 
-  onValidUntilChange 
+  onValidUntilChange,
+  onUnknownExpiryChange 
 }: UploadDocCardProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -262,19 +267,19 @@ export function UploadDocCard({
           </div>
         )}
 
-        {/* Validity Date */}
-        {(doc.status === "submitted" || doc.status === "accepted" || doc.file) && (
-          <div className="space-y-2">
+        {/* Validity Date Section */}
+        {(doc.status === "submitted" || doc.status === "accepted" || doc.file) && hasExpiry(doc.id) && (
+          <div className="space-y-3">
             <Label htmlFor={`valid-${doc.id}`} className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4" />
-              Gültig bis
+              Gültig bis (optional)
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-3 w-3 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Wann läuft die Gültigkeit des Dokuments ab?</p>
+                    <p>Wenn bekannt, geben Sie hier das Ablaufdatum an.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -284,11 +289,36 @@ export function UploadDocCard({
               type="date"
               value={doc.validUntil}
               onChange={(e) => onValidUntilChange(e.target.value)}
-              disabled={doc.status === "accepted"}
+              disabled={doc.status === "accepted" || doc.userUnknownExpiry}
               min={new Date().toISOString().split('T')[0]}
               className="max-w-xs"
               aria-label={`Gültigkeitsdatum für ${doc.label}`}
             />
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`unknown-${doc.id}`}
+                checked={doc.userUnknownExpiry || false}
+                onCheckedChange={(checked) => onUnknownExpiryChange(!!checked)}
+              />
+              <Label 
+                htmlFor={`unknown-${doc.id}`}
+                className="text-sm text-muted-foreground cursor-pointer"
+              >
+                Ablaufdatum ist mir nicht bekannt
+              </Label>
+            </div>
+          </div>
+        )}
+
+        {/* Non-expiring Document Info */}
+        {(doc.status === "submitted" || doc.status === "accepted" || doc.file) && !hasExpiry(doc.id) && (
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Dieses Dokument läuft in der Regel nicht ab.
+              </p>
+            </div>
           </div>
         )}
 

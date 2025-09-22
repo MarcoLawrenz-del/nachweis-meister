@@ -20,6 +20,7 @@ export interface SubcontractorProfileData {
   requires_employees: boolean | null;
   has_non_eu_workers: boolean | null;
   employees_not_employed_in_germany: boolean | null;
+  active: boolean;
   created_at: string;
   updated_at: string;
 }

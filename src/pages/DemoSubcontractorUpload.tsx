@@ -23,6 +23,7 @@ interface DemoDocument {
   validUntil: string;
   uploaded: boolean;
   status?: "missing" | "submitted" | "accepted" | "rejected";
+  userUnknownExpiry?: boolean;
 }
 
 export default function DemoSubcontractorUpload() {
@@ -34,7 +35,8 @@ export default function DemoSubcontractorUpload() {
       file: null,
       validUntil: "",
       uploaded: false,
-      status: "missing"
+      status: "missing",
+      userUnknownExpiry: false
     },
     {
       id: "liability_insurance",
@@ -43,7 +45,8 @@ export default function DemoSubcontractorUpload() {
       file: null,
       validUntil: "",
       uploaded: false,
-      status: "missing"
+      status: "missing",
+      userUnknownExpiry: false
     },
     {
       id: "trade_certificate",
@@ -52,7 +55,8 @@ export default function DemoSubcontractorUpload() {
       file: null,
       validUntil: "",
       uploaded: false,
-      status: "missing"
+      status: "missing",
+      userUnknownExpiry: false
     },
     {
       id: "safety_certificate",
@@ -61,7 +65,8 @@ export default function DemoSubcontractorUpload() {
       file: null,
       validUntil: "",
       uploaded: false,
-      status: "missing"
+      status: "missing",
+      userUnknownExpiry: false
     }
   ]);
   
@@ -110,7 +115,17 @@ export default function DemoSubcontractorUpload() {
 
   const handleValidUntilChange = (documentId: string, validUntil: string) => {
     setDocuments(prev => prev.map(doc => 
-      doc.id === documentId ? { ...doc, validUntil } : doc
+      doc.id === documentId ? { ...doc, validUntil, userUnknownExpiry: false } : doc
+    ));
+  };
+
+  const handleUnknownExpiryChange = (documentId: string, unknown: boolean) => {
+    setDocuments(prev => prev.map(doc => 
+      doc.id === documentId ? { 
+        ...doc, 
+        userUnknownExpiry: unknown,
+        validUntil: unknown ? "" : doc.validUntil
+      } : doc
     ));
   };
 
@@ -249,6 +264,7 @@ export default function DemoSubcontractorUpload() {
                 onRemove={() => handleRemoveFile(doc.id)}
                 onPreview={() => handlePreview(doc.id)}
                 onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+                onUnknownExpiryChange={(unknown) => handleUnknownExpiryChange(doc.id, unknown)}
               />
             ))}
           </div>
@@ -276,6 +292,7 @@ export default function DemoSubcontractorUpload() {
                   onRemove={() => handleRemoveFile(doc.id)}
                   onPreview={() => handlePreview(doc.id)}
                   onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+                  onUnknownExpiryChange={(unknown) => handleUnknownExpiryChange(doc.id, unknown)}
                 />
               ))}
             </CollapsibleContent>

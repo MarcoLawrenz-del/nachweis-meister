@@ -26,6 +26,7 @@ interface DocumentUpload {
   rejectionReason?: string;
   fileUrl?: string;
   fileName?: string;
+  userUnknownExpiry?: boolean;
 }
 
 export default function PublicMagicUpload() {
@@ -90,7 +91,8 @@ export default function PublicMagicUpload() {
               status: existingDoc?.status || "missing",
               rejectionReason: existingDoc?.rejectionReason,
               fileUrl: existingDoc?.fileUrl,
-              fileName: existingDoc?.fileName
+              fileName: existingDoc?.fileName,
+              userUnknownExpiry: false
             };
           })
           .filter(doc => doc !== null)
@@ -172,7 +174,17 @@ export default function PublicMagicUpload() {
 
   const handleValidUntilChange = (documentId: string, validUntil: string) => {
     setDocuments(prev => prev.map(doc => 
-      doc.id === documentId ? { ...doc, validUntil } : doc
+      doc.id === documentId ? { ...doc, validUntil, userUnknownExpiry: false } : doc
+    ));
+  };
+
+  const handleUnknownExpiryChange = (documentId: string, unknown: boolean) => {
+    setDocuments(prev => prev.map(doc => 
+      doc.id === documentId ? { 
+        ...doc, 
+        userUnknownExpiry: unknown,
+        validUntil: unknown ? "" : doc.validUntil
+      } : doc
     ));
   };
 
@@ -250,7 +262,7 @@ export default function PublicMagicUpload() {
             },
             uploadedBy: 'contractor',
             accept: false,
-            validUntil: doc.validUntil || null
+            validUntil: doc.userUnknownExpiry ? null : (doc.validUntil || null)
           });
         }
       }
@@ -377,6 +389,7 @@ export default function PublicMagicUpload() {
                 onRemove={() => handleRemoveFile(doc.id)}
                 onPreview={() => handlePreview(doc.id)}
                 onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+                onUnknownExpiryChange={(unknown) => handleUnknownExpiryChange(doc.id, unknown)}
               />
             ))}
           </div>
@@ -401,6 +414,7 @@ export default function PublicMagicUpload() {
                   onRemove={() => handleRemoveFile(doc.id)}
                   onPreview={() => handlePreview(doc.id)}
                   onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+                  onUnknownExpiryChange={(unknown) => handleUnknownExpiryChange(doc.id, unknown)}
                 />
               ))}
             </CollapsibleContent>
