@@ -16,6 +16,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { NewSubcontractorWizard } from '@/components/NewSubcontractorWizard';
+import { InviteMagicLinkButton } from '@/components/InviteMagicLinkButton';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useDemoData } from '@/hooks/useDemoData';
 import { useToast } from '@/hooks/use-toast';
@@ -337,6 +338,18 @@ export default function Subcontractors() {
                                 <p>Ansehen</p>
                               </TooltipContent>
                             </Tooltip>
+                            
+                            <InviteMagicLinkButton 
+                              contractor={{
+                                id: subcontractor.id,
+                                company_name: subcontractor.company_name,
+                                email: subcontractor.contact_email,
+                                created_at: subcontractor.created_at,
+                                active: subcontractor.status === 'active'
+                              }}
+                              className="h-8 w-8 p-0"
+                            />
+                            
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button 
