@@ -1,31 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { resolveMagicLink } from "@/services/magicLinks";
 import { getContractor } from "@/services/contractors";
 import { getDocs, markUploaded } from "@/services/contractorDocs.store";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Upload, 
-  Camera, 
-  FileCheck, 
-  AlertTriangle, 
-  Eye, 
-  X, 
-  CheckCircle,
-  Clock,
-  Building2
-} from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, Building2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
 import { Logo } from "@/components/Brand/Logo";
 import { TokenError } from "./TokenError";
+import { UploadDocCard } from "@/components/public/UploadDocCard";
+import { StickyUploadFooter } from "@/components/public/StickyUploadFooter";
+import { cn } from "@/lib/utils";
 
 interface DocumentUpload {
   id: string;
@@ -46,13 +35,12 @@ export default function PublicMagicUpload() {
   const [contractorId, setContractorId] = useState<string>("");
   const [contractorName, setContractorName] = useState<string>("");
   const [contractorEmail, setContractorEmail] = useState<string>("");
+  const [projectName, setProjectName] = useState<string>("Bürogebäude Hauptstraße 42");
   const [documents, setDocuments] = useState<DocumentUpload[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<any>(null);
+  const [optionalExpanded, setOptionalExpanded] = useState(false);
   const { toast } = useToast();
-  
-  // File input refs for camera/file selection
-  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     async function loadMagicLink() {
@@ -133,15 +121,13 @@ export default function PublicMagicUpload() {
     loadMagicLink();
   }, [token]);
 
-  const handleFileSelect = (documentId: string, file: File | null, captureType: 'camera' | 'file') => {
-    if (!file) return;
-
+  const handleFileSelect = (documentId: string, file: File) => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "Ungültiger Dateityp",
-        description: "Nur PDF, JPG und PNG Dateien sind erlaubt.",
+        title: "Bitte PDF/JPG/PNG bis 15 MB verwenden.",
+        description: "Der gewählte Dateityp wird nicht unterstützt.",
         variant: "destructive"
       });
       return;
@@ -150,8 +136,8 @@ export default function PublicMagicUpload() {
     // Validate file size (max 15MB)
     if (file.size > 15 * 1024 * 1024) {
       toast({
-        title: "Datei zu groß",
-        description: "Die Datei darf maximal 15MB groß sein.",
+        title: "Bitte PDF/JPG/PNG bis 15 MB verwenden.",
+        description: "Die Datei ist zu groß.",
         variant: "destructive"
       });
       return;
@@ -162,11 +148,26 @@ export default function PublicMagicUpload() {
     ));
 
     // Analytics event
-    console.info(`[analytics] ${captureType === 'camera' ? 'camera_capture' : 'file_selected'}`, {
+    console.info("[analytics] file_selected", {
       documentId,
       fileSize: file.size,
       fileType: file.type
     });
+  };
+
+  const handleCameraCapture = (documentId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        handleFileSelect(documentId, file);
+        console.info("[analytics] camera_capture", { documentId });
+      }
+    };
+    input.click();
   };
 
   const handleValidUntilChange = (documentId: string, validUntil: string) => {
@@ -179,11 +180,6 @@ export default function PublicMagicUpload() {
     setDocuments(prev => prev.map(doc => 
       doc.id === documentId ? { ...doc, file: null } : doc
     ));
-    
-    // Clear file input
-    if (fileInputRefs.current[documentId]) {
-      fileInputRefs.current[documentId]!.value = '';
-    }
   };
 
   const handlePreview = (documentId: string) => {
@@ -270,14 +266,9 @@ export default function PublicMagicUpload() {
         } : doc
       ));
 
-      // Clear file inputs
-      Object.values(fileInputRefs.current).forEach(input => {
-        if (input) input.value = '';
-      });
-
       toast({
-        title: "Uploads gespeichert",
-        description: `${uploadsToProcess.length} Dokument(e) wurden erfolgreich hochgeladen und werden geprüft.`,
+        title: "Gespeichert",
+        description: "Wir prüfen Ihre Unterlagen.",
       });
 
       // Analytics event
@@ -290,7 +281,7 @@ export default function PublicMagicUpload() {
       console.error("Upload error:", error);
       toast({
         title: "Fehler beim Speichern",
-        description: "Die Dokumente konnten nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+        description: "Bitte versuchen Sie es erneut.",
         variant: "destructive"
       });
     } finally {
@@ -298,43 +289,13 @@ export default function PublicMagicUpload() {
     }
   };
 
-  const getStatusBadge = (status: string, rejectionReason?: string) => {
-    switch (status) {
-      case 'accepted':
-        return (
-          <Badge className="bg-success text-success-foreground">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Gültig
-          </Badge>
-        );
-      case 'submitted':
-        return (
-          <Badge variant="secondary">
-            <Clock className="h-3 w-3 mr-1" />
-            Hochgeladen
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge variant="destructive">
-            <X className="h-3 w-3 mr-1" />
-            Abgelehnt
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">
-            <Upload className="h-3 w-3 mr-1" />
-            Fehlend
-          </Badge>
-        );
-    }
-  };
-
   // Calculate progress
   const requiredDocs = documents.filter(d => d.requirement === "required");
+  const optionalDocs = documents.filter(d => d.requirement === "optional");
   const uploadedRequired = requiredDocs.filter(d => d.status === "submitted" || d.status === "accepted").length;
+  const uploadedOptional = optionalDocs.filter(d => d.status === "submitted" || d.status === "accepted").length;
   const progress = requiredDocs.length > 0 ? Math.round((uploadedRequired / requiredDocs.length) * 100) : 0;
+  const hasNewFiles = documents.some(d => d.file);
 
   if (loading) {
     return (
@@ -352,201 +313,114 @@ export default function PublicMagicUpload() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Logo className="h-8 w-8" />
-              <div>
-                <h1 className="text-lg font-semibold">Upload für {contractorName}</h1>
-                <p className="text-sm text-muted-foreground">Bitte laden Sie die folgenden Unterlagen hoch.</p>
+              <Logo className="h-8 w-auto" />
+              <Badge variant="outline" className="text-xs ml-2">
+                Demo-Modus
+              </Badge>
+            </div>
+          </div>
+          
+          {/* Title Section */}
+          <div className="mt-4">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h1 className="text-xl font-bold">Dokumente hochladen</h1>
+                <p className="text-muted-foreground text-sm">
+                  für <span className="font-medium">{contractorName}</span> – {projectName}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                  <Shield className="h-3 w-3" />
+                  <span>Ihre Daten sind sicher (SSL). Sie können den Link jederzeit erneut öffnen.</span>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-medium">{uploadedRequired}/{requiredDocs.length} Pflichtdokumente</div>
-              <Progress value={progress} className="w-24 h-2 mt-1" />
+
+            {/* Progress */}
+            <div className="bg-background/80 rounded-lg p-4 border">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-4 text-sm">
+                  <Badge variant="destructive" className="text-xs">
+                    Pflicht: {uploadedRequired}/{requiredDocs.length} erledigt
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    Optional: {uploadedOptional} hochgeladen
+                  </Badge>
+                </div>
+                <span className="text-sm font-medium">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6 pb-32">
-        {/* Document List */}
-        <div className="space-y-4">
-          {documents.map((doc) => (
-            <Card key={doc.id} className="w-full">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">{doc.label}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={doc.requirement === "required" ? "default" : "secondary"} className="text-xs">
-                        {doc.requirement === "required" ? "Erforderlich" : "Optional"}
-                      </Badge>
-                      {getStatusBadge(doc.status, doc.rejectionReason)}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Rejection Reason */}
-                {doc.status === "rejected" && doc.rejectionReason && (
-                  <Alert className="mt-3 border-destructive/50 bg-destructive/5">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">
-                      <strong>Grund der Ablehnung:</strong> {doc.rejectionReason}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* File Selection */}
-                {(doc.status === "missing" || doc.status === "rejected") && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Camera Button (Mobile) */}
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = 'image/*';
-                        input.capture = 'environment';
-                        input.onchange = (e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0];
-                          if (file) handleFileSelect(doc.id, file, 'camera');
-                        };
-                        input.click();
-                      }}
-                    >
-                      <Camera className="h-4 w-4 mr-2" />
-                      Foto aufnehmen
-                    </Button>
-
-                    {/* File Button */}
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => fileInputRefs.current[doc.id]?.click()}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Datei auswählen
-                    </Button>
-
-                    {/* Hidden file input */}
-                    <input
-                      ref={(el) => fileInputRefs.current[doc.id] = el}
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileSelect(doc.id, file, 'file');
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Selected File Display */}
-                {doc.file && (
-                  <div className="p-3 border border-border rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FileCheck className="h-4 w-4 text-success" />
-                        <span className="text-sm font-medium">{doc.file.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({(doc.file.size / 1024 / 1024).toFixed(1)} MB)
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm" onClick={() => handlePreview(doc.id)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleRemoveFile(doc.id)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Existing File Display */}
-                {!doc.file && (doc.status === "submitted" || doc.status === "accepted") && doc.fileName && (
-                  <div className="p-3 border border-border rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FileCheck className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">{doc.fileName}</span>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={() => handlePreview(doc.id)}>
-                        <Eye className="h-4 w-4" />
-                        Ansehen
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Validity Date */}
-                {(doc.file || doc.status === "rejected") && (
-                  <div className="space-y-2">
-                    <Label htmlFor={`valid-${doc.id}`} className="text-sm">Gültig bis (optional)</Label>
-                    <Input
-                      id={`valid-${doc.id}`}
-                      type="date"
-                      value={doc.validUntil}
-                      onChange={(e) => handleValidUntilChange(doc.id, e.target.value)}
-                      className="w-full sm:w-auto"
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Info Box */}
-        <Alert className="mt-6 border-primary/20 bg-primary/5">
-          <Building2 className="h-4 w-4" />
-          <AlertDescription>
-            Sie können den Link jederzeit erneut öffnen und später fortfahren. 
-            Ihre Uploads werden automatisch gespeichert.
-          </AlertDescription>
-        </Alert>
-
-        {/* Document Preview Dialog */}
-        <DocumentPreviewDialog 
-          open={!!previewDoc} 
-          onOpenChange={(open) => !open && setPreviewDoc(null)}
-          doc={previewDoc}
-        />
-      </main>
-
-      {/* Sticky Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              onClick={handleSubmit}
-              disabled={isSubmitting || !documents.some(doc => doc.file)}
-              className="flex-1 sm:order-2"
-            >
-              {isSubmitting ? "Wird gespeichert..." : "Uploads speichern"}
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex-1 sm:order-1"
-              onClick={() => toast({ 
-                title: "Später fortfahren", 
-                description: "Sie können den Link jederzeit erneut öffnen." 
-              })}
-            >
-              Später fortfahren
-            </Button>
+        {/* Required Documents */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-red-700">Erforderliche Dokumente</h2>
+          <div className="space-y-4">
+            {requiredDocs.map((doc) => (
+              <UploadDocCard
+                key={doc.id}
+                doc={doc}
+                onPickFile={(file) => handleFileSelect(doc.id, file)}
+                onOpenCamera={() => handleCameraCapture(doc.id)}
+                onRemove={() => handleRemoveFile(doc.id)}
+                onPreview={() => handlePreview(doc.id)}
+                onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+              />
+            ))}
           </div>
         </div>
-      </footer>
+
+        {/* Optional Documents */}
+        {optionalDocs.length > 0 && (
+          <Collapsible open={optionalExpanded} onOpenChange={setOptionalExpanded}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 text-lg font-semibold mb-4 text-slate-600 hover:text-slate-800 transition-colors w-full text-left">
+                <ChevronDown className={cn("h-4 w-4 transition-transform", optionalExpanded && "rotate-180")} />
+                Optionale Dokumente ({uploadedOptional} hochgeladen)
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4">
+              {optionalDocs.map((doc) => (
+                <UploadDocCard
+                  key={doc.id}
+                  doc={doc}
+                  onPickFile={(file) => handleFileSelect(doc.id, file)}
+                  onOpenCamera={() => handleCameraCapture(doc.id)}
+                  onRemove={() => handleRemoveFile(doc.id)}
+                  onPreview={() => handlePreview(doc.id)}
+                  onValidUntilChange={(validUntil) => handleValidUntilChange(doc.id, validUntil)}
+                />
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+      </main>
+
+      {/* Document Preview Dialog */}
+      <DocumentPreviewDialog 
+        open={!!previewDoc} 
+        onOpenChange={(open) => !open && setPreviewDoc(null)}
+        doc={previewDoc}
+      />
+
+      {/* Sticky Footer */}
+      <StickyUploadFooter 
+        isSubmitting={isSubmitting}
+        hasNewFiles={hasNewFiles}
+        onSave={handleSubmit}
+      />
     </div>
   );
 }
