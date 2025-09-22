@@ -274,11 +274,28 @@ export default function Subcontractors() {
                     {filteredSubcontractors.map((subcontractor) => (
                       <TableRow key={subcontractor.id} className="hover:bg-muted/50">
                          <TableCell>
-                          <div>
-                            <div className="font-medium">{subcontractor.company_name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Seit {new Date(subcontractor.created_at).toLocaleDateString('de-DE')}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Link 
+                                to={`/app/subcontractors/${subcontractor.id}`}
+                                className="font-medium hover:text-primary hover:underline transition-colors cursor-pointer"
+                              >
+                                {subcontractor.company_name}
+                              </Link>
+                              <div className="text-sm text-muted-foreground">
+                                Seit {new Date(subcontractor.created_at).toLocaleDateString('de-DE')}
+                              </div>
                             </div>
+                            <InviteMagicLinkButton 
+                              contractor={{
+                                id: subcontractor.id,
+                                company_name: subcontractor.company_name,
+                                email: subcontractor.contact_email,
+                                created_at: subcontractor.created_at,
+                                active: subcontractor.status === 'active'
+                              }}
+                              className="h-8 w-8 p-0 shrink-0"
+                            />
                           </div>
                         </TableCell>
                         <TableCell>
@@ -338,17 +355,6 @@ export default function Subcontractors() {
                                 <p>Ansehen</p>
                               </TooltipContent>
                             </Tooltip>
-                            
-                            <InviteMagicLinkButton 
-                              contractor={{
-                                id: subcontractor.id,
-                                company_name: subcontractor.company_name,
-                                email: subcontractor.contact_email,
-                                created_at: subcontractor.created_at,
-                                active: subcontractor.status === 'active'
-                              }}
-                              className="h-8 w-8 p-0"
-                            />
                             
                             <Tooltip>
                               <TooltipTrigger asChild>
