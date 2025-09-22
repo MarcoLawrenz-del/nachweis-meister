@@ -170,7 +170,7 @@ export default function DemoSubcontractorUpload() {
   const uploadedRequired = requiredDocs.filter(d => d.uploaded).length;
   const uploadedOptional = optionalDocs.filter(d => d.uploaded).length;
   const progress = requiredDocs.length > 0 ? Math.round((uploadedRequired / requiredDocs.length) * 100) : 0;
-  const hasNewFiles = documents.some(d => d.file);
+  const hasNewFiles = documents.some(d => d.file && !d.uploaded);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
