@@ -4,7 +4,7 @@ import RequirementSelector from "@/components/RequirementSelector";
 import { getDocs, setDocs, setContractorMeta } from "@/services/contractorDocs.store";
 import { getContractor } from "@/services/contractors";
 import type { ContractorDocument, Requirement } from "@/services/contractors";
-import { sendInvitationLegacy as sendInvitation, getEmailErrorMessage } from "@/services/email";
+import { sendMagicInvitation, getEmailErrorMessage } from "@/services/email";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -171,17 +171,21 @@ export default function RequestDocumentsDialog({
       const email = contractor?.email || contractorEmail;
       
       if (email) {
-        const link = `${window.location.origin}/upload?cid=${contractorId}`;
-        const personalizedMessage = message
-          .replace("{{magic_link}}", link)
-          .replace("{{name}}", contractor?.company_name || "");
-          
         try {
-          const result = await sendInvitation({ 
-            contractorId, 
-            email: email, 
-            message: personalizedMessage,
-            contractorName: contractor?.company_name
+          // Get required documents for this contractor
+          const requiredDocs = next
+            .filter(d => d.requirement === "required")
+            .map(d => {
+              const docType = DOCUMENT_TYPES.find(dt => dt.id === d.documentTypeId);
+              return docType?.label || d.label || d.customName || d.documentTypeId;
+            });
+
+          const result = await sendMagicInvitation({
+            contractorId,
+            email: email,
+            contractorName: contractor?.company_name || "",
+            companyName: "Ihr Auftraggeber",
+            requiredDocs
           });
           
           // Update lastRequestedAt after successful send
