@@ -12,10 +12,16 @@ verify_jwt = true
 [functions.create-invitation]
 verify_jwt = true
 
+[functions.create-magic-link]
+verify_jwt = true
+
 [functions.get-invitation-data]
 verify_jwt = false
 
 [functions.create-public-document]
+verify_jwt = false
+
+[functions.resolve-magic-link]
 verify_jwt = false
 
 [functions.send-invite-email]

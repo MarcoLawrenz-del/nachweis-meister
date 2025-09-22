@@ -268,6 +268,42 @@ export type Database = {
           },
         ]
       }
+      magic_links: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          last_seen_at: string | null
+          token: string
+          used_count: number
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          last_seen_at?: string | null
+          token: string
+          used_count?: number
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          last_seen_at?: string | null
+          token?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
       Marco1: {
         Row: {
           company: string | null
@@ -1015,6 +1051,10 @@ export type Database = {
       calculate_subcontractor_compliance_by_type: {
         Args: { subcontractor_id_param: string }
         Returns: string
+      }
+      cleanup_expired_magic_links: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       compute_required_requirements: {
         Args: { project_sub_id_param?: string; subcontractor_id_param: string }
