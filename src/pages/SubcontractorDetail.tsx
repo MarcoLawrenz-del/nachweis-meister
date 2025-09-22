@@ -12,7 +12,6 @@ import { de } from 'date-fns/locale';
 // Tab components
 import { OverviewTab } from '@/components/SubcontractorProfile/OverviewTab';
 import { DocumentsTab } from '@/components/SubcontractorProfile/DocumentsTab';
-import { InviteMagicLinkButton } from '@/components/InviteMagicLinkButton';
 
 export default function SubcontractorDetail() {
   const { id } = useParams<{ id: string }>();
@@ -81,17 +80,6 @@ export default function SubcontractorDetail() {
               </span>
             </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <InviteMagicLinkButton 
-            contractor={{
-              id: profile.id,
-              company_name: profile.company_name,
-              email: profile.contact_email,
-              created_at: profile.created_at,
-              active: profile.status === 'active'
-            }}
-          />
         </div>
       </div>
 
