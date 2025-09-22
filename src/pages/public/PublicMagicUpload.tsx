@@ -65,7 +65,7 @@ export default function PublicMagicUpload() {
       try {
         const linkResult = await resolveMagicLink(token);
         
-        if (!linkResult.success) {
+        if (linkResult.success === false) {
           setError(linkResult.error);
           setLoading(false);
           return;
