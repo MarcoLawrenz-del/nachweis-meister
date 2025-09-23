@@ -259,16 +259,17 @@ export default function Subcontractors() {
               </div>
             ) : (
               <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Firma</TableHead>
-                      <TableHead>Kontakt</TableHead>
-                      <TableHead>Konto</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <Table>
+                   <TableHeader>
+                     <TableRow>
+                       <TableHead>Firma</TableHead>
+                       <TableHead>Kontakt</TableHead>
+                       <TableHead>Konto</TableHead>
+                       <TableHead>Status</TableHead>
+                       <TableHead>Fehlende Dokumente</TableHead>
+                       <TableHead className="text-right">Aktionen</TableHead>
+                     </TableRow>
+                   </TableHeader>
                   <TableBody>
                     {filteredSubcontractors.map((subcontractor) => (
                       <TableRow key={subcontractor.id} className="hover:bg-muted/50">
@@ -319,15 +320,37 @@ export default function Subcontractors() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {(() => {
-                            const agg = aggregateContractorStatusById(subcontractor.id);
-                            const chip = agg.status === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
-                                        agg.status === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
-                                                             {label: "Fehlt", class: "bg-red-100 text-red-800 border-red-200"};
-                            return <Badge variant="outline" className={chip.class}>{chip.label}</Badge>;
-                          })()}
-                        </TableCell>
+                         <TableCell>
+                           {(() => {
+                             const agg = aggregateContractorStatusById(subcontractor.id);
+                             const chip = agg.status === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
+                                         agg.status === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
+                                                              {label: "Fehlt", class: "bg-red-100 text-red-800 border-red-200"};
+                             return <Badge variant="outline" className={chip.class}>{chip.label}</Badge>;
+                           })()}
+                         </TableCell>
+                         <TableCell>
+                           {(() => {
+                             const agg = aggregateContractorStatusById(subcontractor.id);
+                             if (agg.counts.missing === 0) {
+                               return (
+                                 <div className="flex items-center gap-2">
+                                   <CheckCircle className="h-4 w-4 text-green-500" />
+                                   <span className="text-sm text-muted-foreground">Vollständig</span>
+                                 </div>
+                               );
+                             } else {
+                               return (
+                                 <div className="flex items-center gap-2">
+                                   <AlertTriangle className="h-4 w-4 text-red-500" />
+                                   <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                                     {agg.counts.missing} fehlt
+                                   </Badge>
+                                 </div>
+                               );
+                             }
+                           })()}
+                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <Tooltip>
