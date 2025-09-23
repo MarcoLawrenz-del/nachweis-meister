@@ -88,17 +88,18 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 function getFromAddress(type: string): string {
+  // Use Resend's test domain for development
   const fromMap: Record<string, string> = {
-    invitation: 'invitations@subfix.de',
-    reminder_missing: 'reminders@subfix.de',
-    doc_accepted: 'reviews@subfix.de',
-    doc_rejected: 'reviews@subfix.de',
-    resume_upload: 'support@subfix.de',
-    expiry_warning: 'reminders@subfix.de',
-    test: 'test@subfix.de'
+    invitation: 'onboarding@resend.dev',
+    reminder_missing: 'onboarding@resend.dev',
+    doc_accepted: 'onboarding@resend.dev',
+    doc_rejected: 'onboarding@resend.dev',
+    resume_upload: 'onboarding@resend.dev',
+    expiry_warning: 'onboarding@resend.dev',
+    test: 'onboarding@resend.dev'
   };
   
-  return fromMap[type] || 'noreply@subfix.de';
+  return fromMap[type] || 'onboarding@resend.dev';
 }
 
 function getEmailTemplate(type: string, payload: any): { subject: string; html: string } {
