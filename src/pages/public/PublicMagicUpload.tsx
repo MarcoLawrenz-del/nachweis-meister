@@ -70,9 +70,38 @@ export default function PublicMagicUpload() {
         }
 
         console.log('[PublicMagicUpload] Fetching contractor from Supabase:', linkResult.contractorId);
-        const contractor = await getSupabaseContractor(linkResult.contractorId);
+        let contractor = await getSupabaseContractor(linkResult.contractorId);
+        
         if (!contractor) {
-          console.log('[PublicMagicUpload] Contractor not found in Supabase:', linkResult.contractorId);
+          console.log('[PublicMagicUpload] Contractor not found in Supabase, trying localStorage fallback');
+          // Fallback to localStorage for demo/development
+          const { listContractors } = await import("@/services/contractors.store");
+          const localContractors = listContractors();
+          const localContractor = localContractors.find(c => c.id === linkResult.contractorId);
+          
+          if (localContractor) {
+            console.log('[PublicMagicUpload] Found contractor in localStorage:', localContractor.company_name);
+            contractor = {
+              id: localContractor.id,
+              company_name: localContractor.company_name,
+              contact_name: localContractor.contact_name,
+              contact_email: localContractor.email,
+              phone: localContractor.phone,
+              country_code: localContractor.country || 'DE',
+              address: localContractor.address,
+              notes: localContractor.notes,
+              status: localContractor.active ? 'active' : 'inactive',
+              compliance_status: 'compliant',
+              company_type: 'baubetrieb',
+              tenant_id: 'demo',
+              created_at: localContractor.created_at,
+              updated_at: localContractor.created_at
+            };
+          }
+        }
+        
+        if (!contractor) {
+          console.log('[PublicMagicUpload] Contractor not found anywhere:', linkResult.contractorId);
           setError('not_found');
           setLoading(false);
           return;
