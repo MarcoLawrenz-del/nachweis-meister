@@ -63,14 +63,6 @@ export default function PublicMagicUpload() {
         const linkResult = await resolveMagicLink(token);
         console.log('[PublicMagicUpload] Token resolution result:', linkResult);
         
-        if (linkResult.success === false) {
-          const errorType = linkResult.error;
-          console.log('[PublicMagicUpload] Magic link not found or expired:', errorType);
-          setError(errorType);
-          setLoading(false);
-          return;
-        }
-
         console.log('[PublicMagicUpload] SUCCESS - Magic link resolved!', {
           contractorId: linkResult.contractorId,
           email: linkResult.email
@@ -299,9 +291,14 @@ export default function PublicMagicUpload() {
           submittedCount: relevantDocuments.filter(d => d.status === "submitted").length
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to load magic link:", error);
-        setError('not_found');
+        // Determine error type from error message
+        if (error.message === 'Token expired') {
+          setError('expired');
+        } else {
+          setError('not_found');
+        }
         setLoading(false);
       }
     }

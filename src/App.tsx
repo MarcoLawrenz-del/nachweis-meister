@@ -42,7 +42,7 @@ const DocumentsGuide = lazy(() => import("./pages/help/DocumentsGuide"));
 
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
-const PublicUpload = lazy(() => import("./pages/PublicUpload"));
+const PublicUploadPage = lazy(() => import("./pages/PublicUploadPage"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -102,7 +102,7 @@ const App = () => (
                        {/* Magic Link Upload - MUST be before other routes */}
                        <Route path="/upload/:token" element={
                          <Suspense fallback={<LoadingSpinner />}>
-                           <PublicMagicUpload />
+                           <PublicUploadPage />
                          </Suspense>
                        } />
 

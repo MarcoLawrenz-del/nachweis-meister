@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface CreateMagicLinkRequest {
   contractorId: string;
-  email: string;
+  email?: string;
   sendEmail?: boolean;
   validityDays?: number; // Optional, defaults to 14
 }
@@ -45,10 +45,10 @@ const handler = async (req: Request): Promise<Response> => {
     const { contractorId, email, sendEmail = false, validityDays = 14 }: CreateMagicLinkRequest = await req.json();
 
     // Validate required fields
-    if (!contractorId || !email) {
+    if (!contractorId) {
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'contractorId and email are required' 
+        error: 'contractorId is required' 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
       .insert({
         token,
         contractor_id: contractorId,
-        email,
+        email: email || '',
         expires_at: expiresAt.toISOString(),
         created_by: null // Will be set by auth context if user is logged in
       })

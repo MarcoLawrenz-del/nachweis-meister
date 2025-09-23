@@ -2,7 +2,7 @@
 // Production-ready email system with Supabase Edge Function + Resend
 
 import { listContractors } from './contractors.store';
-import { createMagicLink, generateMagicLinkUrl } from './magicLinks';
+import { createMagicLink, getMagicLinkUrl } from './magicLinks';
 import { supabase } from '@/integrations/supabase/client';
 import { isErr, type Result } from "@/utils/result";
 
@@ -593,8 +593,8 @@ export async function sendEmail(
     // Create magic link if needed
     if (["invitation", "reminder_missing", "doc_rejected", "expiry_warning", "resume_upload"].includes(type)) {
       if (!payload.magicLink) {
-        const token = await createMagicLink(payload.contractorId, payload.to);
-        payload.magicLink = generateMagicLinkUrl(token);
+        const { token } = await createMagicLink(payload.contractorId);
+        payload.magicLink = getMagicLinkUrl(token);
       }
     }
     
@@ -674,8 +674,8 @@ export async function sendMagicInvitation(args: {
 }): Promise<{ isStub: boolean; magicLink?: string }> {
   try {
     // Create magic link token
-    const token = await createMagicLink(args.contractorId, args.email);
-    const magicLinkUrl = generateMagicLinkUrl(token);
+    const { token } = await createMagicLink(args.contractorId);
+    const magicLinkUrl = getMagicLinkUrl(token);
     
     console.info('[email] Sending magic link invitation', { 
       contractorId: args.contractorId, 
@@ -706,8 +706,8 @@ export async function sendMagicInvitation(args: {
     console.warn("Error sending magic link invitation, falling back to stub:", error);
     
     // Create magic link even if email fails
-    const token = await createMagicLink(args.contractorId, args.email);
-    const magicLinkUrl = generateMagicLinkUrl(token);
+    const { token } = await createMagicLink(args.contractorId);
+    const magicLinkUrl = getMagicLinkUrl(token);
     
     await new Promise(resolve => setTimeout(resolve, 500));
     return { isStub: true, magicLink: magicLinkUrl };
