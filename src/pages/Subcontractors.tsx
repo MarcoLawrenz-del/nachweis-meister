@@ -335,15 +335,24 @@ export default function Subcontractors() {
                          <TableCell>
                            {(() => {
                              const agg = aggregateContractorStatusById(subcontractor.id);
-                             const chip = agg.status === "complete" ? {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"} :
-                                         agg.status === "attention" ? {label: "Aufmerksamkeit", class: "bg-amber-100 text-amber-800 border-amber-200"} :
-                                                              {label: "Fehlt", class: "bg-red-100 text-red-800 border-red-200"};
+                             const isInactive = subcontractor.status === 'inactive';
+                             
+                             let chip;
+                             if (agg.status === "complete") {
+                               chip = {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"};
+                             } else if (agg.status === "attention") {
+                               chip = {label: "Aufmerksamkeit", class: isInactive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-amber-100 text-amber-800 border-amber-200"};
+                             } else {
+                               chip = {label: "Fehlt", class: isInactive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-red-100 text-red-800 border-red-200"};
+                             }
                              return <Badge variant="outline" className={chip.class}>{chip.label}</Badge>;
                            })()}
                          </TableCell>
                          <TableCell>
                            {(() => {
                              const agg = aggregateContractorStatusById(subcontractor.id);
+                             const isInactive = subcontractor.status === 'inactive';
+                             
                              if (agg.counts.missing === 0) {
                                return (
                                  <div className="flex items-center gap-2">
@@ -354,8 +363,14 @@ export default function Subcontractors() {
                              } else {
                                return (
                                  <div className="flex items-center gap-2">
-                                   <AlertTriangle className="h-4 w-4 text-red-500" />
-                                   <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                                   <AlertTriangle className={`h-4 w-4 ${isInactive ? 'text-gray-400' : 'text-red-500'}`} />
+                                   <Badge 
+                                     variant="destructive" 
+                                     className={isInactive 
+                                       ? "bg-gray-100 text-gray-600 border-gray-200" 
+                                       : "bg-red-100 text-red-800 border-red-200"
+                                     }
+                                   >
                                      {agg.counts.missing} fehlt
                                    </Badge>
                                  </div>
