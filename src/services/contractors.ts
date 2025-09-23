@@ -120,14 +120,18 @@ export async function setDocumentStatus(input: {
 }) {
   console.info("[mock] setDocumentStatus", input);
   
-  // Update store
-  const currentReq = getDocs(input.contractorId).find(d => d.documentTypeId === input.documentTypeId)?.requirement ?? "required";
+  // Update store while preserving existing document data
+  const currentDoc = getDocs(input.contractorId).find(d => d.documentTypeId === input.documentTypeId);
+  const currentReq = currentDoc?.requirement ?? "required";
+  
+  // Preserve all existing fields and only update the status-related ones
   upsertDoc(input.contractorId, {
+    ...currentDoc, // Preserve all existing fields including fileUrl, fileName, etc.
     contractorId: input.contractorId,
     documentTypeId: input.documentTypeId,
     requirement: currentReq,
     status: input.status,
-    validUntil: input.validUntil ?? null,
+    validUntil: input.validUntil ?? currentDoc?.validUntil ?? null,
     rejectionReason: input.reason ?? null,
   });
   
