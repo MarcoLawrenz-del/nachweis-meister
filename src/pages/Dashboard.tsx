@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { subscribe as subscribeContractors } from "@/services/contractors.store";
 import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
 import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
+import { ActivityFeed } from "@/components/ActivityFeed";
 
 function NavigationCard({ 
   title, 
