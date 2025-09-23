@@ -62,6 +62,7 @@ export default function PublicMagicUpload() {
         console.log('[PublicMagicUpload] About to resolve token:', token);
         const linkResult = await resolveMagicLink(token);
         console.log('[PublicMagicUpload] Token resolution result:', linkResult);
+        
         if (linkResult.success === false) {
           const errorType = linkResult.error;
           console.log('[PublicMagicUpload] Magic link not found or expired:', errorType);
@@ -70,6 +71,12 @@ export default function PublicMagicUpload() {
           return;
         }
 
+        console.log('[PublicMagicUpload] SUCCESS - Magic link resolved!', {
+          contractorId: linkResult.contractorId,
+          email: linkResult.email
+        });
+
+        // Check if contractor exists in Supabase first
         console.log('[PublicMagicUpload] Fetching contractor from Supabase:', linkResult.contractorId);
         let contractor = await getSupabaseContractor(linkResult.contractorId);
         
@@ -161,6 +168,8 @@ export default function PublicMagicUpload() {
             .eq('id', linkResult.contractorId)
             .single();
 
+          console.log('[PublicMagicUpload] Supabase contractor check result:', supabaseContractor);
+
           if (supabaseContractor && supabaseContractor.tenant_id !== 'demo') {
             // Real Supabase contractor - get requirements from Supabase
             console.log('[PublicMagicUpload] Loading requirements from Supabase for real contractor');
@@ -192,6 +201,8 @@ export default function PublicMagicUpload() {
               `)
               .eq('project_subs.subcontractor_id', linkResult.contractorId);
 
+            console.log('[PublicMagicUpload] Supabase requirements query result:', { requirements, error });
+
             if (error) {
               console.error('[PublicMagicUpload] Error loading Supabase requirements:', error);
               throw error;
@@ -216,6 +227,10 @@ export default function PublicMagicUpload() {
                 if (a.requirement === "optional" && b.requirement === "required") return 1;
                 return 0;
               });
+              
+              console.log('[PublicMagicUpload] Processed Supabase requirements:', relevantDocuments);
+            } else {
+              console.log('[PublicMagicUpload] No requirements found in Supabase');
             }
           } else {
             // Demo contractor or not found in Supabase
@@ -231,11 +246,20 @@ export default function PublicMagicUpload() {
         if (isDemo || relevantDocuments.length === 0) {
           console.log('[PublicMagicUpload] Using localStorage fallback for demo contractor');
           const existingDocs = getDocs(linkResult.contractorId);
+          console.log('[PublicMagicUpload] Existing localStorage docs:', existingDocs);
           
           relevantDocuments = DOCUMENT_TYPES
             .map(dt => {
               const existingDoc = existingDocs.find(d => d.documentTypeId === dt.id);
               const requirement = existingDoc?.requirement || dt.defaultRequirement;
+              
+              console.log('[PublicMagicUpload] Processing document type:', {
+                id: dt.id,
+                label: dt.label,
+                defaultRequirement: dt.defaultRequirement,
+                existingDoc: existingDoc?.requirement,
+                finalRequirement: requirement
+              });
               
               // Only include required and optional documents
               if (requirement === "hidden") return null;
@@ -260,8 +284,11 @@ export default function PublicMagicUpload() {
               if (a.requirement === "optional" && b.requirement === "required") return 1;
               return 0;
             });
+            
+          console.log('[PublicMagicUpload] Final localStorage requirements:', relevantDocuments);
         }
 
+        console.log('[PublicMagicUpload] FINAL requirements to display:', relevantDocuments);
         setDocuments(relevantDocuments);
         setLoading(false);
 
