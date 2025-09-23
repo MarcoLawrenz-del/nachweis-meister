@@ -99,6 +99,13 @@ const App = () => (
                       {/* Landing Page */}
                       <Route path="/" element={<Landing />} />
 
+                      {/* Magic Link Upload - MUST be before other routes */}
+                      <Route path="/upload/:token" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicMagicUpload />
+                        </Suspense>
+                      } />
+
                       {/* Auth Route */}
                       <Route path="/auth" element={
                         <Suspense fallback={<LoadingSpinner />}>
@@ -161,13 +168,6 @@ const App = () => (
                       <Route path="/upload-demo" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <PublicUploadDemo />
-                        </Suspense>
-                      } />
-                      
-                      {/* Magic Link Upload - Public */}
-                      <Route path="/upload/:token" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <PublicMagicUpload />
                         </Suspense>
                       } />
                       
