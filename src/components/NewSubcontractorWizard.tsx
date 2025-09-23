@@ -31,7 +31,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
-import { PACKAGE_PROFILES, seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
+import { seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
+import { COMPLIANCE_PACKAGES, calculateRequirements, type ConditionalFlags } from "@/config/packages";
 import { sendInvitationLegacy as sendInvitation } from "@/services/email";
 import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
 
@@ -48,7 +49,6 @@ interface NewSubcontractorData {
   phone: string;
   address: string;
   country_code: string;
-  
   notes: string;
 }
 
@@ -85,11 +85,20 @@ export function NewSubcontractorWizard({
   });
 
   // Step 2: Package selection and requirements
-  const [selectedPackageId, setSelectedPackageId] = useState<string>('Standard');
+  const [selectedPackageId, setSelectedPackageId] = useState<string>('handwerk_basis');
   const [requirements, setRequirements] = useState<Record<string,"required"|"optional"|"hidden">>({});
   const [message, setMessage] = useState(
     "Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank."
   );
+  
+  // Conditional flags for compliance matrix
+  const [conditionalFlags, setConditionalFlags] = useState<ConditionalFlags>({
+    hasEmployees: false,
+    providesConstructionServices: false,
+    isSokaPflicht: false,
+    providesAbroad: false,
+    processesPersonalData: false
+  });
   
   // Custom documents
   const [showCustomForm, setShowCustomForm] = useState(false);
@@ -99,7 +108,6 @@ export function NewSubcontractorWizard({
   const [customDocLabels, setCustomDocLabels] = useState<Record<string, string>>({});
   
   const validateCustomName = (name: string) => {
-    // Create array of existing docs for validation
     const existingDocs = Object.keys(requirements)
       .filter(isCustomDoc)
       .map(docId => ({ 
@@ -133,12 +141,8 @@ export function NewSubcontractorWizard({
     setCustomDocLabels(restLabels);
   };
 
-  // Static package options
-  const staticPackages = [
-    { id: 'Standard', name: 'Standard', description: 'Grundlegende Dokumente für die meisten Projekte' },
-    { id: 'Minimal', name: 'Minimal', description: 'Nur die wichtigsten Dokumente' },
-    { id: 'Erweitert', name: 'Erweitert', description: 'Umfassende Dokumentensammlung' }
-  ];
+  // Use compliance packages from config
+  const staticPackages = COMPLIANCE_PACKAGES;
 
   // Initialize form data for editing
   useEffect(() => {
@@ -150,13 +154,10 @@ export function NewSubcontractorWizard({
         phone: editingSubcontractor.phone || '',
         address: editingSubcontractor.address || '',
         country_code: editingSubcontractor.country_code,
-        
         notes: editingSubcontractor.notes || ''
       });
-      // For editing, skip package selection step
       setCurrentStep(1);
     } else {
-      // Reset for new subcontractor
       setSubcontractorData({
         company_name: '',
         contact_name: '',
@@ -164,20 +165,18 @@ export function NewSubcontractorWizard({
         phone: '',
         address: '',
         country_code: 'DE',
-        
         notes: ''
       });
       setCurrentStep(1);
     }
   }, [editingSubcontractor, isOpen]);
 
-  // Sync requirements with selected package
+  // Sync requirements with selected package and conditional flags
   useEffect(() => {
-    const base = PACKAGE_PROFILES[selectedPackageId] ?? {};
-    const filled = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, base[d.id] ?? d.defaultRequirement]));
+    const calculated = calculateRequirements(selectedPackageId, conditionalFlags);
+    const filled = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, calculated[d.id] ?? d.defaultRequirement]));
     setRequirements(filled);
-  }, [selectedPackageId]);
-
+  }, [selectedPackageId, conditionalFlags]);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !editingSubcontractor) {
@@ -192,11 +191,8 @@ export function NewSubcontractorWizard({
   };
 
   const handleSubmit = async () => {
-    console.log('handleSubmit called', { profile, subcontractorData });
-    
     if (!profile) {
       console.warn('No profile found, but allowing creation anyway');
-      // Don't return - allow creation even without profile for demo/offline mode
     }
 
     try {
@@ -209,11 +205,17 @@ export function NewSubcontractorWizard({
         phone: subcontractorData.phone || undefined,
         address: subcontractorData.address || undefined,
         country: subcontractorData.country_code || undefined,
-        notes: subcontractorData.notes || undefined
+        notes: subcontractorData.notes || undefined,
+        // Save conditional flags
+        hasEmployees: conditionalFlags.hasEmployees,
+        providesConstructionServices: conditionalFlags.providesConstructionServices,
+        isSokaPflicht: conditionalFlags.isSokaPflicht,
+        providesAbroad: conditionalFlags.providesAbroad,
+        processesPersonalData: conditionalFlags.processesPersonalData,
+        selectedPackageId: selectedPackageId
       };
 
       if (editingSubcontractor) {
-        // Update existing subcontractor
         try {
           const contractor = await updateContractor(editingSubcontractor.id, subData);
           
@@ -222,7 +224,6 @@ export function NewSubcontractorWizard({
             description: `${subcontractorData.company_name} wurde erfolgreich aktualisiert.`
           });
 
-          // Navigate to contractor detail page
           navigate(ROUTES.contractor(contractor.id));
           onClose();
           if (onSuccess) onSuccess();
@@ -235,7 +236,6 @@ export function NewSubcontractorWizard({
           });
         }
       } else {
-        // Create new subcontractor - this should always work
         let contractorId: string;
         try {
           const contractor = createContractor(subData);
@@ -254,10 +254,9 @@ export function NewSubcontractorWizard({
               : "Nachunternehmer konnte nicht gespeichert werden.",
             variant: "destructive"
           });
-          return; // Don't proceed if contractor creation failed
+          return;
         }
 
-        // Non-blocking operations: document seeding and email sending
         try {
           await seedDocumentsForContractor(contractorId, selectedPackageId, requirements, customDocLabels);
           
@@ -283,7 +282,6 @@ export function NewSubcontractorWizard({
           });
         }
 
-        // Always navigate after successful contractor creation
         navigate(ROUTES.contractor(contractorId));
         onClose();
         if (onSuccess) onSuccess();
@@ -293,7 +291,6 @@ export function NewSubcontractorWizard({
       setSubmitting(false);
     }
   };
-
 
   const isStep1Valid = subcontractorData.company_name && subcontractorData.contact_email;
   const isStep2Valid = selectedPackageId && selectedPackageId.length > 0;
@@ -437,69 +434,82 @@ export function NewSubcontractorWizard({
               </div>
             </div>
 
-            {/* Custom Document Form */}
-            <div className="mb-4">
-              <Button
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowCustomForm(true)}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Eigenes Dokument hinzufügen
-              </Button>
-            </div>
+            {/* Conditional Questions */}
+            <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+              <Label className="text-base font-medium">Konditionale Anforderungen</Label>
+              <p className="text-sm text-muted-foreground">
+                Die folgenden Fragen bestimmen, welche Dokumente als Pflicht oder optional angezeigt werden.
+              </p>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="hasEmployees"
+                    checked={conditionalFlags.hasEmployees}
+                    onCheckedChange={(checked) => 
+                      setConditionalFlags(prev => ({ ...prev, hasEmployees: !!checked }))
+                    }
+                  />
+                  <Label htmlFor="hasEmployees" className="text-sm font-normal">
+                    Hat der Nachunternehmer Mitarbeitende?
+                  </Label>
+                </div>
 
-            {showCustomForm && (
-              <div className="mb-4 p-3 border rounded-lg bg-muted/50">
-                <div className="space-y-2">
-                  <div>
-                    <Label className="text-sm">Dokumentname</Label>
-                    <Input
-                      value={customDocName}
-                      onChange={(e) => {
-                        setCustomDocName(e.target.value);
-                        if (customNameError) validateCustomName(e.target.value);
-                      }}
-                      placeholder="z.B. Bankbestätigung"
-                      className={`text-sm ${customNameError ? "border-red-500" : ""}`}
-                      size={undefined}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="providesConstructionServices"
+                    checked={conditionalFlags.providesConstructionServices}
+                    onCheckedChange={(checked) => 
+                      setConditionalFlags(prev => ({ ...prev, providesConstructionServices: !!checked }))
+                    }
+                  />
+                  <Label htmlFor="providesConstructionServices" className="text-sm font-normal">
+                    Erbringt der Nachunternehmer Bauleistungen?
+                  </Label>
+                </div>
+
+                {conditionalFlags.providesConstructionServices && (
+                  <div className="flex items-center space-x-2 ml-6">
+                    <Checkbox
+                      id="isSokaPflicht"
+                      checked={conditionalFlags.isSokaPflicht}
+                      onCheckedChange={(checked) => 
+                        setConditionalFlags(prev => ({ ...prev, isSokaPflicht: !!checked }))
+                      }
                     />
-                    {customNameError && (
-                      <p className="text-xs text-red-500 mt-1">{customNameError}</p>
-                    )}
+                    <Label htmlFor="isSokaPflicht" className="text-sm font-normal">
+                      Ist der Betrieb SOKA-BAU-pflichtig?
+                    </Label>
                   </div>
-                  <div>
-                    <Label className="text-sm">Anforderung</Label>
-                    <RequirementSelector 
-                      compact
-                      value={customDocRequirement} 
-                      onChange={setCustomDocRequirement} 
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm"
-                      onClick={addCustomDocument}
-                      disabled={!customDocName.trim() || !!customNameError}
-                    >
-                      Hinzufügen
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        setShowCustomForm(false);
-                        setCustomDocName("");
-                        setCustomNameError(null);
-                      }}
-                    >
-                      Abbrechen
-                    </Button>
-                  </div>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="providesAbroad"
+                    checked={conditionalFlags.providesAbroad}
+                    onCheckedChange={(checked) => 
+                      setConditionalFlags(prev => ({ ...prev, providesAbroad: !!checked }))
+                    }
+                  />
+                  <Label htmlFor="providesAbroad" className="text-sm font-normal">
+                    Entsendung ins EU/EWR/CH-Ausland vorgesehen?
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="processesPersonalData"
+                    checked={conditionalFlags.processesPersonalData}
+                    onCheckedChange={(checked) => 
+                      setConditionalFlags(prev => ({ ...prev, processesPersonalData: !!checked }))
+                    }
+                  />
+                  <Label htmlFor="processesPersonalData" className="text-sm font-normal">
+                    Verarbeitet der Nachunternehmer personenbezogene Daten im Auftrag?
+                  </Label>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Document Requirements Matrix */}
             <div className="mt-4 border rounded-xl">
@@ -507,123 +517,58 @@ export function NewSubcontractorWizard({
                 <div>Dokument</div><div>Anforderung</div>
               </div>
               
-              {/* Standard Documents */}
-              {DOCUMENT_TYPES.map(dt => (
-                <div key={dt.id} className="grid grid-cols-2 items-center px-3 py-2 border-t">
-                  <div className="text-sm">{dt.label}</div>
-                  <div className="justify-self-end">
-                    <RequirementSelector
-                      compact
-                      value={requirements[dt.id]}
-                      onChange={(v) => setRequirements(s => ({ ...s, [dt.id]: v }))}
-                    />
-                  </div>
-                </div>
-              ))}
-              
-              {/* Custom Documents */}
-              {Object.entries(requirements).filter(([docId]) => isCustomDoc(docId)).map(([docId, requirement]) => {
-                const docName = customDocLabels[docId] || docId.replace('custom:', '');
+              <Separator />
+              {DOCUMENT_TYPES.map(docType => {
+                const req = requirements[docType.id] || docType.defaultRequirement;
+                if (req === "hidden") return null;
                 
                 return (
-                  <div key={docId} className="grid grid-cols-2 items-center px-3 py-2 border-t bg-blue-50/50">
-                    <div className="text-sm flex items-center gap-2">
-                      <span>{docName}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCustomDocument(docId)}
-                        className="h-5 w-5 p-0 hover:bg-red-100"
-                      >
-                        <X className="h-3 w-3 text-red-500" />
-                      </Button>
+                  <div key={docType.id} className="grid grid-cols-2 px-3 py-2 items-center text-sm hover:bg-muted/30">
+                    <div className="flex items-center gap-2">
+                      <span>{docType.label}</span>
                     </div>
-                    <div className="justify-self-end">
-                      <RequirementSelector
-                        compact
-                        value={requirement}
-                        onChange={(v) => setRequirements(s => ({ ...s, [docId]: v }))}
+                    <div>
+                      <RequirementSelector 
+                        compact 
+                        value={req} 
+                        onChange={(v) => setRequirements(prev => ({ ...prev, [docType.id]: v }))}
                       />
                     </div>
                   </div>
                 );
               })}
             </div>
-
-            {/* Send Invitation Option */}
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="send_invitation"
-                  checked={sendInvitationFlag}
-                  onCheckedChange={(checked) => setSendInvitationFlag(checked === true)}
-                />
-                <div className="flex-1">
-                  <Label htmlFor="send_invitation" className="font-medium cursor-pointer">
-                    Direkt Einladung senden
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Sendet automatisch eine E-Mail mit Upload-Link
-                  </p>
-                </div>
-                <Mail className="h-4 w-4 text-blue-600" />
-              </div>
-              {sendInvitationFlag && (
-                <div className="space-y-2">
-                  <Label htmlFor="invitation_message" className="text-sm font-medium">
-                    Einladungstext
-                  </Label>
-                  <Textarea
-                    id="invitation_message"
-                    className="w-full text-sm border rounded-lg p-2"
-                    rows={4}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Einladungstext eingeben..."
-                  />
-                </div>
-              )}
-            </div>
           </div>
         )}
 
         <DialogFooter>
-          <div className="flex items-center justify-between w-full">
-            <div className="flex gap-2">
+          <div className="flex justify-between w-full">
+            <div>
               {currentStep === 2 && (
-                <Button type="button" variant="outline" onClick={handlePrevStep}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                <Button variant="outline" onClick={handlePrevStep}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
                   Zurück
                 </Button>
               )}
-              <Button type="button" variant="outline" onClick={onClose}>
+            </div>
+            
+            <div className="space-x-2">
+              <Button variant="outline" onClick={onClose}>
                 Abbrechen
               </Button>
-            </div>
-            <div>
+              
               {currentStep === 1 && !editingSubcontractor ? (
-                <Button 
-                  onClick={handleNextStep}
-                  disabled={!isStep1Valid}
-                >
-                  Weiter
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button onClick={handleNextStep} disabled={!isStep1Valid}>
+                  Weiter <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={submitting || (currentStep === 2 && !isStep2Valid)}
-                >
+                <Button onClick={handleSubmit} disabled={submitting || !isStep1Valid}>
                   {submitting ? (
-                    <>
-                      <LoadingSpinner className="mr-2" />
-                      {editingSubcontractor ? 'Aktualisiert...' : 'Erstellt...'}
-                    </>
+                    <LoadingSpinner className="h-4 w-4 mr-2" />
+                  ) : editingSubcontractor ? (
+                    'Speichern'
                   ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      {editingSubcontractor ? 'Aktualisieren' : 'Erstellen & Einladen'}
-                    </>
+                    'Erstellen'
                   )}
                 </Button>
               )}

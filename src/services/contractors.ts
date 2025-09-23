@@ -64,7 +64,13 @@ import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
 import { isExpiring } from "@/utils/validity";
 
 export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>, customLabels?: Record<string, string>) {
-  const profile = customRequirements || (PACKAGE_PROFILES[packageId] ?? {});
+  const profile = customRequirements || calculateRequirements(packageId, {
+    hasEmployees: false,
+    providesConstructionServices: false,
+    isSokaPflicht: false,
+    providesAbroad: false,
+    processesPersonalData: false
+  });
   const created: ContractorDocument[] = [];
   const seen = ((globalThis as any).__DOC_SEED__ ??= new Set<string>()) as Set<string>;
   

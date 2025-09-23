@@ -12,6 +12,13 @@ export type Contractor = {
   notes?: string;
   created_at: string; // ISO
   active: boolean;
+  // Conditional flags for compliance package matrix
+  hasEmployees?: boolean;
+  providesConstructionServices?: boolean;
+  isSokaPflicht?: boolean;
+  providesAbroad?: boolean;
+  processesPersonalData?: boolean;
+  selectedPackageId?: string;
 };
 
 const contractorsMap = new Map<string, Contractor>();
