@@ -518,14 +518,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
 
                 return (
                   <TableRow key={doc.documentTypeId}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{docName}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {doc.documentTypeId}
-                        </div>
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div>
+                         <div className="font-medium">{docName}</div>
+                       </div>
+                     </TableCell>
                     
                      <TableCell>
                        <Badge 
