@@ -1,6 +1,8 @@
 // ============= Contractors Store =============
 // localStorage-based store for contractors with subscribe mechanism
 
+import { ConditionalAnswers, DEFAULT_CONDITIONAL_ANSWERS } from '@/config/conditionalQuestions';
+
 export type Contractor = {
   id: string;
   company_name: string;
@@ -12,7 +14,10 @@ export type Contractor = {
   notes?: string;
   created_at: string; // ISO
   active: boolean;
-  // Conditional flags for compliance package matrix
+  // Neue Konditions-Felder
+  conditionalAnswers?: ConditionalAnswers;
+  orgFlags?: { hrRegistered?: boolean };
+  // Legacy flags (behalten für Kompatibilität)
   hasEmployees?: boolean;
   providesConstructionServices?: boolean;
   isSokaPflicht?: boolean;
@@ -75,6 +80,9 @@ export function createContractor(data: Omit<Contractor, "id"|"created_at"|"activ
     ...data,
     active: data.active ?? true,
     created_at: new Date().toISOString(),
+    // Setze Standard-Antworten für neue Nachunternehmer
+    conditionalAnswers: data.conditionalAnswers || { ...DEFAULT_CONDITIONAL_ANSWERS },
+    orgFlags: data.orgFlags || { hrRegistered: false },
   };
   
   contractorsMap.set(id, contractor);
@@ -130,4 +138,13 @@ export function deleteContractor(id: string): void {
 export function subscribe(fn: () => void) {
   listeners.add(fn);
   return () => { listeners.delete(fn); };
+}
+
+// Neue Hilfsfunktionen für Konditions-Antworten
+export function updateConditionalAnswers(id: string, answers: ConditionalAnswers): Promise<Contractor> {
+  return updateContractor(id, { conditionalAnswers: answers });
+}
+
+export function updateOrgFlags(id: string, orgFlags: { hrRegistered?: boolean }): Promise<Contractor> {
+  return updateContractor(id, { orgFlags });
 }

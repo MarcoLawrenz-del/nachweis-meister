@@ -14,6 +14,16 @@ import { useToast } from "@/hooks/use-toast";
 import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
 import { Plus, X, HelpCircle, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ConditionalQuestionsCompact } from "./ConditionalQuestionsForm";
+import { 
+  ConditionalAnswers, 
+  DEFAULT_CONDITIONAL_ANSWERS 
+} from '@/config/conditionalQuestions';
+import { 
+  deriveRequirements, 
+  OrgFlags 
+} from '@/services/requirements/deriveRequirements';
+import { updateConditionalAnswers, updateOrgFlags } from '@/services/contractors.store';
 
 export default function RequestDocumentsDialog({ 
   contractorId, 
@@ -25,15 +35,39 @@ export default function RequestDocumentsDialog({
   onClose: () => void; 
 }) {
   const existingDocs = getDocs(contractorId);
-  const initial = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, (existingDocs.find(x => x.documentTypeId === d.id)?.requirement ?? d.defaultRequirement) as Requirement]));
+  const contractor = getContractor(contractorId);
   
-  // Add existing custom documents to requirements
-  const customDocs = existingDocs.filter(doc => isCustomDoc(doc.documentTypeId));
-  customDocs.forEach(doc => {
-    initial[doc.documentTypeId] = doc.requirement;
-  });
+  // Conditional answers state
+  const [conditionalAnswers, setConditionalAnswers] = useState<ConditionalAnswers>(
+    contractor?.conditionalAnswers || DEFAULT_CONDITIONAL_ANSWERS
+  );
+  const [orgFlags, setOrgFlags] = useState<OrgFlags>(
+    contractor?.orgFlags || { hrRegistered: false }
+  );
   
-  const [reqs, setReqs] = useState<Record<string, Requirement>>(initial);
+  // Derive requirements from conditional answers
+  const derivedRequirements = deriveRequirements(conditionalAnswers, orgFlags);
+  
+  // Initialize requirements with derived logic
+  const getInitialRequirements = () => {
+    const base = Object.fromEntries(
+      DOCUMENT_TYPES.map(d => [
+        d.id, 
+        derivedRequirements[d.id.toLowerCase()] || 
+        (existingDocs.find(x => x.documentTypeId === d.id)?.requirement ?? d.defaultRequirement) as Requirement
+      ])
+    );
+    
+    // Add existing custom documents to requirements
+    const customDocs = existingDocs.filter(doc => isCustomDoc(doc.documentTypeId));
+    customDocs.forEach(doc => {
+      base[doc.documentTypeId] = doc.requirement;
+    });
+    
+    return base;
+  };
+  
+  const [reqs, setReqs] = useState<Record<string, Requirement>>(getInitialRequirements());
   const [customDocLabels, setCustomDocLabels] = useState<Record<string, string>>({});
   const [sendNow, setSendNow] = useState(false);
   const [message, setMessage] = useState("Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank.");
@@ -44,6 +78,7 @@ export default function RequestDocumentsDialog({
   const { toast } = useToast();
   
   // Get all document types (config + custom)
+  const customDocs = existingDocs.filter(doc => isCustomDoc(doc.documentTypeId));
   const allDocuments = [
     ...DOCUMENT_TYPES,
     ...customDocs.map(doc => ({
@@ -52,6 +87,42 @@ export default function RequestDocumentsDialog({
       defaultRequirement: doc.requirement
     }))
   ];
+  
+  // Update requirements when conditional answers change
+  useEffect(() => {
+    const newDerivedRequirements = deriveRequirements(conditionalAnswers, orgFlags);
+    const updatedReqs = { ...reqs };
+    
+    // Apply derived requirements to config documents
+    DOCUMENT_TYPES.forEach(dt => {
+      const derivedReq = newDerivedRequirements[dt.id.toLowerCase()];
+      if (derivedReq) {
+        updatedReqs[dt.id] = derivedReq as Requirement;
+      }
+    });
+    
+    setReqs(updatedReqs);
+  }, [conditionalAnswers, orgFlags]);
+  
+  const handleConditionalAnswersChange = async (newAnswers: ConditionalAnswers) => {
+    setConditionalAnswers(newAnswers);
+    // Sofort speichern
+    try {
+      await updateConditionalAnswers(contractorId, newAnswers);
+    } catch (error) {
+      console.error('Error updating conditional answers:', error);
+    }
+  };
+  
+  const handleOrgFlagsChange = async (newFlags: OrgFlags) => {
+    setOrgFlags(newFlags);
+    // Sofort speichern
+    try {
+      await updateOrgFlags(contractorId, newFlags);
+    } catch (error) {
+      console.error('Error updating org flags:', error);
+    }
+  };
   
   const validateCustomName = (name: string) => {
     const error = validateCustomDocName(name, existingDocs);
@@ -214,6 +285,29 @@ export default function RequestDocumentsDialog({
   return (
     <div className="p-4">
       <h2 className="text-lg font-semibold mb-4">Dokumente anfordern</h2>
+      
+      {/* Conditional Questions Section */}
+      <div className="mb-6">
+        <ConditionalQuestionsCompact
+          answers={conditionalAnswers}
+          onChange={handleConditionalAnswersChange}
+        />
+      </div>
+
+      {/* Organization Flags */}
+      <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+        <h3 className="font-medium text-sm mb-3">Organisationsdaten</h3>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="hrRegistered"
+            checked={orgFlags.hrRegistered || false}
+            onCheckedChange={(checked) => handleOrgFlagsChange({ ...orgFlags, hrRegistered: checked === true })}
+          />
+          <Label htmlFor="hrRegistered" className="text-sm">
+            Unternehmen ist im Handelsregister eingetragen
+          </Label>
+        </div>
+      </div>
       
       {/* Add Custom Document Button */}
       <div className="mb-4">
