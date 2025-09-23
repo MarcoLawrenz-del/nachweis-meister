@@ -535,18 +535,18 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                        </Badge>
                      </TableCell>
                     
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <StatusIcon className="h-4 w-4" />
-                        <Badge variant={statusConfig.variant} className={statusConfig.className}>
-                          {expired ? 'Abgelaufen' : expiring ? 'Läuft ab' : statusConfig.label}
-                        </Badge>
-                        {expiring && !expired && (
-                          <Badge variant="outline" className="text-warn-600 border-warn-600/20">
-                            Läuft ab
-                          </Badge>
-                        )}
-                      </div>
+                     <TableCell>
+                       <div className="flex items-center gap-2">
+                         <StatusIcon className="h-4 w-4" />
+                         <Badge variant={statusConfig.variant} className={statusConfig.className}>
+                           {expired ? 'Abgelaufen' : statusConfig.label}
+                         </Badge>
+                         {expiring && !expired && (
+                           <Badge variant="outline" className="text-warn-600 border-warn-600/20">
+                             Läuft ab
+                           </Badge>
+                         )}
+                       </div>
                       {doc.rejectionReason && (
                         <Collapsible 
                           open={!collapsedRejections[doc.documentTypeId]} 
