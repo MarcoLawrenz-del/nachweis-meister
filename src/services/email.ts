@@ -620,7 +620,7 @@ export async function sendEmail(
       to: payload.to,
       mode,
       result: result.ok ? "ok" : "error",
-      error: result.error
+      error: !result.ok ? result.error : undefined
     });
     
     if (result.ok) {
@@ -701,7 +701,8 @@ export async function sendMagicInvitation(args: {
       console.log("Magic link invitation sent successfully:", result);
       return { isStub: result.mode === 'stub', magicLink: magicLinkUrl };
     } else {
-      console.warn('Email sending failed, using stub mode:', result.error);
+      const errorMessage = 'error' in result ? result.error : 'Unknown error';
+      console.warn('Email sending failed, using stub mode:', errorMessage);
       await new Promise(resolve => setTimeout(resolve, 500));
       return { isStub: true, magicLink: magicLinkUrl };
     }

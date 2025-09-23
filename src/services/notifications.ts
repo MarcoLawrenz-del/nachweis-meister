@@ -1,7 +1,7 @@
 // ============= Notification Service =============
 // Expiry warnings and automated notifications
 
-import { getContractors } from './contractors.store';
+import { getAllContractors } from './contractors.store';
 import { getDocs } from './contractorDocs.store';
 import { sendEmail } from './email';
 
@@ -51,7 +51,7 @@ export async function tickDaily(): Promise<{
     return { checked: 0, warnings: 0, errors: [] };
   }
   
-  const contractors = getContractors();
+  const contractors = getAllContractors();
   const errors: string[] = [];
   let checked = 0;
   let warnings = 0;
@@ -89,7 +89,9 @@ export async function tickDaily(): Promise<{
             if (result.ok) {
               warnings++;
             } else {
-              errors.push(`${contractor.company_name}: ${result.error}`);
+              // Type guard to safely access error property  
+              const errorMessage = 'error' in result ? result.error : 'Unknown error';
+              errors.push(`${contractor.company_name}: ${errorMessage}`);
             }
           } catch (error) {
             errors.push(`${contractor.company_name}: ${error instanceof Error ? error.message : 'Unknown error'}`);

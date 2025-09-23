@@ -140,7 +140,11 @@ export function subscribe(fn: () => void) {
   return () => { listeners.delete(fn); };
 }
 
-// Neue Hilfsfunktionen für Konditions-Antworten
+// Export function to get all contractors
+export function getAllContractors(): Contractor[] {
+  load(); // Ensure data is loaded
+  return Array.from(contractorsMap.values());
+}
 export function updateConditionalAnswers(id: string, answers: ConditionalAnswers): Promise<Contractor> {
   return updateContractor(id, { conditionalAnswers: answers });
 }
