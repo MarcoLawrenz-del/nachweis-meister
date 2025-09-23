@@ -147,73 +147,89 @@ export default function PublicMagicUpload() {
         setContractorName(contractor.company_name);
         setContractorEmail(contractor.contact_email);
 
-        // Load contractor documents from Supabase requirements
-        console.log('[PublicMagicUpload] Loading requirements from Supabase for contractor:', linkResult.contractorId);
+        // Load contractor documents from Supabase requirements or fallback to localStorage
+        console.log('[PublicMagicUpload] Loading requirements for contractor:', linkResult.contractorId);
         
         let relevantDocuments: DocumentUpload[] = [];
+        let isDemo = false;
         
         try {
-          // Get requirements for this contractor from Supabase
-          const { data: requirements, error } = await supabase
-            .from('requirements')
-            .select(`
-              id,
-              status,
-              due_date,
-              document_type_id,
-              project_sub_id,
-              project_subs!inner (
-                subcontractor_id
-              ),
-              document_types!inner (
-                id,
-                name_de,
-                code,
-                required_by_default
-              ),
-              documents (
-                id,
-                file_name,
-                file_url,
-                valid_to,
-                uploaded_at
-              )
-            `)
-            .eq('project_subs.subcontractor_id', linkResult.contractorId);
+          // First, check if contractor exists in Supabase
+          const { data: supabaseContractor } = await supabase
+            .from('subcontractors')
+            .select('id, tenant_id')
+            .eq('id', linkResult.contractorId)
+            .single();
 
-          if (error) {
-            console.error('[PublicMagicUpload] Error loading requirements:', error);
-            throw error;
-          }
-
-          if (requirements && requirements.length > 0) {
-            console.log('[PublicMagicUpload] Found requirements from Supabase:', requirements);
+          if (supabaseContractor && supabaseContractor.tenant_id !== 'demo') {
+            // Real Supabase contractor - get requirements from Supabase
+            console.log('[PublicMagicUpload] Loading requirements from Supabase for real contractor');
             
-            relevantDocuments = requirements.map((req: any) => ({
-              id: req.document_types.code,
-              label: req.document_types.name_de,
-              requirement: (req.document_types.required_by_default ? "required" : "optional") as "required" | "optional",
-              file: null,
-              validUntil: req.documents?.[0]?.valid_to || "",
-              status: req.status === "valid" ? "accepted" : req.status as "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired",
-              rejectionReason: null,
-              fileUrl: req.documents?.[0]?.file_url || undefined,
-              fileName: req.documents?.[0]?.file_name || undefined,
-              userUnknownExpiry: false
-            })).sort((a, b) => {
-              // Required first, then optional
-              if (a.requirement === "required" && b.requirement === "optional") return -1;
-              if (a.requirement === "optional" && b.requirement === "required") return 1;
-              return 0;
-            });
+            const { data: requirements, error } = await supabase
+              .from('requirements')
+              .select(`
+                id,
+                status,
+                due_date,
+                document_type_id,
+                project_sub_id,
+                project_subs!inner (
+                  subcontractor_id
+                ),
+                document_types!inner (
+                  id,
+                  name_de,
+                  code,
+                  required_by_default
+                ),
+                documents (
+                  id,
+                  file_name,
+                  file_url,
+                  valid_to,
+                  uploaded_at
+                )
+              `)
+              .eq('project_subs.subcontractor_id', linkResult.contractorId);
+
+            if (error) {
+              console.error('[PublicMagicUpload] Error loading Supabase requirements:', error);
+              throw error;
+            }
+
+            if (requirements && requirements.length > 0) {
+              console.log('[PublicMagicUpload] Found Supabase requirements:', requirements);
+              
+              relevantDocuments = requirements.map((req: any) => ({
+                id: req.document_types.code,
+                label: req.document_types.name_de,
+                requirement: (req.document_types.required_by_default ? "required" : "optional") as "required" | "optional",
+                file: null,
+                validUntil: req.documents?.[0]?.valid_to || "",
+                status: req.status === "valid" ? "accepted" : req.status as "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired",
+                rejectionReason: null,
+                fileUrl: req.documents?.[0]?.file_url || undefined,
+                fileName: req.documents?.[0]?.file_name || undefined,
+                userUnknownExpiry: false
+              })).sort((a, b) => {
+                if (a.requirement === "required" && b.requirement === "optional") return -1;
+                if (a.requirement === "optional" && b.requirement === "required") return 1;
+                return 0;
+              });
+            }
+          } else {
+            // Demo contractor or not found in Supabase
+            isDemo = true;
+            console.log('[PublicMagicUpload] Demo contractor detected, using localStorage requirements');
           }
         } catch (error) {
-          console.error('[PublicMagicUpload] Failed to load Supabase requirements, falling back to localStorage:', error);
+          console.error('[PublicMagicUpload] Error checking Supabase contractor, assuming demo:', error);
+          isDemo = true;
         }
 
-        // Fallback to localStorage if no Supabase requirements found
-        if (relevantDocuments.length === 0) {
-          console.log('[PublicMagicUpload] No Supabase requirements found, using localStorage fallback');
+        // Fallback to localStorage for demo contractors
+        if (isDemo || relevantDocuments.length === 0) {
+          console.log('[PublicMagicUpload] Using localStorage fallback for demo contractor');
           const existingDocs = getDocs(linkResult.contractorId);
           
           relevantDocuments = DOCUMENT_TYPES
