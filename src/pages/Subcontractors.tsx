@@ -36,6 +36,7 @@ import {
   Circle
 } from 'lucide-react';
 import { aggregateContractorStatusById, listContractors, deleteContractor } from "@/services/contractors";
+import { subscribe as subscribeContractors } from "@/services/contractors.store";
 import type { Contractor } from "@/services/contractors.store";
 
 interface Subcontractor extends Contractor {
@@ -75,6 +76,17 @@ export default function Subcontractors() {
     }
     
     fetchSubcontractors();
+  }, [isDemo]);
+
+  // Subscribe to contractors store changes
+  useEffect(() => {
+    if (isDemo) return;
+    
+    const unsubscribe = subscribeContractors(() => {
+      fetchSubcontractors();
+    });
+    
+    return unsubscribe;
   }, [isDemo]);
 
   useEffect(() => {
