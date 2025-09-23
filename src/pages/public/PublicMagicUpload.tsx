@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { resolveMagicLink } from "@/services/magicLinks";
 import { getSupabaseContractor } from "@/services/supabaseContractors";
 import { getDocs, markUploaded } from "@/services/contractorDocs.store";
@@ -146,37 +147,104 @@ export default function PublicMagicUpload() {
         setContractorName(contractor.company_name);
         setContractorEmail(contractor.contact_email);
 
-        // Load contractor documents and build upload form
-        const existingDocs = getDocs(linkResult.contractorId);
+        // Load contractor documents from Supabase requirements
+        console.log('[PublicMagicUpload] Loading requirements from Supabase for contractor:', linkResult.contractorId);
         
-        const relevantDocuments = DOCUMENT_TYPES
-          .map(dt => {
-            const existingDoc = existingDocs.find(d => d.documentTypeId === dt.id);
-            const requirement = existingDoc?.requirement || dt.defaultRequirement;
+        let relevantDocuments: DocumentUpload[] = [];
+        
+        try {
+          // Get requirements for this contractor from Supabase
+          const { data: requirements, error } = await supabase
+            .from('requirements')
+            .select(`
+              id,
+              status,
+              due_date,
+              document_type_id,
+              project_sub_id,
+              project_subs!inner (
+                subcontractor_id
+              ),
+              document_types!inner (
+                id,
+                name_de,
+                code,
+                required_by_default
+              ),
+              documents (
+                id,
+                file_name,
+                file_url,
+                valid_to,
+                uploaded_at
+              )
+            `)
+            .eq('project_subs.subcontractor_id', linkResult.contractorId);
+
+          if (error) {
+            console.error('[PublicMagicUpload] Error loading requirements:', error);
+            throw error;
+          }
+
+          if (requirements && requirements.length > 0) {
+            console.log('[PublicMagicUpload] Found requirements from Supabase:', requirements);
             
-            // Only include required and optional documents
-            if (requirement === "hidden") return null;
-            
-            return {
-              id: dt.id,
-              label: dt.label,
-              requirement: requirement as "required" | "optional",
+            relevantDocuments = requirements.map((req: any) => ({
+              id: req.document_types.code,
+              label: req.document_types.name_de,
+              requirement: (req.document_types.required_by_default ? "required" : "optional") as "required" | "optional",
               file: null,
-              validUntil: existingDoc?.validUntil || "",
-              status: existingDoc?.status || "missing",
-              rejectionReason: existingDoc?.rejectionReason,
-              fileUrl: existingDoc?.fileUrl,
-              fileName: existingDoc?.fileName,
+              validUntil: req.documents?.[0]?.valid_to || "",
+              status: req.status === "valid" ? "accepted" : req.status as "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired",
+              rejectionReason: null,
+              fileUrl: req.documents?.[0]?.file_url || undefined,
+              fileName: req.documents?.[0]?.file_name || undefined,
               userUnknownExpiry: false
-            };
-          })
-          .filter(doc => doc !== null)
-          .sort((a, b) => {
-            // Required first, then optional
-            if (a.requirement === "required" && b.requirement === "optional") return -1;
-            if (a.requirement === "optional" && b.requirement === "required") return 1;
-            return 0;
-          });
+            })).sort((a, b) => {
+              // Required first, then optional
+              if (a.requirement === "required" && b.requirement === "optional") return -1;
+              if (a.requirement === "optional" && b.requirement === "required") return 1;
+              return 0;
+            });
+          }
+        } catch (error) {
+          console.error('[PublicMagicUpload] Failed to load Supabase requirements, falling back to localStorage:', error);
+        }
+
+        // Fallback to localStorage if no Supabase requirements found
+        if (relevantDocuments.length === 0) {
+          console.log('[PublicMagicUpload] No Supabase requirements found, using localStorage fallback');
+          const existingDocs = getDocs(linkResult.contractorId);
+          
+          relevantDocuments = DOCUMENT_TYPES
+            .map(dt => {
+              const existingDoc = existingDocs.find(d => d.documentTypeId === dt.id);
+              const requirement = existingDoc?.requirement || dt.defaultRequirement;
+              
+              // Only include required and optional documents
+              if (requirement === "hidden") return null;
+              
+              return {
+                id: dt.id,
+                label: dt.label,
+                requirement: requirement as "required" | "optional",
+                file: null,
+                validUntil: existingDoc?.validUntil || "",
+                status: existingDoc?.status || "missing",
+                rejectionReason: existingDoc?.rejectionReason,
+                fileUrl: existingDoc?.fileUrl,
+                fileName: existingDoc?.fileName,
+                userUnknownExpiry: false
+              };
+            })
+            .filter(doc => doc !== null)
+            .sort((a, b) => {
+              // Required first, then optional
+              if (a.requirement === "required" && b.requirement === "optional") return -1;
+              if (a.requirement === "optional" && b.requirement === "required") return 1;
+              return 0;
+            });
+        }
 
         setDocuments(relevantDocuments);
         setLoading(false);
