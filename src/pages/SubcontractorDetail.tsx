@@ -131,9 +131,6 @@ export default function SubcontractorDetail() {
                     <span className="font-semibold">
                       {profile.active ? "Aktiv" : "Inaktiv"}
                     </span>
-                    <Badge variant={profile.active ? "default" : "destructive"} className="text-xs">
-                      {profile.active ? "ON" : "OFF"}
-                    </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Erinnerungen {profile.active ? "aktiviert" : "pausiert"}
@@ -141,54 +138,13 @@ export default function SubcontractorDetail() {
                 </div>
               </div>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Switch
-                    checked={profile.active}
-                    disabled={isToggling}
-                    aria-label="Subunternehmer Status ändern"
-                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-500"
-                  />
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Subunternehmer {profile.active ? "deaktivieren" : "aktivieren"}?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-2">
-                      {profile.active ? (
-                        <>
-                          <p>Wenn Sie den Subunternehmer <strong>deaktivieren</strong>:</p>
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            <li>Werden keine automatischen Erinnerungen mehr versendet</li>
-                            <li>Keine Compliance-Warnungen mehr</li>
-                            <li>Der Status wird als "Inaktiv" markiert</li>
-                          </ul>
-                        </>
-                      ) : (
-                        <>
-                          <p>Wenn Sie den Subunternehmer <strong>aktivieren</strong>:</p>
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            <li>Können wieder automatische Erinnerungen versendet werden</li>
-                            <li>Compliance-Warnungen werden wieder aktiviert</li>
-                            <li>Der Status wird als "Aktiv" markiert</li>
-                          </ul>
-                        </>
-                      )}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => handleActiveToggle(!profile.active)}
-                      className={profile.active ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
-                    >
-                      {profile.active ? "Deaktivieren" : "Aktivieren"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Switch
+                checked={profile.active}
+                disabled={isToggling}
+                onCheckedChange={handleActiveToggle}
+                aria-label="Subunternehmer Status ändern"
+                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-500"
+              />
             </div>
           </CardContent>
         </Card>
