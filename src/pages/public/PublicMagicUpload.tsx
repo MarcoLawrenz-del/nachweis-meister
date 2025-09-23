@@ -45,7 +45,9 @@ export default function PublicMagicUpload() {
 
   useEffect(() => {
     async function loadMagicLink() {
-      console.log('[PublicMagicUpload] Loading token:', token);
+      console.log('[PublicMagicUpload] Starting to load token:', token);
+      console.log('[PublicMagicUpload] Current URL:', window.location.href);
+      console.log('[PublicMagicUpload] Current localStorage keys:', Object.keys(localStorage));
       
       if (!token) {
         console.log('[PublicMagicUpload] No token provided');
@@ -55,6 +57,7 @@ export default function PublicMagicUpload() {
       }
 
       try {
+        console.log('[PublicMagicUpload] About to resolve token:', token);
         const linkResult = resolveUploadToken(token);
         console.log('[PublicMagicUpload] Token resolution result:', linkResult);
         
