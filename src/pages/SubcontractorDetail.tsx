@@ -82,10 +82,11 @@ export default function SubcontractorDetail() {
         status: newActiveStatus ? 'active' : 'inactive' 
       });
       
-      // Force a re-fetch to ensure consistency
-      if (refetchData) {
-        setTimeout(() => refetchData(), 100);
-      }
+  // Force a re-fetch to ensure consistency - but preserve existing data
+  if (refetchData) {
+    // Give time for both systems to update before refetching
+    setTimeout(() => refetchData(), 500);
+  }
       
       toast({
         title: newActiveStatus ? "Subunternehmer aktiviert" : "Subunternehmer deaktiviert",

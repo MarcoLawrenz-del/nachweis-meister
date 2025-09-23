@@ -90,9 +90,18 @@ export function updateContractor(id: string, patch: Partial<Contractor>): Promis
       return;
     }
     
+    // Merge the patch with existing data to preserve all fields
     const updated = { ...existing, ...patch };
     contractorsMap.set(id, updated);
     saveFromMap();
+    
+    console.log('LocalStorage contractor updated successfully:', { 
+      id, 
+      patch, 
+      preservedFields: Object.keys(existing),
+      updatedFields: Object.keys(patch)
+    });
+    
     resolve(updated);
   });
 }

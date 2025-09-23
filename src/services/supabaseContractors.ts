@@ -37,6 +37,14 @@ export async function updateSupabaseContractorStatus(
   status: 'active' | 'inactive'
 ): Promise<boolean> {
   try {
+    // First get the current contractor data to preserve all fields
+    const currentData = await getSupabaseContractor(id);
+    if (!currentData) {
+      console.error('Contractor not found for status update:', id);
+      return false;
+    }
+
+    // Only update the status field while preserving all other data
     const { error } = await supabase
       .from('subcontractors')
       .update({ 
@@ -50,6 +58,7 @@ export async function updateSupabaseContractorStatus(
       return false;
     }
 
+    console.log('Contractor status updated successfully:', { id, status, preservedData: currentData });
     return true;
   } catch (error) {
     console.error('Error updating contractor status:', error);
