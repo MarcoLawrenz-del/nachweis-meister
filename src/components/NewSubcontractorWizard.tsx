@@ -28,13 +28,23 @@ import {
 import { ArrowLeft, ArrowRight, Send, CheckCircle2, Package, Mail, Plus, X } from 'lucide-react';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
+import { createContractor, updateContractor } from '@/services/contractors.store';
+import { DOCUMENT_TYPES } from '@/config/documentTypes';
+import { COMPLIANCE_PACKAGES, type ConditionalFlags } from '@/config/packages';
+import { sendInvitationLegacy as sendInvitation } from '@/services/email';
+import { displayName, isCustomDoc, makeCustomDocId, validateCustomDocName } from '@/utils/customDocs';
 import { ROUTES } from '@/lib/ROUTES';
-import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
-import { seedDocumentsForContractor, createContractor, updateContractor } from "@/services/contractors";
-import { COMPLIANCE_PACKAGES, calculateRequirements, type ConditionalFlags } from "@/config/packages";
-import { sendInvitationLegacy as sendInvitation } from "@/services/email";
-import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
+import { ConditionalQuestionsForm } from './ConditionalQuestionsForm';
+import { 
+  ConditionalAnswers, 
+  DEFAULT_CONDITIONAL_ANSWERS 
+} from '@/config/conditionalQuestions';
+import { 
+  deriveRequirements, 
+  OrgFlags 
+} from '@/services/requirements/deriveRequirements';
+import { createDocumentsForContractor } from '@/services/wizardDocuments';
 
 const FormSchema = z.object({
   name: z.string().min(2, "Bitte Name angeben"),
@@ -84,14 +94,18 @@ export function NewSubcontractorWizard({
     notes: ''
   });
 
-  // Step 2: Package selection and requirements
+  // Step 2: Package selection and requirements  
   const [selectedPackageId, setSelectedPackageId] = useState<string>('handwerk_basis');
   const [requirements, setRequirements] = useState<Record<string,"required"|"optional"|"hidden">>({});
   const [message, setMessage] = useState(
     "Hallo {{name}}, bitte laden Sie die angeforderten Dokumente unter {{magic_link}} hoch. Vielen Dank."
   );
   
-  // Conditional flags for compliance matrix
+  // New Conditional Questions System
+  const [conditionalAnswers, setConditionalAnswers] = useState<ConditionalAnswers>(DEFAULT_CONDITIONAL_ANSWERS);
+  const [orgFlags, setOrgFlags] = useState<OrgFlags>({ hrRegistered: false });
+  
+  // Legacy conditional flags (für Kompatibilität behalten)
   const [conditionalFlags, setConditionalFlags] = useState<ConditionalFlags>({
     hasEmployees: false,
     providesConstructionServices: false,
@@ -171,12 +185,28 @@ export function NewSubcontractorWizard({
     }
   }, [editingSubcontractor, isOpen]);
 
-  // Sync requirements with selected package and conditional flags
+  // Sync requirements with conditional answers (new system)
   useEffect(() => {
-    const calculated = calculateRequirements(selectedPackageId, conditionalFlags);
-    const filled = Object.fromEntries(DOCUMENT_TYPES.map(d => [d.id, calculated[d.id] ?? d.defaultRequirement]));
+    const derivedRequirements = deriveRequirements(conditionalAnswers, orgFlags);
+    const filled = Object.fromEntries(
+      DOCUMENT_TYPES.map(d => [
+        d.id, 
+        derivedRequirements[d.id.toLowerCase()] || d.defaultRequirement
+      ])
+    );
     setRequirements(filled);
-  }, [selectedPackageId, conditionalFlags]);
+  }, [conditionalAnswers, orgFlags]);
+
+  // Sync legacy flags with new conditional answers (for backward compatibility)
+  useEffect(() => {
+    setConditionalFlags({
+      hasEmployees: conditionalAnswers.hasEmployees === 'yes',
+      providesConstructionServices: conditionalAnswers.doesConstructionWork === 'yes',
+      isSokaPflicht: conditionalAnswers.sokaBauSubject === 'yes',
+      providesAbroad: conditionalAnswers.sendsAbroad === 'yes',
+      processesPersonalData: conditionalAnswers.processesPersonalData === 'yes'
+    });
+  }, [conditionalAnswers]);
 
   const handleNextStep = () => {
     if (currentStep === 1 && !editingSubcontractor) {
@@ -206,7 +236,10 @@ export function NewSubcontractorWizard({
         address: subcontractorData.address || undefined,
         country: subcontractorData.country_code || undefined,
         notes: subcontractorData.notes || undefined,
-        // Save conditional flags
+        // New conditional system
+        conditionalAnswers: conditionalAnswers,
+        orgFlags: orgFlags,
+        // Legacy flags (for backward compatibility)
         hasEmployees: conditionalFlags.hasEmployees,
         providesConstructionServices: conditionalFlags.providesConstructionServices,
         isSokaPflicht: conditionalFlags.isSokaPflicht,
@@ -258,7 +291,8 @@ export function NewSubcontractorWizard({
         }
 
         try {
-          await seedDocumentsForContractor(contractorId, selectedPackageId, requirements, customDocLabels);
+          // Create documents directly in the store with "lastRequestedAt"
+          await createDocumentsForContractor(contractorId, requirements, customDocLabels);
           
           if (subcontractorData.contact_email && sendInvitationFlag) {
             await sendInvitation({ 
@@ -434,11 +468,36 @@ export function NewSubcontractorWizard({
               </div>
             </div>
 
-            {/* Conditional Questions */}
-            <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
-              <Label className="text-base font-medium">Konditionale Anforderungen</Label>
+            {/* Conditional Questions (New System) */}
+            <div className="space-y-4">
+              <ConditionalQuestionsForm
+                answers={conditionalAnswers}
+                onChange={setConditionalAnswers}
+                title="Dokumentenanforderungen bestimmen"
+                description="Beantworten Sie diese Fragen, um zu ermitteln, welche Dokumente benötigt werden."
+              />
+            </div>
+
+            {/* Organization Flags */}
+            <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+              <Label className="text-base font-medium">Organisationsdaten</Label>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="hrRegistered"
+                  checked={orgFlags.hrRegistered || false}
+                  onCheckedChange={(checked) => setOrgFlags({ ...orgFlags, hrRegistered: checked === true })}
+                />
+                <Label htmlFor="hrRegistered" className="text-sm">
+                  Unternehmen ist im Handelsregister eingetragen
+                </Label>
+              </div>
+            </div>
+
+            {/* Legacy Conditional Questions (for backward compatibility, hidden by default) */}
+            <details className="space-y-4 p-4 bg-muted/30 rounded-lg">
+              <summary className="text-base font-medium cursor-pointer">Legacy Konditionale Anforderungen</summary>
               <p className="text-sm text-muted-foreground">
-                Die folgenden Fragen bestimmen, welche Dokumente als Pflicht oder optional angezeigt werden.
+                Diese Fragen sind für Rückwärtskompatibilität. Nutzen Sie die neuen Fragen oben.
               </p>
               
               <div className="space-y-3">
@@ -509,7 +568,7 @@ export function NewSubcontractorWizard({
                   </Label>
                 </div>
               </div>
-            </div>
+            </details>
 
             {/* Document Requirements Matrix */}
             <div className="mt-4 border rounded-xl">
