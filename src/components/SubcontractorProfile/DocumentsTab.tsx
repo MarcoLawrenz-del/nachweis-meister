@@ -615,16 +615,20 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                     
                      <TableCell>
                        <div className="flex gap-2">
-                         {doc.fileUrl ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setPreviewDoc(doc)}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Dokument ansehen
-                            </Button>
-                         ) : (
+                         {/* Document Preview - always available for uploaded documents */}
+                         {doc.fileUrl && (
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => setPreviewDoc(doc)}
+                           >
+                             <Eye className="w-4 h-4 mr-1" />
+                             Dokument ansehen
+                           </Button>
+                         )}
+                         
+                         {/* Upload button for missing documents */}
+                         {!doc.fileUrl && (
                            <div className="relative">
                              <input
                                type="file"
@@ -651,7 +655,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                            </div>
                          )}
                          
-                         {doc.status === 'submitted' || doc.status === 'in_review' ? (
+                         {/* Action buttons based on status */}
+                         {(doc.status === 'submitted' || doc.status === 'in_review') && (
                            <>
                              <Button
                                variant="outline"
@@ -677,7 +682,10 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                                Ablehnen
                              </Button>
                            </>
-                         ) : doc.status === 'missing' || doc.status === 'rejected' || doc.status === 'expired' ? (
+                         )}
+                         
+                         {/* Request again for missing/rejected/expired documents */}
+                         {(doc.status === 'missing' || doc.status === 'rejected' || doc.status === 'expired') && (
                            <Button
                              variant="outline"
                              size="sm"
@@ -687,7 +695,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                              <Upload className="h-3 w-3" />
                              Erneut anfordern
                            </Button>
-                         ) : null}
+                         )}
                        </div>
                      </TableCell>
                   </TableRow>
