@@ -62,6 +62,7 @@ export const PACKAGE_PROFILES: Record<string, PackageProfile> = {
 
 import { getDocs, setDocs, upsertDoc } from "./contractorDocs.store";
 import { isExpiring } from "@/utils/validity";
+import { calculateRequirements } from "@/config/packages";
 
 export async function seedDocumentsForContractor(contractorId: string, packageId: string, customRequirements?: Record<string, Requirement>, customLabels?: Record<string, string>) {
   const profile = customRequirements || calculateRequirements(packageId, {
@@ -74,7 +75,7 @@ export async function seedDocumentsForContractor(contractorId: string, packageId
   const created: ContractorDocument[] = [];
   const seen = ((globalThis as any).__DOC_SEED__ ??= new Set<string>()) as Set<string>;
   
-  for (const [documentTypeId, requirement] of Object.entries(profile)) {
+  for (const [documentTypeId, requirement] of Object.entries(profile) as [string, Requirement][]) {
     const key = `${contractorId}:${documentTypeId}`;
     if (seen.has(key)) continue;
     
