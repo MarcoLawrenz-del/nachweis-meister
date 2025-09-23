@@ -417,7 +417,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowRequestDialog(true)}
+              onClick={handleSendReminder}
               className="gap-2"
             >
               <Upload className="h-4 w-4" />
