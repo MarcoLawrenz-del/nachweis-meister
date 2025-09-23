@@ -74,7 +74,7 @@ export default function PublicMagicUpload() {
         
         if (!contractor) {
           console.log('[PublicMagicUpload] Contractor not found in Supabase, trying localStorage fallback');
-          // Fallback to localStorage for demo/development
+          // Import localStorage contractors dynamically to avoid SSR issues
           const { listContractors } = await import("@/services/contractors.store");
           const localContractors = listContractors();
           const localContractor = localContractors.find(c => c.id === linkResult.contractorId);
@@ -97,14 +97,26 @@ export default function PublicMagicUpload() {
               created_at: localContractor.created_at,
               updated_at: localContractor.created_at
             };
+          } else {
+            console.log('[PublicMagicUpload] Contractor not found in localStorage either, creating from magic link email');
+            // Create a minimal contractor from the magic link data
+            contractor = {
+              id: linkResult.contractorId,
+              company_name: `Unternehmen (${linkResult.email})`,
+              contact_name: undefined,
+              contact_email: linkResult.email,
+              phone: undefined,
+              country_code: 'DE',
+              address: undefined,
+              notes: undefined,
+              status: 'active',
+              compliance_status: 'non_compliant',
+              company_type: 'baubetrieb',
+              tenant_id: 'demo',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
           }
-        }
-        
-        if (!contractor) {
-          console.log('[PublicMagicUpload] Contractor not found anywhere:', linkResult.contractorId);
-          setError('not_found');
-          setLoading(false);
-          return;
         }
 
         console.log('[PublicMagicUpload] Found contractor:', contractor.company_name);
