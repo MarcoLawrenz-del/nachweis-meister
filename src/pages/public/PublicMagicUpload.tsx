@@ -45,7 +45,10 @@ export default function PublicMagicUpload() {
 
   useEffect(() => {
     async function loadMagicLink() {
+      console.log('[PublicMagicUpload] Loading token:', token);
+      
       if (!token) {
+        console.log('[PublicMagicUpload] No token provided');
         setError('not_found');
         setLoading(false);
         return;
@@ -53,21 +56,26 @@ export default function PublicMagicUpload() {
 
       try {
         const linkResult = resolveUploadToken(token);
+        console.log('[PublicMagicUpload] Token resolution result:', linkResult);
         
         if (!linkResult) {
+          console.log('[PublicMagicUpload] Token not found or expired');
           setError('not_found');
           setLoading(false);
           return;
         }
 
         const contractors = listContractors();
+        console.log('[PublicMagicUpload] Available contractors:', contractors.length);
         const contractor = contractors.find(c => c.id === linkResult.contractorId);
         if (!contractor) {
+          console.log('[PublicMagicUpload] Contractor not found:', linkResult.contractorId);
           setError('not_found');
           setLoading(false);
           return;
         }
 
+        console.log('[PublicMagicUpload] Found contractor:', contractor.company_name);
         setContractorId(linkResult.contractorId);
         setContractorName(contractor.company_name);
         setContractorEmail(contractor.email);
