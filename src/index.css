@@ -3,6 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============= UTILITY CLASSES ============= */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar { 
+    display: none;  /* Safari and Chrome */
+  }
+}
+
 /* ============= SUBFIX DESIGN SYSTEM (SevDesk-inspired) ============= */
 /* GOAL: Rechtssicherheit, Vertrauen, Klarheit */
 
