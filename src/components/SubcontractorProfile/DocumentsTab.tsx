@@ -520,7 +520,12 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                   <TableRow key={doc.documentTypeId}>
                      <TableCell>
                        <div>
-                         <div className="font-medium">{docName}</div>
+                         <div 
+                           className={`font-medium ${doc.fileUrl ? 'cursor-pointer hover:text-primary underline-offset-2 hover:underline' : ''}`}
+                           onClick={() => doc.fileUrl && setPreviewDoc(doc)}
+                         >
+                           {docName}
+                         </div>
                        </div>
                      </TableCell>
                     
@@ -611,14 +616,14 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                      <TableCell>
                        <div className="flex gap-2">
                          {doc.fileUrl ? (
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => setPreviewDoc(doc)}
-                           >
-                             <Eye className="w-4 h-4 mr-1" />
-                             Ansehen
-                           </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPreviewDoc(doc)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Dokument ansehen
+                            </Button>
                          ) : (
                            <div className="relative">
                              <input
@@ -763,8 +768,15 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      )}
-      </div>
-    </TooltipProvider>
-  );
-}
+       )}
+       
+       {/* Document Preview Dialog */}
+       <DocumentPreviewDialog
+         open={!!previewDoc}
+         onOpenChange={(open) => !open && setPreviewDoc(null)}
+         doc={previewDoc}
+       />
+       </div>
+     </TooltipProvider>
+   );
+ }
