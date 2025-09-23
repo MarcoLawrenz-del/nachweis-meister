@@ -1,136 +1,63 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { 
-  Activity, 
-  Upload, 
-  FileText, 
-  Clock,
-  Eye
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { format, subDays, isAfter } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Clock, FileText, User, Eye } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { getDocs, subscribe as subscribeContractorDocs } from '@/services/contractorDocs.store';
 import { getContractors } from '@/services/contractors.store';
+import { getAllRecentEvents } from '@/services/docsReview.store';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { displayName } from '@/utils/customDocs';
-
-interface ActivityItem {
-  id: string;
-  contractorId: string;
-  contractorName: string;
-  documentTypeId: string;
-  documentName: string;
-  action: 'uploaded' | 'accepted' | 'rejected';
-  timestamp: string;
-  isRequired: boolean;
-}
+import { Link } from 'react-router-dom';
 
 interface ActivityFeedProps {
+  limit?: number;
+  daysBack?: number;
+  onReviewClick?: (contractorId: string, docType: string) => void;
   className?: string;
 }
 
-export function ActivityFeed({ className }: ActivityFeedProps) {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [timeFilter, setTimeFilter] = useState<'7' | '30'>('7');
-  const [requiredOnly, setRequiredOnly] = useState(false);
-
-  const loadActivities = () => {
-    const contractors = getContractors();
-    const cutoffDate = subDays(new Date(), parseInt(timeFilter));
-    const allActivities: ActivityItem[] = [];
-
-    contractors.forEach(contractor => {
-      const docs = getDocs(contractor.id);
-      
-      docs.forEach(doc => {
-        // Check for uploaded events from history
-        if (doc.history && Array.isArray(doc.history)) {
-          doc.history.forEach(historyEntry => {
-            const entryDate = new Date(historyEntry.tsISO);
-            
-            if (isAfter(entryDate, cutoffDate) && historyEntry.action === 'uploaded') {
-              const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
-              const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
-              
-              // Skip if filtering for required only and doc is not required
-              if (requiredOnly && doc.requirement !== 'required') return;
-              
-              allActivities.push({
-                id: `${contractor.id}-${doc.documentTypeId}-${historyEntry.tsISO}`,
-                contractorId: contractor.id,
-                contractorName: contractor.company_name || contractor.companyName,
-                documentTypeId: doc.documentTypeId,
-                documentName: docName,
-                action: 'uploaded',
-                timestamp: historyEntry.tsISO,
-                isRequired: doc.requirement === 'required'
-              });
-            }
-          });
-        }
-        
-        // Also check for recently uploaded documents without history (backwards compatibility)
-        if (doc.uploadedAt && doc.status === 'submitted') {
-          const uploadDate = new Date(doc.uploadedAt);
-          
-          if (isAfter(uploadDate, cutoffDate)) {
-            const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
-            const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
-            
-            // Skip if filtering for required only and doc is not required
-            if (requiredOnly && doc.requirement !== 'required') return;
-            
-            // Only add if not already in activities from history
-            const existsInHistory = allActivities.some(activity => 
-              activity.contractorId === contractor.id && 
-              activity.documentTypeId === doc.documentTypeId
-            );
-            
-            if (!existsInHistory) {
-              allActivities.push({
-                id: `${contractor.id}-${doc.documentTypeId}-${doc.uploadedAt}`,
-                contractorId: contractor.id,
-                contractorName: contractor.company_name || contractor.companyName,
-                documentTypeId: doc.documentTypeId,
-                documentName: docName,
-                action: 'uploaded',
-                timestamp: doc.uploadedAt,
-                isRequired: doc.requirement === 'required'
-              });
-            }
-          }
-        }
-      });
-    });
-
-    // Sort by timestamp (newest first) and take top 10
-    allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    setActivities(allActivities.slice(0, 10));
-  };
-
-  useEffect(() => {
-    loadActivities();
+export function ActivityFeed({ limit = 10, daysBack = 7, onReviewClick, className }: ActivityFeedProps) {
+  const contractors = getContractors();
+  const events = getAllRecentEvents(daysBack);
+  
+  // Convert events to activity items
+  const activities = events.slice(0, limit).map(event => {
+    const contractor = contractors.find(c => c.id === event.contractorId);
+    const docType = DOCUMENT_TYPES.find(t => t.id === event.docType);
+    const docDisplayName = displayName(event.docType, docType?.label || '', undefined, undefined);
     
-    // Subscribe to changes in contractor docs
-    const contractors = getContractors();
-    const unsubscribers = contractors.map(contractor => 
-      subscribeContractorDocs(contractor.id, loadActivities)
-    );
+    let actionLabel = '';
+    switch (event.kind) {
+      case 'file_uploaded':
+        actionLabel = 'hochgeladen';
+        break;
+      case 'status_set_accepted':
+        actionLabel = 'angenommen';
+        break;
+      case 'status_set_rejected':
+        actionLabel = 'abgelehnt';
+        break;
+      default:
+        actionLabel = event.kind.replace('status_set_', '').replace('_', ' ');
+    }
     
-    return () => {
-      unsubscribers.forEach(unsub => unsub());
+    return {
+      id: event.id,
+      contractorId: event.contractorId,
+      contractorName: contractor?.company_name || 'Unbekannt',
+      docType: event.docType,
+      docName: docDisplayName,
+      action: actionLabel,
+      timestamp: event.tsISO,
+      actor: event.actor
     };
-  }, [timeFilter, requiredOnly]);
+  });
 
   const formatDateTime = (dateStr: string) => {
     try {
-      return format(new Date(dateStr), 'dd.MM.yyyy HH:mm', { locale: de });
+      return format(parseISO(dateStr), 'dd.MM.yyyy HH:mm', { locale: de });
     } catch {
       return dateStr;
     }
@@ -138,62 +65,40 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
 
   const getActionConfig = (action: string) => {
     const configs = {
-      uploaded: {
+      hochgeladen: {
         label: 'Hochgeladen',
-        icon: Upload,
         className: 'bg-info-50 text-info-600 border-info-600/20'
       },
-      accepted: {
+      angenommen: {
         label: 'Angenommen',
-        icon: FileText,
         className: 'bg-success-50 text-success-600 border-success-600/20'
       },
-      rejected: {
+      abgelehnt: {
         label: 'Abgelehnt',
-        icon: FileText,
         className: 'bg-danger-50 text-danger-600 border-danger-600/20'
       }
     };
-    return configs[action as keyof typeof configs] || configs.uploaded;
+    return configs[action as keyof typeof configs] || configs.hochgeladen;
   };
 
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Aktivität
-          </CardTitle>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="required-only"
-                checked={requiredOnly}
-                onCheckedChange={setRequiredOnly}
-              />
-              <Label htmlFor="required-only" className="text-sm">
-                Nur Pflicht
-              </Label>
-            </div>
-            <Select value={timeFilter} onValueChange={(value: '7' | '30') => setTimeFilter(value)}>
-              <SelectTrigger className="w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">7 Tage</SelectItem>
-                <SelectItem value="30">30 Tage</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Aktivität
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        {activities.length > 0 ? (
-          <div className="space-y-3">
+        {activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Keine aktuellen Aktivitäten</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
             {activities.map((activity) => {
               const actionConfig = getActionConfig(activity.action);
-              const ActionIcon = actionConfig.icon;
               
               return (
                 <div 
@@ -202,10 +107,10 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-muted rounded-full">
-                      <ActionIcon className="h-4 w-4 text-muted-foreground" />
+                      <FileText className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{activity.documentName}</p>
+                      <p className="font-medium text-sm">{activity.docName}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-muted-foreground">
                           {activity.contractorName}
@@ -213,11 +118,6 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                         <Badge variant="outline" className={actionConfig.className}>
                           {actionConfig.label}
                         </Badge>
-                        {activity.isRequired && (
-                          <Badge variant="outline" className="bg-warn-50 text-warn-600 border-warn-600/20">
-                            Pflicht
-                          </Badge>
-                        )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         <Clock className="h-3 w-3 inline mr-1" />
@@ -231,7 +131,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                     asChild
                     className="gap-1"
                   >
-                    <Link to={`/app/subcontractors/${activity.contractorId}?doc=${activity.documentTypeId}&open=review`}>
+                    <Link to={`/app/subcontractors/${activity.contractorId}?doc=${activity.docType}&open=review`}>
                       <Eye className="h-3 w-3" />
                       Prüfen
                     </Link>
@@ -239,14 +139,6 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                 </div>
               );
             })}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Keine Aktivitäten in den letzten {timeFilter} Tagen</p>
-            <p className="text-xs mt-1">
-              {requiredOnly ? 'Filter: Nur Pflichtdokumente' : 'Alle Dokumente'}
-            </p>
           </div>
         )}
       </CardContent>

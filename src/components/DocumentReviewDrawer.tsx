@@ -75,7 +75,7 @@ export function DocumentReviewDrawer({
   });
 
   // Add history entry
-  const addHistoryEntry = (action: string, by: string, meta?: any) => {
+  const addHistoryEntry = (action: "uploaded" | "accepted" | "rejected" | "replaced" | "validity_changed", by: string, meta?: any) => {
     const currentDocs = getDocs(contractorId);
     const docIndex = currentDocs.findIndex(d => d.documentTypeId === document.documentTypeId);
     
@@ -162,13 +162,18 @@ export function DocumentReviewDrawer({
     // Send email if settings allow
     try {
       const settings = getNotificationSettings();
-      if (settings.enableEmails && contractor?.active) {
-        await sendEmail('doc_accepted', {
-          to: contractor.contactEmail || contractor.email,
+      if (settings.statusUpdatesEnabled && contractor?.active) {
+        const result = await sendEmail('doc_accepted', {
+          to: contractor.email,
           contractorName: contractor.company_name,
-          document: docName,
-          contractorId
+          customerName: 'Ihr Auftraggeber',
+          contractorId,
+          docLabel: docName
         });
+        
+        if (!result.ok && 'error' in result) {
+          console.warn('Failed to send acceptance email:', result.error);
+        }
       }
     } catch (error) {
       console.warn('Failed to send acceptance email:', error);
@@ -219,14 +224,19 @@ export function DocumentReviewDrawer({
     // Send email if settings allow
     try {
       const settings = getNotificationSettings();
-      if (settings.emailNotifications && contractor?.active) {
-        await sendEmail('doc_rejected', {
-          to: contractor.contact_email || contractor.email,
-          contractorName: contractor.company_name || contractor.companyName,
-          documentName: docName,
-          rejectionReason: rejectReason,
-          contractorId
+      if (settings.statusUpdatesEnabled && contractor?.active) {
+        const result = await sendEmail('doc_rejected', {
+          to: contractor.email,
+          contractorName: contractor.company_name,
+          customerName: 'Ihr Auftraggeber',
+          contractorId,
+          docLabel: docName,
+          reason: rejectReason
         });
+        
+        if (!result.ok && 'error' in result) {
+          console.warn('Failed to send rejection email:', result.error);
+        }
       } else if (!contractor?.active) {
         toast({
           title: "Nachunternehmer ist inaktiv – Versand übersprungen",
@@ -308,7 +318,7 @@ export function DocumentReviewDrawer({
 
   const handleDownload = () => {
     if (document.fileUrl) {
-      const link = document.createElement('a');
+      const link = globalThis.document.createElement('a');
       link.href = document.fileUrl;
       link.download = document.fileName || `${docName}.pdf`;
       link.click();
@@ -353,9 +363,9 @@ export function DocumentReviewDrawer({
             <div>
               <SheetTitle>{docName}</SheetTitle>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-muted-foreground">
-                  {contractor?.company_name || contractor?.companyName}
-                </span>
+                 <span className="text-sm text-muted-foreground">
+                   {contractor?.company_name}
+                 </span>
                 <Badge 
                   variant="outline" 
                   className={isInactiveContractor ? 'bg-muted text-muted-foreground' : statusConfig.className}
@@ -486,20 +496,20 @@ export function DocumentReviewDrawer({
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="never-expires" 
-                    checked={neverExpires}
-                    onCheckedChange={setNeverExpires}
-                  />
+                   <Checkbox 
+                     id="never-expires" 
+                     checked={neverExpires}
+                     onCheckedChange={(checked) => setNeverExpires(checked === true)}
+                   />
                   <Label htmlFor="never-expires">Läuft nicht ab</Label>
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="validity-unknown" 
-                    checked={isValidityUnknown}
-                    onCheckedChange={setIsValidityUnknown}
-                  />
+                   <Checkbox 
+                     id="validity-unknown" 
+                     checked={isValidityUnknown}
+                     onCheckedChange={(checked) => setIsValidityUnknown(checked === true)}
+                   />
                   <Label htmlFor="validity-unknown">Gültigkeit unbekannt</Label>
                 </div>
                 

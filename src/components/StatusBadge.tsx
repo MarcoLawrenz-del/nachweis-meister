@@ -26,7 +26,7 @@ export function SimpleStatusBadge({ status, className }: SimpleStatusBadgeProps)
 import { Badge } from "@/components/ui/badge";
 import { RequirementStatus } from "@/types/compliance";
 
-export type StatusType = RequirementStatus | 'escalated' | 'uploaded';
+export type StatusType = RequirementStatus | 'escalated' | 'uploaded' | 'active' | 'inactive';
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -79,6 +79,16 @@ const statusConfig = {
   escalated: {
     label: 'Eskaliert',
     className: 'bg-brand-accent-200 text-brand-accent-800 border border-brand-accent-300',
+    inactiveClassName: 'bg-surface-muted text-text-muted border border-border-muted',
+  },
+  active: {
+    label: 'Aktiv',
+    className: 'bg-success-50 text-success-600 border-success-600/20',
+    inactiveClassName: 'bg-surface-muted text-text-muted border border-border-muted',
+  },
+  inactive: {
+    label: 'Inaktiv',
+    className: 'bg-danger-50 text-danger-600 border-danger-600/20',
     inactiveClassName: 'bg-surface-muted text-text-muted border border-border-muted',
   },
 };

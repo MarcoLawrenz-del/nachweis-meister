@@ -140,7 +140,11 @@ export function subscribe(fn: () => void) {
   return () => { listeners.delete(fn); };
 }
 
-// Export function to get all contractors
+// Export function to get all contractors - alias for compatibility
+export function getContractors(): Contractor[] {
+  return listContractors();
+}
+
 export function getAllContractors(): Contractor[] {
   load(); // Ensure data is loaded
   return Array.from(contractorsMap.values());

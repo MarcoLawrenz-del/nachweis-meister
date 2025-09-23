@@ -1,8 +1,9 @@
 // Enhanced contractor types with validity and active status
 export interface ContractorDocument {
+  contractorId: string;
   documentTypeId: string;
-  status: 'missing' | 'submitted' | 'accepted' | 'rejected' | 'expired';
-  requirement: 'required' | 'optional';
+  status: 'missing' | 'submitted' | 'accepted' | 'rejected' | 'expired' | 'in_review';
+  requirement: 'required' | 'optional' | 'hidden';
   fileName?: string;
   fileType?: string;
   fileSize?: number;
@@ -31,7 +32,7 @@ export interface ContractorDocument {
     reviewedBy?: string;    // Session-E-Mail
     reason?: string;        // Pflicht bei 'rejected'
   };
-  history: Array<{
+  history?: Array<{
     tsISO: string;
     action: "uploaded"|"accepted"|"rejected"|"replaced"|"validity_changed";
     by: "subcontractor" | string; // E-Mail für Admin
