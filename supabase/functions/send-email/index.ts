@@ -89,16 +89,16 @@ const handler = async (req: Request): Promise<Response> => {
 
 function getFromAddress(type: string): string {
   const fromMap: Record<string, string> = {
-    invitation: 'invitations@subfix.de',
-    reminder_missing: 'reminders@subfix.de',
-    doc_accepted: 'reviews@subfix.de',
-    doc_rejected: 'reviews@subfix.de',
-    resume_upload: 'support@subfix.de',
-    expiry_warning: 'reminders@subfix.de',
-    test: 'test@subfix.de'
+    invitation: 'invitations@gosubfix.de',
+    reminder_missing: 'reminders@gosubfix.de',
+    doc_accepted: 'reviews@gosubfix.de',
+    doc_rejected: 'reviews@gosubfix.de',
+    resume_upload: 'support@gosubfix.de',
+    expiry_warning: 'reminders@gosubfix.de',
+    test: 'test@gosubfix.de'
   };
   
-  return fromMap[type] || 'noreply@subfix.de';
+  return fromMap[type] || 'noreply@gosubfix.de';
 }
 
 function getEmailTemplate(type: string, payload: any): { subject: string; html: string } {
