@@ -31,7 +31,8 @@ import { useToast } from '@/hooks/use-toast';
 import { createContractor, updateContractor } from '@/services/contractors.store';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { COMPLIANCE_PACKAGES, type ConditionalFlags } from '@/config/packages';
-import { sendInvitationLegacy as sendInvitation } from '@/services/email';
+import { sendEmail } from '@/services/email';
+import { isErr } from '@/utils/result';
 import { displayName, isCustomDoc, makeCustomDocId, validateCustomDocName } from '@/utils/customDocs';
 import { ROUTES } from '@/lib/ROUTES';
 import RequirementSelector from "@/components/RequirementSelector";
@@ -292,20 +293,42 @@ export function NewSubcontractorWizard({
 
         try {
           // Create documents directly in the store with "lastRequestedAt"
-          await createDocumentsForContractor(contractorId, requirements, customDocLabels);
+          createDocumentsForContractor(contractorId, requirements);
           
           if (subcontractorData.contact_email && sendInvitationFlag) {
-            await sendInvitation({ 
-              contractorId: contractorId, 
-              email: subcontractorData.contact_email, 
-              message: message,
-              contractorName: subcontractorData.company_name
+            // Get required documents for email
+            const requiredDocs = Object.entries(requirements)
+              .filter(([_, req]) => req === 'required')
+              .map(([docId, _]) => {
+                const docType = DOCUMENT_TYPES.find(dt => dt.id === docId);
+                const customLabel = customDocLabels[docId];
+                return docType?.label || customLabel || docId;
+              });
+
+            const result = await sendEmail("invitation", {
+              contractorId,
+              to: subcontractorData.contact_email,
+              contractorName: subcontractorData.company_name,
+              customerName: "Ihr Auftraggeber",
+              requiredDocs
             });
             
-            toast({ 
-              title: "Einladung gesendet", 
-              description: subcontractorData.contact_email 
-            });
+            if (isErr(result)) {
+              toast({
+                title: "Einladung fehlgeschlagen",
+                description: result.error === "inactive" 
+                  ? "Nachunternehmer ist inaktiv – Versand übersprungen"
+                  : result.error === "rate_limited"
+                  ? "Zu häufig – bitte später erneut versuchen"
+                  : result.error,
+                variant: "destructive"
+              });
+            } else {
+              toast({ 
+                title: result.mode === "stub" ? "Im Demo-Modus gesendet (Stub)" : "Einladung gesendet", 
+                description: subcontractorData.contact_email 
+              });
+            }
           }
         } catch (error: any) {
           console.warn('Non-critical error in document seeding or email sending:', error);

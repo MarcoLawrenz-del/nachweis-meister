@@ -1,24 +1,25 @@
 // ============= Notification Service =============
 // Expiry warnings and automated notifications
 
-import { getAllContractors } from './contractors.store';
+import { listContractors } from './contractors.store';
 import { getDocs } from './contractorDocs.store';
 import { sendEmail } from './email';
+import { isErr } from '@/utils/result';
 
 const SETTINGS_KEY = "subfix.settings.notifications.v1";
 
 export interface NotificationSettings {
-  remindersMissing: boolean;
-  statusUpdates: boolean;
-  expiryWarnings: boolean;
-  expiryWarningDays: number;
+  missingRemindersEnabled: boolean;
+  statusUpdatesEnabled: boolean;
+  expiryWarningsEnabled: boolean;
+  expiryWarnDays: number;
 }
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
-  remindersMissing: true,
-  statusUpdates: true,
-  expiryWarnings: true,
-  expiryWarningDays: 30
+  missingRemindersEnabled: true,
+  statusUpdatesEnabled: true,
+  expiryWarningsEnabled: true,
+  expiryWarnDays: 30
 };
 
 export function getNotificationSettings(): NotificationSettings {
@@ -47,17 +48,17 @@ export async function tickDaily(): Promise<{
 }> {
   const settings = getNotificationSettings();
   
-  if (!settings.expiryWarnings) {
+  if (!settings.expiryWarningsEnabled) {
     return { checked: 0, warnings: 0, errors: [] };
   }
   
-  const contractors = getAllContractors();
+  const contractors = listContractors();
   const errors: string[] = [];
   let checked = 0;
   let warnings = 0;
   
   const now = new Date();
-  const warningThreshold = new Date(now.getTime() + (settings.expiryWarningDays * 24 * 60 * 60 * 1000));
+  const warningThreshold = new Date(now.getTime() + (settings.expiryWarnDays * 24 * 60 * 60 * 1000));
   
   for (const contractor of contractors) {
     if (!contractor.active || !contractor.email) {
@@ -86,12 +87,10 @@ export async function tickDaily(): Promise<{
               days: daysUntilExpiry
             });
             
-            if (result.ok) {
+            if (!isErr(result)) {
               warnings++;
             } else {
-              // Type guard to safely access error property  
-              const errorMessage = 'error' in result ? result.error : 'Unknown error';
-              errors.push(`${contractor.company_name}: ${errorMessage}`);
+              errors.push(`${contractor.company_name}: ${result.error}`);
             }
           } catch (error) {
             errors.push(`${contractor.company_name}: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -3,6 +3,7 @@
 
 import { getContractor } from './contractors.store';
 import { createUploadToken } from './uploadLinks';
+import { isErr, type Result } from "@/utils/result";
 
 export type EmailType =
   | "invitation"
@@ -620,13 +621,13 @@ export async function sendEmail(
       to: payload.to,
       mode,
       result: result.ok ? "ok" : "error",
-      error: !result.ok ? result.error : undefined
+      error: result.ok ? undefined : (result as any).error
     });
     
     if (result.ok) {
       return { ok: true, mode };
     } else {
-      return { ok: false, error: result.error || "Unknown error" };
+      return { ok: false, error: (result as any).error || "Unknown error" };
     }
     
   } catch (error) {
@@ -701,7 +702,7 @@ export async function sendMagicInvitation(args: {
       console.log("Magic link invitation sent successfully:", result);
       return { isStub: result.mode === 'stub', magicLink: magicLinkUrl };
     } else {
-      const errorMessage = 'error' in result ? result.error : 'Unknown error';
+      const errorMessage = result.ok ? 'Unknown error' : (result as any).error || 'Unknown error';
       console.warn('Email sending failed, using stub mode:', errorMessage);
       await new Promise(resolve => setTimeout(resolve, 500));
       return { isStub: true, magicLink: magicLinkUrl };

@@ -38,7 +38,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { setDocumentStatus, getContractor } from "@/services/contractors";
-import { sendReminderMissingLegacy as sendReminderMissing, getEmailErrorMessage } from "@/services/email";
+import { sendEmail, type EmailType } from '@/services/email';
+import { getNotificationSettings } from '@/services/notifications';
+import { isErr } from '@/utils/result';
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
@@ -251,27 +253,47 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       // Check if subcontractor is active before sending reminder
       if (!profile.active) {
         toast({
-          title: "Erinnerung nicht gesendet",
-          description: "Inaktive Nachunternehmer erhalten keine Erinnerungen.",
+          title: "Nachunternehmer ist inaktiv – Versand übersprungen",
           variant: "destructive"
         });
         return;
       }
 
-      await sendReminderMissing({ 
-        contractorId, 
-        email: contractorEmail ?? "",
-        missingDocs
+      // Get required documents for this contractor
+      const requiredDocs = allDocs
+        .filter(d => d.requirement === "required")
+        .map(d => {
+          const docType = DOCUMENT_TYPES.find(dt => dt.id === d.documentTypeId);
+          return docType?.label || d.label || d.customName || d.documentTypeId;
+        });
+
+      const result = await sendEmail("reminder_missing", {
+        contractorId,
+        to: contractorEmail ?? "",
+        contractorName: profile?.company_name || profile?.companyName || "",
+        customerName: "Ihr Auftraggeber",
+        requiredDocs: missingDocs
       });
       
+      if (isErr(result)) {
+        toast({
+          title: "Fehler beim Senden",
+          description: result.error === "inactive" 
+            ? "Nachunternehmer ist inaktiv – Versand übersprungen"
+            : result.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
-        title: "Erinnerung versendet",
+        title: result.mode === "stub" ? "Im Demo-Modus gesendet (Stub)" : "Erinnerung versendet",
         description: `${missingDocs.length} Dokument(e) angefordert`
       });
     } catch (error: any) {
       toast({
         title: "Fehler beim Senden",
-        description: getEmailErrorMessage(error),
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive"
       });
     }
@@ -344,30 +366,44 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       return;
     }
 
-    try {
-      const result = await sendReminderMissing({
-        contractorId: contractorId,
-        email: email,
-        missingDocs: missingDocs,
-        message: `Bitte reichen Sie die folgenden fehlenden Dokumente nach: ${missingDocs.join(', ')}`
-      });
-      
-      // Update lastRequestedAt after successful send
-      setContractorMeta(contractorId, { lastRequestedAt: new Date().toISOString() });
-      
-      toast({
-        title: result.isStub ? "Im Demo-Modus gesendet (Stub)" : "Erinnerung versendet",
-        description: `Erinnerung für ${missingDocs.length} Dokument(e) an ${email} gesendet.`,
-        variant: "default"
-      });
-    } catch (error: any) {
-      console.warn('Failed to send reminder:', error);
-      toast({
-        title: "Fehler beim Senden",
-        description: getEmailErrorMessage(error),
-        variant: "destructive"
-      });
-    }
+     try {
+       const result = await sendEmail("reminder_missing", {
+         contractorId,
+         to: email,
+         contractorName: contractor?.company_name || "",
+         customerName: "Ihr Auftraggeber",
+         requiredDocs: missingDocs
+       });
+       
+       if (isErr(result)) {
+         toast({
+           title: "Fehler beim Senden",
+           description: result.error === "inactive" 
+             ? "Nachunternehmer ist inaktiv – Versand übersprungen"
+             : result.error === "rate_limited"
+             ? "Zu häufig – bitte später erneut versuchen"
+             : result.error,
+           variant: "destructive"
+         });
+         return;
+       }
+       
+       // Update lastRequestedAt after successful send
+       setContractorMeta(contractorId, { lastRequestedAt: new Date().toISOString() });
+       
+       toast({
+         title: result.mode === "stub" ? "Im Demo-Modus gesendet (Stub)" : "Erinnerung versendet",
+         description: `Erinnerung für ${missingDocs.length} Dokument(e) an ${email} gesendet.`,
+         variant: "default"
+       });
+     } catch (error: any) {
+       console.warn('Failed to send reminder:', error);
+       toast({
+         title: "Fehler beim Senden",
+         description: error instanceof Error ? error.message : "Unbekannter Fehler",
+         variant: "destructive"
+       });
+     }
   };
 
   // Handle admin file upload
