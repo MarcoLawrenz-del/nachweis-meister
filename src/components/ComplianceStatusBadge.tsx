@@ -18,6 +18,7 @@ const complianceConfig = {
     label: 'Aktuell Aktiv & Compliant',
     shortLabel: 'Aktiv', 
     className: 'bg-success text-success-foreground hover:bg-success/80',
+    inactiveClassName: 'bg-muted text-muted-foreground hover:bg-muted/80',
     icon: CheckCircle,
     description: 'Alle Chargenpflichtigen Dokumente sind vollständig & gültig - automatisch aktiviert'
   },
@@ -25,6 +26,7 @@ const complianceConfig = {
     label: 'Dokumente laufen ab',
     shortLabel: 'Läuft ab',
     className: 'bg-warning text-warning-foreground hover:bg-warning/80',
+    inactiveClassName: 'bg-muted text-muted-foreground hover:bg-muted/80',
     icon: Clock,
     description: 'Chargenpflichtige Dokumente laufen in den nächsten 30 Tagen ab - Reminder versandt'
   },
@@ -32,6 +34,7 @@ const complianceConfig = {
     label: 'Nicht Aktiv - Dokumente fehlen',
     shortLabel: 'Inaktiv',
     className: 'bg-destructive text-destructive-foreground hover:bg-destructive/80',
+    inactiveClassName: 'bg-muted text-muted-foreground hover:bg-muted/80',
     icon: XCircle,
     description: 'Chargenpflichtige Dokumente fehlen oder sind abgelaufen - Projektassignment blockiert'
   }
@@ -59,6 +62,7 @@ export function ComplianceStatusBadge({
 }: ComplianceStatusBadgeProps) {
   const complianceConf = complianceConfig[complianceStatus];
   const statusConf = statusConfig[subcontractorStatus];
+  const isInactive = subcontractorStatus === 'inactive';
   
   const sizeClasses = {
     sm: 'text-xs px-2 py-1',
@@ -66,10 +70,13 @@ export function ComplianceStatusBadge({
     lg: 'text-base px-4 py-2'
   };
 
+  // Use gray colors for inactive subcontractors
+  const complianceClassName = isInactive ? complianceConf.inactiveClassName : complianceConf.className;
+
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <Badge 
-        className={cn(complianceConf.className, sizeClasses[size])}
+        className={cn(complianceClassName, sizeClasses[size])}
         title={complianceConf.description}
       >
         {showIcon && <complianceConf.icon className="h-3 w-3 mr-1" />}

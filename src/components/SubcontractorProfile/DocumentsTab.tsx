@@ -248,6 +248,16 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       });
     
     try {
+      // Check if subcontractor is active before sending reminder
+      if (!profile.active) {
+        toast({
+          title: "Erinnerung nicht gesendet",
+          description: "Inaktive Nachunternehmer erhalten keine Erinnerungen.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       await sendReminderMissing({ 
         contractorId, 
         email: contractorEmail ?? "",
@@ -302,6 +312,16 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         title: "Warnung",
         description: "Keine E-Mail hinterlegt – Erinnerung nicht gesendet.",
         variant: "default"
+      });
+      return;
+    }
+
+    // Check if subcontractor is active before sending reminder
+    if (!profile.active) {
+      toast({
+        title: "Erinnerung nicht gesendet",
+        description: "Inaktive Nachunternehmer erhalten keine Erinnerungen.",
+        variant: "destructive"
       });
       return;
     }
@@ -587,18 +607,24 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                        </Select>
                      </TableCell>
                     
-                     <TableCell>
-                       <div className="flex items-center gap-2">
-                         <StatusIcon className="h-4 w-4" />
-                          <Badge variant={statusConfig.variant} className={statusConfig.className}>
-                            {doc.status === 'expired' ? 'Abgelaufen' : statusConfig.label}
-                          </Badge>
-                         {expiring && !expired && (
-                           <Badge variant="outline" className="text-warn-600 border-warn-600/20">
-                             Läuft ab
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <StatusIcon className="h-4 w-4" />
+                           <Badge 
+                             variant={statusConfig.variant} 
+                             className={profile.active ? statusConfig.className : 'bg-surface-muted text-text-muted border border-border-muted'}
+                           >
+                             {doc.status === 'expired' ? 'Abgelaufen' : statusConfig.label}
                            </Badge>
-                         )}
-                       </div>
+                          {expiring && !expired && (
+                            <Badge 
+                              variant="outline" 
+                              className={profile.active ? "text-warn-600 border-warn-600/20" : "bg-surface-muted text-text-muted border border-border-muted"}
+                            >
+                              Läuft ab
+                            </Badge>
+                          )}
+                        </div>
                       {doc.rejectionReason && (
                         <Collapsible 
                           open={collapsedRejections[doc.documentTypeId] === true} 

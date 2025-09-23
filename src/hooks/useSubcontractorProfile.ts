@@ -266,6 +266,16 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
 
   const sendReminder = async (requirementIds?: string[]) => {
     try {
+      // Check if subcontractor is active before sending reminder
+      if (!profile?.active) {
+        toast({
+          title: "Erinnerung nicht gesendet",
+          description: "Inaktive Nachunternehmer erhalten keine Erinnerungen.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       const magicLink = `${window.location.origin}/upload?cid=${subcontractorId}`;
       await sendReminderMissing({
         to: "", 
