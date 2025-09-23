@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { resolveUploadToken } from "@/services/uploadLinks";
+import { resolveMagicLink } from "@/services/magicLinks";
 import { listContractors } from "@/services/contractors.store";
 import { getDocs, markUploaded } from "@/services/contractorDocs.store";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
@@ -58,12 +58,12 @@ export default function PublicMagicUpload() {
 
       try {
         console.log('[PublicMagicUpload] About to resolve token:', token);
-        const linkResult = resolveUploadToken(token);
+        const linkResult = await resolveMagicLink(token);
         console.log('[PublicMagicUpload] Token resolution result:', linkResult);
-        
-        if (!linkResult) {
-          console.log('[PublicMagicUpload] Token not found or expired');
-          setError('not_found');
+        if (linkResult.success === false) {
+          const errorType = linkResult.error;
+          console.log('[PublicMagicUpload] Magic link not found or expired:', errorType);
+          setError(errorType);
           setLoading(false);
           return;
         }

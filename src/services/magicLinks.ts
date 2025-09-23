@@ -189,5 +189,5 @@ export function getMagicLinkBaseUrl(): string {
 // Generate full magic link URL
 export function generateMagicLinkUrl(token: string): string {
   const baseUrl = getMagicLinkBaseUrl();
-  return `${baseUrl}/u/${token}`;
+  return `${baseUrl}/upload/${token}`;
 }
