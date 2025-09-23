@@ -1,4 +1,5 @@
 import type { ContractorDocument } from "./contractors";
+import { isExpired } from "@/utils/validity";
 
 const db = new Map<string, ContractorDocument[]>();
 const listeners = new Map<string, Set<() => void>>();
@@ -20,12 +21,38 @@ function save(id: string, docs: ContractorDocument[]) {
   } catch {} 
 }
 
+// Function to update expired documents
+function updateExpiredDocuments(docs: ContractorDocument[]): ContractorDocument[] {
+  return docs.map(doc => {
+    // Only check accepted documents with validUntil dates
+    if (doc.status === 'accepted' && doc.validUntil) {
+      const validUntilDate = new Date(doc.validUntil);
+      if (isExpired(validUntilDate)) {
+        return { ...doc, status: 'expired' as ContractorDocument['status'] };
+      }
+    }
+    return doc;
+  });
+}
+
 export function getDocs(id: string) { 
   const m = db.get(id); 
-  if (m) return m; 
+  if (m) {
+    // Check for expired documents and update if needed
+    const updatedDocs = updateExpiredDocuments(m);
+    if (JSON.stringify(updatedDocs) !== JSON.stringify(m)) {
+      setDocs(id, updatedDocs);
+      return updatedDocs;
+    }
+    return m;
+  } 
   const fromLS = load(id) ?? []; 
-  db.set(id, fromLS); 
-  return fromLS; 
+  const updatedDocs = updateExpiredDocuments(fromLS);
+  db.set(id, updatedDocs); 
+  if (JSON.stringify(updatedDocs) !== JSON.stringify(fromLS)) {
+    save(id, updatedDocs);
+  }
+  return updatedDocs; 
 }
 
 export function setDocs(id: string, docs: ContractorDocument[]) { 
@@ -68,9 +95,9 @@ export function markUploaded(args: {
     }
   }
   
-  const updatedDoc = {
+  const updatedDoc: ContractorDocument = {
     ...doc,
-    status: accept ? 'accepted' : 'submitted',
+    status: (accept ? 'accepted' : 'submitted') as ContractorDocument['status'],
     fileName: file.name,
     fileType: file.type,
     fileSize: file.size,

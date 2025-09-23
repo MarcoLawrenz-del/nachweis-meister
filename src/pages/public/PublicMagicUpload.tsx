@@ -22,7 +22,7 @@ interface DocumentUpload {
   requirement: "required" | "optional";
   file: File | null;
   validUntil: string;
-  status: "missing" | "submitted" | "accepted" | "rejected";
+  status: "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired";
   rejectionReason?: string;
   fileUrl?: string;
   fileName?: string;

@@ -29,7 +29,7 @@ interface DocumentUpload {
   requirement: "required" | "optional";
   file: File | null;
   validUntil: string;
-  status: "missing" | "submitted" | "accepted" | "rejected";
+  status: "missing" | "submitted" | "in_review" | "accepted" | "rejected" | "expired";
   rejectionReason?: string;
   fileUrl?: string;
   fileName?: string;
@@ -66,6 +66,13 @@ export function UploadDocCard({
           <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Gültig
+          </Badge>
+        );
+      case 'expired':
+        return (
+          <Badge className="bg-red-50 text-red-700 border-red-200">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Abgelaufen
           </Badge>
         );
       case 'submitted':
@@ -119,8 +126,8 @@ export function UploadDocCard({
     }
   };
 
-  const canUpload = doc.status === "missing" || doc.status === "rejected";
-  const hasExistingFile = (doc.status === "submitted" || doc.status === "accepted") && (doc.fileName || doc.fileUrl);
+  const canUpload = doc.status === "missing" || doc.status === "rejected" || doc.status === "expired";
+  const hasExistingFile = (doc.status === "submitted" || doc.status === "accepted" || doc.status === "expired") && (doc.fileName || doc.fileUrl);
 
   return (
     <Card 
@@ -169,6 +176,16 @@ export function UploadDocCard({
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
               <strong>Grund der Ablehnung:</strong> {doc.rejectionReason}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Expired Document Alert */}
+        {doc.status === "expired" && (
+          <Alert className="mb-4 border-red-200 bg-red-50/50">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              <strong>Dokument abgelaufen:</strong> Dieses Dokument ist abgelaufen und muss erneut hochgeladen werden.
             </AlertDescription>
           </Alert>
         )}

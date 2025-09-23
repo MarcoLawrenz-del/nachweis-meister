@@ -118,11 +118,11 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
 
         // Convert documents to requirements format
         const requirementsData: RequirementWithDocument[] = documents.map(doc => ({
-          id: `req-${doc.docTypeId}`,
+          id: `req-${doc.documentTypeId}`,
           status: doc.status as RequirementStatus,
           due_date: null,
-          valid_from: doc.validFrom || null,
-          valid_to: doc.validTo || null,
+          valid_from: null,
+          valid_to: doc.validUntil || null,
           submitted_at: doc.status === 'submitted' ? new Date().toISOString() : null,
           assigned_reviewer_id: null,
           rejection_reason: doc.rejectionReason || null,
@@ -134,20 +134,20 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
           project_sub_id: `ps-${subcontractorId}`,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          document_type_id: doc.docTypeId,
+          document_type_id: doc.documentTypeId,
           document_types: {
-            id: doc.docTypeId,
-            name_de: doc.name || doc.docTypeId,
-            code: doc.docTypeId,
+            id: doc.documentTypeId,
+            name_de: doc.label || doc.customName || doc.documentTypeId,
+            code: doc.documentTypeId,
             description_de: null,
             required_by_default: doc.requirement === 'required'
           },
           documents: doc.fileUrl ? [{
-            id: `file-${doc.docTypeId}`,
-            file_name: doc.fileName || `${doc.name}.pdf`,
+            id: `file-${doc.documentTypeId}`,
+            file_name: doc.fileName || `${doc.label || doc.customName || doc.documentTypeId}.pdf`,
             file_url: doc.fileUrl,
-            valid_from: doc.validFrom || null,
-            valid_to: doc.validTo || null,
+            valid_from: null,
+            valid_to: doc.validUntil || null,
             uploaded_at: new Date().toISOString()
           }] : []
         }));

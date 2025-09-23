@@ -513,7 +513,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                 
                 // Check validity states
                 const validUntilDate = doc.validUntil ? new Date(doc.validUntil) : null;
-                const expired = validUntilDate && isExpired(validUntilDate);
+                const expired = doc.status === 'expired' || (validUntilDate && isExpired(validUntilDate));
                 const expiring = validUntilDate && !expired && isExpiring(validUntilDate, 30);
 
                 return (
@@ -540,9 +540,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                      <TableCell>
                        <div className="flex items-center gap-2">
                          <StatusIcon className="h-4 w-4" />
-                         <Badge variant={statusConfig.variant} className={statusConfig.className}>
-                           {expired ? 'Abgelaufen' : statusConfig.label}
-                         </Badge>
+                          <Badge variant={statusConfig.variant} className={statusConfig.className}>
+                            {doc.status === 'expired' ? 'Abgelaufen' : statusConfig.label}
+                          </Badge>
                          {expiring && !expired && (
                            <Badge variant="outline" className="text-warn-600 border-warn-600/20">
                              Läuft ab
