@@ -84,7 +84,7 @@ export default function DocumentsGuide() {
       {/* Sticky Sub-Navigation */}
       <SubnavAnchors items={navItems} />
 
-      <div className="max-w-5xl mx-auto px-4 md:px-6">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 pt-20">
         {/* Hero Section */}
         <Section className="text-center pt-8 md:pt-12 pb-6 md:pb-8">
           <div className="max-w-3xl mx-auto space-y-6 md:space-y-8">
