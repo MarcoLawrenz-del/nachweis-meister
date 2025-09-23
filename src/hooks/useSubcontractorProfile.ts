@@ -188,13 +188,23 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
 
   const updateProfile = async (updates: Partial<SubcontractorProfileData>) => {
     try {
-      const success = updateContractor(subcontractorId, {
+      // Handle both active boolean and status string
+      let activeStatus: boolean;
+      if ('active' in updates) {
+        activeStatus = updates.active!;
+      } else if ('status' in updates) {
+        activeStatus = updates.status === 'active';
+      } else {
+        activeStatus = profile?.active || false;
+      }
+
+      const success = await updateContractor(subcontractorId, {
         company_name: updates.company_name,
         contact_name: updates.contact_name || undefined,
         email: updates.contact_email || '',
         phone: updates.phone || undefined,
         address: updates.address || undefined,
-        active: updates.status === 'active',
+        active: activeStatus,
         notes: updates.notes || undefined
       });
 
@@ -202,7 +212,14 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
         throw new Error('Fehler beim Aktualisieren des Profils');
       }
 
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
+      // Ensure both active and status fields are updated
+      const normalizedUpdates = {
+        ...updates,
+        active: activeStatus,
+        status: activeStatus ? 'active' : 'inactive'
+      };
+
+      setProfile(prev => prev ? { ...prev, ...normalizedUpdates } : null);
       
       toast({
         title: "Profil aktualisiert",
@@ -284,8 +301,32 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     updateProfile,
     reviewRequirement,
     sendReminder,
-    refetchData: async () => {
-      // Refetch would be handled by the useEffect dependency on documents
+    refetchData: () => {
+      // Force re-load of contractor data
+      const contractor = getContractor(subcontractorId);
+      if (contractor) {
+        const profileData: SubcontractorProfileData = {
+          id: contractor.id,
+          company_name: contractor.company_name,
+          contact_name: contractor.contact_name || null,
+          contact_email: contractor.email,
+          phone: contractor.phone || null,
+          address: contractor.address || null,
+          country_code: 'DE',
+          company_type: 'baubetrieb',
+          status: contractor.active ? 'active' : 'inactive',
+          compliance_status: 'non_compliant' as ComplianceStatus,
+          notes: contractor.notes || null,
+          requires_employees: null,
+          has_non_eu_workers: null,
+          employees_not_employed_in_germany: null,
+          active: contractor.active,
+          created_at: contractor.created_at,
+          updated_at: new Date().toISOString()
+        };
+        
+        setProfile(profileData);
+      }
     }
   };
 };

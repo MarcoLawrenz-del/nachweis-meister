@@ -43,16 +43,35 @@ export default function SubcontractorDetail() {
   } = useSubcontractorProfile(id);
 
   const handleActiveToggle = async (newActiveStatus: boolean) => {
-    if (!profile) return;
+    if (!profile) {
+      console.error('No profile found for toggle');
+      return;
+    }
+    
+    console.log('Toggling contractor status:', { 
+      contractorId: profile.id,
+      currentStatus: profile.active, 
+      newStatus: newActiveStatus 
+    });
     
     setIsToggling(true);
     try {
-      await updateContractor(profile.id, {
+      const updatedContractor = await updateContractor(profile.id, {
         active: newActiveStatus
       });
       
-      // Update local profile state
-      updateProfile({ active: newActiveStatus });
+      console.log('Contractor updated successfully:', updatedContractor);
+      
+      // Update local profile state - fix the format
+      updateProfile({ 
+        active: newActiveStatus,
+        status: newActiveStatus ? 'active' : 'inactive' 
+      });
+      
+      // Force a re-fetch to ensure consistency
+      if (refetchData) {
+        setTimeout(() => refetchData(), 100);
+      }
       
       toast({
         title: newActiveStatus ? "Subunternehmer aktiviert" : "Subunternehmer deaktiviert",
@@ -61,6 +80,7 @@ export default function SubcontractorDetail() {
           : "Der Subunternehmer erhält keine Erinnerungen mehr.",
       });
     } catch (error) {
+      console.error('Error toggling contractor status:', error);
       toast({
         title: "Fehler",
         description: "Der Status konnte nicht geändert werden.",
