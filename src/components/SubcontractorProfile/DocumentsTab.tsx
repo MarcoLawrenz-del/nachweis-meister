@@ -49,22 +49,6 @@ import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
 import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
 import { exportContractorBundle } from "@/utils/export";
-import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ROUTES } from '@/lib/ROUTES';
-import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import { setDocumentStatus, getContractor } from "@/services/contractors";
-import { sendReminderMissingLegacy as sendReminderMissing, getEmailErrorMessage } from "@/services/email";
-import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
-import { useContractorDocuments } from "@/hooks/useContractorDocuments";
-import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
-import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta, getDocs, setContractorMeta, markUploaded } from "@/services/contractorDocs.store";
-import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
-import { displayName, isCustomDoc } from "@/utils/customDocs";
-import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
-import { exportContractorBundle } from "@/utils/export";
 
 interface DocumentsTabProps {
   requirements: RequirementWithDocument[];
