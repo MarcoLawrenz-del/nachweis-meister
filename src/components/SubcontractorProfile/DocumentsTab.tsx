@@ -551,8 +551,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                        </div>
                       {doc.rejectionReason && (
                         <Collapsible 
-                          open={!collapsedRejections[doc.documentTypeId]} 
-                          onOpenChange={(open) => setCollapsedRejections(prev => ({ ...prev, [doc.documentTypeId]: !open }))}
+                          open={collapsedRejections[doc.documentTypeId] === true} 
+                          onOpenChange={(open) => setCollapsedRejections(prev => ({ ...prev, [doc.documentTypeId]: open }))}
                         >
                           <CollapsibleTrigger asChild>
                             <Button 
@@ -560,15 +560,15 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                               size="sm" 
                               className="mt-1 h-6 p-1 text-danger-600 hover:text-danger-700 hover:bg-danger-50"
                             >
-                              {collapsedRejections[doc.documentTypeId] ? (
-                                <ChevronRight className="h-3 w-3 mr-1" />
-                              ) : (
+                              {collapsedRejections[doc.documentTypeId] === true ? (
                                 <ChevronDown className="h-3 w-3 mr-1" />
+                              ) : (
+                                <ChevronRight className="h-3 w-3 mr-1" />
                               )}
                               <span className="text-xs">
-                                {collapsedRejections[doc.documentTypeId] 
-                                  ? 'Ablehnungsgrund anzeigen' 
-                                  : 'Ablehnungsgrund verbergen'
+                                {collapsedRejections[doc.documentTypeId] === true
+                                  ? 'Ablehnungsgrund verbergen' 
+                                  : 'Ablehnungsgrund anzeigen'
                                 }
                               </span>
                             </Button>
