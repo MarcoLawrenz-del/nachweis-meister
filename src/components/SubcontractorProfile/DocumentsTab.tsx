@@ -29,8 +29,26 @@ import {
   Eye,
   Clock,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
+import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { ROUTES } from '@/lib/ROUTES';
+import { DOCUMENT_TYPES } from "@/config/documentTypes";
+import { setDocumentStatus, getContractor } from "@/services/contractors";
+import { sendReminderMissingLegacy as sendReminderMissing, getEmailErrorMessage } from "@/services/email";
+import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
+import { useContractorDocuments } from "@/hooks/useContractorDocuments";
+import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
+import { useToast } from "@/hooks/use-toast";
+import { getContractorMeta, getDocs, setContractorMeta, markUploaded } from "@/services/contractorDocs.store";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
+import { displayName, isCustomDoc } from "@/utils/customDocs";
+import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
+import { exportContractorBundle } from "@/utils/export";
 import { RequirementWithDocument } from '@/hooks/useSubcontractorProfile';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/lib/ROUTES';
@@ -474,6 +492,15 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                   })}
                 </Badge>
               )}
+              <Link 
+                to="/hilfe/dokumente#faq"
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+                title="Erklärseite Dokumente"
+                aria-label="Erklärseite Dokumente öffnen"
+              >
+                <HelpCircle className="h-4 w-4" />
+                Erklärseite Dokumente
+              </Link>
               <Button 
                 variant="outline" 
                 size="sm" 

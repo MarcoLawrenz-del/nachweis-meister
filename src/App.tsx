@@ -37,6 +37,9 @@ const Dienstleister = lazy(() => import("./pages/Dienstleister"));
 const AGB = lazy(() => import("./pages/AGB"));
 const Kontakt = lazy(() => import("./pages/Kontakt"));
 
+// Help Pages
+const DocumentsGuide = lazy(() => import("./pages/help/DocumentsGuide"));
+
 const RequirementsDetail = lazy(() => import("./pages/RequirementsDetail"));
 const DocumentDetail = lazy(() => import("./pages/DocumentDetail").then(module => ({ default: module.DocumentDetail })));
 const PublicUpload = lazy(() => import("./pages/PublicUpload"));
@@ -141,6 +144,11 @@ const App = () => (
                             <Settings />
                           </Suspense>
                         } />
+                        <Route path="hilfe/dokumente" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <DocumentsGuide />
+                          </Suspense>
+                        } />
                         {/* Fallback 404 im App-Scope */}
                         <Route path="*" element={
                           <Suspense fallback={<LoadingSpinner />}>
@@ -156,6 +164,13 @@ const App = () => (
                         </Suspense>
                       } />
                       
+                      {/* Public Help Pages */}
+                      <Route path="/hilfe/dokumente" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <DocumentsGuide />
+                        </Suspense>
+                      } />
+
                       {/* Demo Upload Preview */}
                       <Route path="/demo/upload" element={
                         <Suspense fallback={<LoadingSpinner />}>

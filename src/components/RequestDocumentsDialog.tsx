@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { makeCustomDocId, isCustomDoc, displayName, validateCustomDocName } from "@/utils/customDocs";
-import { Plus, X } from "lucide-react";
+import { Plus, X, HelpCircle, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function RequestDocumentsDialog({ 
   contractorId, 
@@ -318,6 +319,23 @@ export default function RequestDocumentsDialog({
             </div>
           );
         })}
+      </div>
+      
+      {/* Help Link */}
+      <div className="mb-4 p-3 bg-muted/30 rounded-lg">
+        <div className="flex items-center gap-2 text-sm">
+          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Unsicher, welche Dokumente Sie benötigen?</span>
+          <Link 
+            to="/hilfe/dokumente#dokumente"
+            className="text-primary hover:underline flex items-center gap-1"
+            title="Hilfe zu Nachweisen"
+            aria-label="Hilfe zu Nachweisen öffnen"
+          >
+            Hilfe zu Nachweisen
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
       </div>
       
       {/* Invitation Toggle and Message */}
