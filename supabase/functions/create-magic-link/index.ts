@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build magic link URL
     const baseUrl = req.headers.get('origin') || 'https://your-domain.com';
-    const magicLink = `${baseUrl}/u/${token}`;
+    const magicLink = `${baseUrl}/upload/${token}`;
 
     console.info('[create-magic-link] Magic link created successfully:', { token: token.substring(0, 8) + '...', contractorId });
 
