@@ -118,60 +118,102 @@ export default function SubcontractorDetail() {
           </div>
         </div>
         
-        {/* Active/Inactive Toggle */}
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant={profile.active ? "default" : "secondary"}>
-                {profile.active ? "Aktiv" : "Inaktiv"}
-              </Badge>
+        {/* Status Toggle Card */}
+        <Card className="w-80">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${
+                  profile.active ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                }`} />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {profile.active ? "Aktiv" : "Inaktiv"}
+                    </span>
+                    <Badge variant={profile.active ? "default" : "destructive"} className="text-xs">
+                      {profile.active ? "ON" : "OFF"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Erinnerungen {profile.active ? "aktiviert" : "pausiert"}
+                  </p>
+                </div>
+              </div>
+              
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Switch
                     checked={profile.active}
                     disabled={isToggling}
                     aria-label="Subunternehmer Status ändern"
+                    className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-500"
                   />
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
                       Subunternehmer {profile.active ? "deaktivieren" : "aktivieren"}?
                     </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {profile.active 
-                        ? "Wenn Sie den Subunternehmer deaktivieren, werden keine automatischen Erinnerungen mehr versendet."
-                        : "Wenn Sie den Subunternehmer aktivieren, können wieder automatische Erinnerungen versendet werden."
-                      }
+                    <AlertDialogDescription className="space-y-2">
+                      {profile.active ? (
+                        <>
+                          <p>Wenn Sie den Subunternehmer <strong>deaktivieren</strong>:</p>
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>Werden keine automatischen Erinnerungen mehr versendet</li>
+                            <li>Keine Compliance-Warnungen mehr</li>
+                            <li>Der Status wird als "Inaktiv" markiert</li>
+                          </ul>
+                        </>
+                      ) : (
+                        <>
+                          <p>Wenn Sie den Subunternehmer <strong>aktivieren</strong>:</p>
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>Können wieder automatische Erinnerungen versendet werden</li>
+                            <li>Compliance-Warnungen werden wieder aktiviert</li>
+                            <li>Der Status wird als "Aktiv" markiert</li>
+                          </ul>
+                        </>
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleActiveToggle(!profile.active)}>
+                    <AlertDialogAction 
+                      onClick={() => handleActiveToggle(!profile.active)}
+                      className={profile.active ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
+                    >
                       {profile.active ? "Deaktivieren" : "Aktivieren"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Erinnerungen {profile.active ? "aktiviert" : "deaktiviert"}
-            </p>
-          </div>
-        </div>
-        
-        {/* Inactive Banner */}
-        {!profile.active && (
-          <div className="col-span-full p-4 bg-muted/50 border border-amber-200 rounded-lg">
-            <div className="flex items-center gap-2 text-amber-700">
-              <Activity className="h-4 w-4" />
-              <p className="text-sm font-medium">
-                Dieser Nachunternehmer ist inaktiv. Es werden keine Erinnerungen versendet.
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Inactive Banner */}
+      {!profile.active && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Activity className="h-5 w-5 text-red-600" />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-red-800">
+                Nachunternehmer ist inaktiv
+              </p>
+              <p className="text-sm text-red-700">
+                Erinnerungen und Compliance-Warnungen sind pausiert. Aktivieren Sie den Status um Benachrichtigungen zu erhalten.
               </p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <Tabs defaultValue="overview" className="space-y-6">
