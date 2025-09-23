@@ -210,7 +210,7 @@ export default function Dashboard() {
                       <TableCell className="font-medium">
                         <Link 
                           to={`/app/subcontractors/${item.contractor.id}`}
-                          className="text-primary hover:underline cursor-pointer"
+                          className="text-foreground hover:underline cursor-pointer font-medium"
                         >
                           {item.contractor.company_name}
                         </Link>
