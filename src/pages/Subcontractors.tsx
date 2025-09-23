@@ -79,9 +79,9 @@ export default function Subcontractors() {
 
   useEffect(() => {
     const filtered = subcontractors.filter(sub =>
-      sub.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (sub.contact_name && sub.contact_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      sub.email.toLowerCase().includes(searchTerm.toLowerCase())
+      (sub.company_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (sub.contact_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (sub.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
     setFilteredSubcontractors(filtered);
   }, [subcontractors, searchTerm]);
