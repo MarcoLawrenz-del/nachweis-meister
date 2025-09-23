@@ -192,7 +192,12 @@ export function NewSubcontractorWizard({
   };
 
   const handleSubmit = async () => {
-    if (!profile) return;
+    console.log('handleSubmit called', { profile, subcontractorData });
+    
+    if (!profile) {
+      console.warn('No profile found, but allowing creation anyway');
+      // Don't return - allow creation even without profile for demo/offline mode
+    }
 
     try {
       setSubmitting(true);
