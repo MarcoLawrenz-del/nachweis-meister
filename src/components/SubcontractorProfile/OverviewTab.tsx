@@ -98,24 +98,26 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
       </div>
 
       {/* Aggregated Status */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground">Status:</span>
-          <Badge variant={
-            status === "complete" ? "default" : 
-            status === "attention" ? "secondary" : 
-            "destructive"
-          } className={
-            status === "complete" ? "bg-green-100 text-green-800 border-green-200" :
-            status === "attention" ? "bg-amber-100 text-amber-800 border-amber-200" :
-            "bg-red-100 text-red-800 border-red-200"
-          }>
-            {status === "complete" ? "Vollständig" : 
-             status === "attention" ? "Aufmerksamkeit" : 
-             "Fehlt"}
-          </Badge>
+      {status === "complete" && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Status:</span>
+            <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+              Vollständig
+            </Badge>
+          </div>
         </div>
-      </div>
+      )}
+      {status === "attention" && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Status:</span>
+            <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
+              Aufmerksamkeit
+            </Badge>
+          </div>
+        </div>
+      )}
 
       {/* Contact Details */}
       <Card>
@@ -148,7 +150,7 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
                   <p className="text-sm font-medium text-muted-foreground">E-Mail</p>
                   <a 
                     href={`mailto:${profile.contact_email}`}
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-foreground hover:underline"
                   >
                     {profile.contact_email}
                   </a>
@@ -165,7 +167,7 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
                   <p className="text-sm font-medium text-muted-foreground">Telefon</p>
                   <a 
                     href={`tel:${profile.phone}`}
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-foreground hover:underline"
                   >
                     {profile.phone}
                   </a>
