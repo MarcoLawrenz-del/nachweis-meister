@@ -158,9 +158,16 @@ const App = () => (
                       </Route>
 
                       {/* Public routes - Keep unprotected */}
-                      <Route path="/upload" element={
+                      <Route path="/upload-demo" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <PublicUploadDemo />
+                        </Suspense>
+                      } />
+                      
+                      {/* Magic Link Upload - Public */}
+                      <Route path="/upload/:token" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <PublicMagicUpload />
                         </Suspense>
                       } />
                       
@@ -178,7 +185,7 @@ const App = () => (
                         </Suspense>
                       } />
                       
-                      {/* Magic Link Upload - Public */}
+                      {/* Legacy Magic Link Route - Redirect to new format */}
                       <Route path="/u/:token" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <PublicMagicUpload />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { resolveMagicLink } from "@/services/magicLinks";
-import { getContractor } from "@/services/contractors";
+import { resolveUploadToken } from "@/services/uploadLinks";
+import { listContractors } from "@/services/contractors.store";
 import { getDocs, markUploaded } from "@/services/contractorDocs.store";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { Badge } from "@/components/ui/badge";
@@ -52,15 +52,16 @@ export default function PublicMagicUpload() {
       }
 
       try {
-        const linkResult = await resolveMagicLink(token);
+        const linkResult = resolveUploadToken(token);
         
-        if (linkResult.success === false) {
-          setError(linkResult.error);
+        if (!linkResult) {
+          setError('not_found');
           setLoading(false);
           return;
         }
 
-        const contractor = getContractor(linkResult.contractorId);
+        const contractors = listContractors();
+        const contractor = contractors.find(c => c.id === linkResult.contractorId);
         if (!contractor) {
           setError('not_found');
           setLoading(false);
@@ -69,7 +70,7 @@ export default function PublicMagicUpload() {
 
         setContractorId(linkResult.contractorId);
         setContractorName(contractor.company_name);
-        setContractorEmail(linkResult.email);
+        setContractorEmail(contractor.email);
 
         // Load contractor documents and build upload form
         const existingDocs = getDocs(linkResult.contractorId);
