@@ -299,6 +299,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     }
   };
 
+  // Add "Ansehen" button
+  const handleViewDocument = (doc: any) => {
+    navigate(`/app/subcontractors/${contractorId}?doc=${doc.documentTypeId}&open=review`);
+  };
+
   // Handle requirement change
   const handleRequirementChange = async (documentTypeId: string, newRequirement: 'required' | 'optional') => {
     try {
@@ -729,7 +734,18 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                        <div className="flex gap-2">
                          {/* Document Preview - always available for uploaded documents */}
                          {doc.fileUrl && (
-                           <Button
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleViewDocument(doc)}
+                                  disabled={!doc.fileUrl}
+                                  className="gap-1"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                  Ansehen
+                                </Button>
+                                <Button
                              variant="outline"
                              size="sm"
                              onClick={() => setPreviewDoc(doc)}
@@ -761,11 +777,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                                className="flex items-center gap-1"
                                onClick={() => document.getElementById(`upload-${doc.documentTypeId}`)?.click()}
                              >
-                               <Upload className="h-3 w-3" />
-                               Hochladen
-                             </Button>
-                           </div>
-                         )}
+                                <Upload className="h-3 w-3" />
+                                Hochladen
+                              </Button>
+                            </div>
+                          )}
                          
                          {/* Action buttons based on status */}
                          {(doc.status === 'submitted' || doc.status === 'in_review') && (

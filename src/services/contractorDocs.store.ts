@@ -1,4 +1,4 @@
-import type { ContractorDocument } from "./contractors";
+import type { ContractorDocument } from "../types/contractor";
 import { isExpired } from "@/utils/validity";
 
 const db = new Map<string, ContractorDocument[]>();
@@ -21,9 +21,17 @@ function save(id: string, docs: ContractorDocument[]) {
   } catch {} 
 }
 
-// Function to update expired documents
+  // Initialize history if it doesn't exist
+  const initializeDocHistory = (docs: ContractorDocument[]): ContractorDocument[] => {
+    return docs.map(doc => ({
+      ...doc,
+      history: doc.history || []
+    }));
+  };
+
+  // Function to update expired documents
 function updateExpiredDocuments(docs: ContractorDocument[]): ContractorDocument[] {
-  return docs.map(doc => {
+  return initializeDocHistory(docs).map(doc => {
     // Only check accepted documents with validUntil dates
     if (doc.status === 'accepted' && doc.validUntil) {
       const validUntilDate = new Date(doc.validUntil);
@@ -95,6 +103,9 @@ export function markUploaded(args: {
     }
   }
   
+  const uploadedAtISO = new Date().toISOString();
+  const source = uploadedBy === 'admin' ? 'admin' : 'public';
+  
   const updatedDoc: ContractorDocument = {
     ...doc,
     status: (accept ? 'accepted' : 'submitted') as ContractorDocument['status'],
@@ -103,8 +114,34 @@ export function markUploaded(args: {
     fileSize: file.size,
     fileUrl: file.dataUrl,
     uploadedBy,
-    uploadedAt: new Date().toISOString(),
+    uploadedAt: uploadedAtISO,
     validUntil: finalValidUntil,
+    validitySource: accept ? 'admin' : 'auto',
+    file: {
+      url: file.dataUrl,
+      name: file.name,
+      size: file.size,
+      mime: file.type,
+      uploadedAtISO,
+      uploadedBy: uploadedBy === 'admin' ? 'admin' : 'subcontractor',
+      source
+    },
+    review: accept ? {
+      status: 'accepted',
+      reviewedAtISO: uploadedAtISO,
+      reviewedBy: 'admin'
+    } : {
+      status: 'submitted'
+    },
+    history: [
+      ...(doc.history || []),
+      {
+        tsISO: uploadedAtISO,
+        action: 'uploaded',
+        by: uploadedBy === 'admin' ? 'admin' : 'subcontractor',
+        meta: { fileName: file.name, fileSize: file.size, source }
+      }
+    ]
   };
   
   upsertDoc(contractorId, updatedDoc);

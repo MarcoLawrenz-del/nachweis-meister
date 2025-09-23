@@ -21,9 +21,39 @@ import { DocumentsTab } from '@/components/SubcontractorProfile/DocumentsTab';
 export default function SubcontractorDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [isToggling, setIsToggling] = useState(false);
+
+  // Get review drawer params from URL
+  const docId = searchParams.get('doc');
+  const openReview = searchParams.get('open') === 'review';
+  const [reviewDrawerOpen, setReviewDrawerOpen] = useState(openReview);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
   
+  // Load document for review drawer if specified in URL
+  useEffect(() => {
+    if (docId && openReview && id) {
+      const docs = getDocs(id);
+      const doc = docs.find(d => d.documentTypeId === docId);
+      if (doc) {
+        setSelectedDocument(doc);
+        setReviewDrawerOpen(true);
+      }
+    }
+  }, [docId, openReview, id]);
+
+  // Handle drawer close
+  const handleDrawerClose = () => {
+    setReviewDrawerOpen(false);
+    setSelectedDocument(null);
+    // Remove URL params
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete('doc');
+    newSearchParams.delete('open');
+    navigate(`/app/subcontractors/${id}?${newSearchParams.toString()}`, { replace: true });
+  };
+
   if (!id) {
     navigate('/app/subcontractors');
     return null;
@@ -201,9 +231,21 @@ export default function SubcontractorDetail() {
               <p className="text-sm text-red-700">
                 Erinnerungen und Compliance-Warnungen sind pausiert. Aktivieren Sie den Status um Benachrichtigungen zu erhalten.
               </p>
-            </div>
-          </div>
         </div>
+      </div>
+
+      {/* Document Review Drawer */}
+      <DocumentReviewDrawer
+        isOpen={reviewDrawerOpen}
+        onClose={handleDrawerClose}
+        document={selectedDocument}
+        contractorId={id}
+        onStatusChange={() => {
+          // Refresh data after status changes
+          refetchData();
+        }}
+      />
+    </div>
       )}
 
       {/* Tab Navigation */}

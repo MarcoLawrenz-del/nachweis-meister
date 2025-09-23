@@ -10,11 +10,33 @@ export interface ContractorDocument {
   uploadedBy?: 'admin' | 'contractor';
   uploadedAt?: string;
   validUntil?: string | null;
-  validitySource?: "user" | "auto" | "none";
+  validitySource?: "user" | "auto" | "none" | "admin";
   userUnknownExpiry?: boolean;
   rejectionReason?: string;
   customName?: string;
   label?: string;
+  file?: {
+    url: string;            // DataURL (Demo) or Blob-URL
+    name: string;
+    size?: number;
+    mime?: string;          // 'application/pdf', 'image/jpeg', ...
+    pages?: number;         // falls PDF ermittelt
+    uploadedAtISO: string;
+    uploadedBy: "subcontractor" | "admin";
+    source: "public" | "admin";
+  };
+  review?: {
+    status: "submitted" | "accepted" | "rejected";
+    reviewedAtISO?: string;
+    reviewedBy?: string;    // Session-E-Mail
+    reason?: string;        // Pflicht bei 'rejected'
+  };
+  history: Array<{
+    tsISO: string;
+    action: "uploaded"|"accepted"|"rejected"|"replaced"|"validity_changed";
+    by: "subcontractor" | string; // E-Mail für Admin
+    meta?: Record<string, any>;
+  }>;
 }
 
 export interface Contractor {

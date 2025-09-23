@@ -10,7 +10,7 @@ import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { subscribe as subscribeContractors } from "@/services/contractors.store";
 import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
-import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
+import { ActivityFeed } from "@/components/ActivityFeed";
 
 function NavigationCard({ 
   title, 
@@ -185,109 +185,114 @@ export default function Dashboard() {
       </div>
 
       {/* Tables */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Recently Requested */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Zuletzt angefordert
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentlyRequested.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nachunternehmer</TableHead>
-                    <TableHead>Zeitpunkt</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentlyRequested.map((item) => (
-                    <TableRow key={item.contractor.id}>
-                      <TableCell className="font-medium">
-                        <Link 
-                          to={`/app/subcontractors/${item.contractor.id}`}
-                          className="text-foreground hover:underline cursor-pointer font-medium"
-                        >
-                          {item.contractor.company_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDateTime(item.lastRequestedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/app/subcontractors/${item.contractor.id}`}>
-                            Dokumente anfordern
-                          </Link>
-                        </Button>
-                      </TableCell>
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        {/* Activity Feed */}
+        <ActivityFeed className="lg:col-span-1" />
+        
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recently Requested */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Zuletzt angefordert
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentlyRequested.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nachunternehmer</TableHead>
+                      <TableHead>Zeitpunkt</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Noch keine Dokumentenanfragen
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {recentlyRequested.map((item) => (
+                      <TableRow key={item.contractor.id}>
+                        <TableCell className="font-medium">
+                          <Link 
+                            to={`/app/subcontractors/${item.contractor.id}`}
+                            className="text-foreground hover:underline cursor-pointer font-medium"
+                          >
+                            {item.contractor.company_name}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDateTime(item.lastRequestedAt)}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/app/subcontractors/${item.contractor.id}`}>
+                              Dokumente anfordern
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Noch keine Dokumentenanfragen
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Expiring Soon */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              Bald ablaufend
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {expiringDocs.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Dokument</TableHead>
-                    <TableHead>Nachunternehmer</TableHead>
-                    <TableHead>Läuft ab</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {expiringDocs.map((item, index) => (
-                    <TableRow key={`${item.contractor.id}-${item.documentTypeId}-${index}`}>
-                      <TableCell className="font-medium">
-                        {item.documentName}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {item.contractor.company_name}
-                      </TableCell>
-                       <TableCell>
-                         <Badge variant="outline" className="text-warn-600 border-warn-600/20">
-                           {formatDate(item.validUntil)}
-                         </Badge>
-                       </TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/app/subcontractors/${item.contractor.id}`}>
-                            Erinnerung senden
-                          </Link>
-                        </Button>
-                      </TableCell>
+          {/* Expiring Soon */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Bald ablaufend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {expiringDocs.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Dokument</TableHead>
+                      <TableHead>Nachunternehmer</TableHead>
+                      <TableHead>Läuft ab</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                Keine ablaufenden Dokumente
-              </div>
-            )}
-           </CardContent>
-         </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {expiringDocs.map((item, index) => (
+                      <TableRow key={`${item.contractor.id}-${item.documentTypeId}-${index}`}>
+                        <TableCell className="font-medium">
+                          {item.documentName}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {item.contractor.company_name}
+                        </TableCell>
+                         <TableCell>
+                           <Badge variant="outline" className="text-warn-600 border-warn-600/20">
+                             {formatDate(item.validUntil)}
+                           </Badge>
+                         </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/app/subcontractors/${item.contractor.id}`}>
+                              Erinnerung senden
+                            </Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Keine ablaufenden Dokumente
+                </div>
+              )}
+             </CardContent>
+           </Card>
+         </div>
        </div>
 
        {/* NewSubcontractorWizard Dialog */}
