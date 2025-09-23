@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom';
 import { format, subDays, isAfter } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { getDocs, subscribe as subscribeContractorDocs } from '@/services/contractorDocs.store';
-import { getContractors } from '@/services/contractors';
+import { getContractors } from '@/services/contractors.store';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { displayName } from '@/utils/customDocs';
 
@@ -50,7 +50,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
       
       docs.forEach(doc => {
         // Check for uploaded events from history
-        if (doc.history) {
+        if (doc.history && Array.isArray(doc.history)) {
           doc.history.forEach(historyEntry => {
             const entryDate = new Date(historyEntry.tsISO);
             

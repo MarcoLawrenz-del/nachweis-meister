@@ -117,7 +117,7 @@ export function DocumentReviewDrawer({
     });
     
     console.info('[analytics] review', { 
-      action: 'validity_changed', 
+      action: 'validity_changed' as const, 
       contractorId, 
       docType: document.documentTypeId, 
       by: 'admin' 
@@ -162,11 +162,11 @@ export function DocumentReviewDrawer({
     // Send email if settings allow
     try {
       const settings = getNotificationSettings();
-      if (settings.emailNotifications && contractor?.active) {
+      if (settings.enableEmails && contractor?.active) {
         await sendEmail('doc_accepted', {
-          to: contractor.contact_email || contractor.email,
-          contractorName: contractor.company_name || contractor.companyName,
-          documentName: docName,
+          to: contractor.contactEmail || contractor.email,
+          contractorName: contractor.company_name,
+          document: docName,
           contractorId
         });
       }

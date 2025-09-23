@@ -10,7 +10,7 @@ import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { subscribe as subscribeContractors } from "@/services/contractors.store";
 import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
-import { ActivityFeed } from "@/components/ActivityFeed";
+import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
 
 function NavigationCard({ 
   title, 
@@ -297,7 +297,7 @@ export default function Dashboard() {
 
        {/* NewSubcontractorWizard Dialog */}
        {showNewSubcontractorWizard && (
-         <NewSubcontractorWizard 
+        <NewSubcontractorWizard
            isOpen={showNewSubcontractorWizard}
            onClose={() => setShowNewSubcontractorWizard(false)}
          />

@@ -136,9 +136,9 @@ export function markUploaded(args: {
     history: [
       ...(doc.history || []),
       {
-        tsISO: uploadedAtISO,
-        action: 'uploaded',
-        by: uploadedBy === 'admin' ? 'admin' : 'subcontractor',
+                        tsISO: new Date().toISOString(),
+                        action: 'uploaded' as const,
+                        by: uploadedBy === 'admin' ? 'admin' : 'subcontractor',
         meta: { fileName: file.name, fileSize: file.size, source }
       }
     ]

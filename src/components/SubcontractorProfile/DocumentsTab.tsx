@@ -733,27 +733,28 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                      <TableCell>
                        <div className="flex gap-2">
                          {/* Document Preview - always available for uploaded documents */}
-                         {doc.fileUrl && (
-                              <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleViewDocument(doc)}
-                                  disabled={!doc.fileUrl}
-                                  className="gap-1"
-                                >
-                                  <Eye className="h-3 w-3" />
-                                  Ansehen
-                                </Button>
-                                <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => setPreviewDoc(doc)}
-                           >
-                             <Eye className="w-4 h-4 mr-1" />
-                             Dokument ansehen
-                           </Button>
-                         )}
+                          {doc.fileUrl && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleViewDocument(doc)}
+                                disabled={!doc.fileUrl}
+                                className="gap-1"
+                              >
+                                <Eye className="h-3 w-3" />
+                                Ansehen
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPreviewDoc(doc)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                Dokument ansehen
+                              </Button>
+                            </>
+                          )}
                          
                          {/* Upload button for missing documents */}
                          {!doc.fileUrl && (
@@ -783,8 +784,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                             </div>
                           )}
                          
-                         {/* Action buttons based on status */}
-                         {(doc.status === 'submitted' || doc.status === 'in_review') && (
+          {/* Action buttons based on status */}
+          {doc.status === 'submitted' && (
                            <>
                              <Button
                                variant="outline"
