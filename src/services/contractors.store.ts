@@ -84,23 +84,35 @@ export function createContractor(data: Omit<Contractor, "id"|"created_at"|"activ
 
 export function updateContractor(id: string, patch: Partial<Contractor>): Promise<Contractor> {
   return new Promise((resolve, reject) => {
+    console.log('=== updateContractor START ===');
+    console.log('ID:', id);
+    console.log('Patch:', patch);
+    
     const existing = contractorsMap.get(id);
+    console.log('Existing contractor:', existing);
+    
     if (!existing) {
+      console.error('Contractor not found in contractorsMap for ID:', id);
+      console.log('Available IDs in contractorsMap:', Array.from(contractorsMap.keys()));
       reject(new Error(`Contractor with id ${id} not found`));
       return;
     }
     
     // Merge the patch with existing data to preserve all fields
     const updated = { ...existing, ...patch };
-    contractorsMap.set(id, updated);
-    saveFromMap();
+    console.log('Updated contractor (merged):', updated);
     
-    console.log('LocalStorage contractor updated successfully:', { 
-      id, 
-      patch, 
-      preservedFields: Object.keys(existing),
-      updatedFields: Object.keys(patch)
-    });
+    contractorsMap.set(id, updated);
+    console.log('Contractor set in contractorsMap');
+    
+    saveFromMap();
+    console.log('saveFromMap() called');
+    
+    // Verify the data was saved correctly
+    const verification = contractorsMap.get(id);
+    console.log('Verification - contractor after save:', verification);
+    
+    console.log('=== updateContractor END ===');
     
     resolve(updated);
   });

@@ -48,15 +48,13 @@ export default function SubcontractorDetail() {
       return;
     }
     
-    console.log('Toggling contractor status:', { 
-      contractorId: profile.id,
-      currentStatus: profile.active, 
-      newStatus: newActiveStatus 
-    });
+    console.log('=== TOGGLE STATUS START ===');
+    console.log('Profile before toggle:', profile);
+    console.log('New active status:', newActiveStatus);
     
     setIsToggling(true);
     try {
-      // First try Supabase update
+      // Update Supabase first
       const { updateSupabaseContractorStatus } = await import('@/services/supabaseContractors');
       const supabaseSuccess = await updateSupabaseContractorStatus(
         profile.id, 
@@ -66,27 +64,28 @@ export default function SubcontractorDetail() {
       if (supabaseSuccess) {
         console.log('Supabase update successful');
       } else {
-        console.warn('Supabase update failed, falling back to localStorage');
+        console.warn('Supabase update failed, falling back to localStorage only');
       }
       
-      // Also update localStorage for consistency
+      // Update localStorage with detailed logging
+      console.log('Updating localStorage...');
       const updatedContractor = await updateContractor(profile.id, {
         active: newActiveStatus
       });
       
       console.log('LocalStorage updated successfully:', updatedContractor);
       
-      // Update local profile state
-      updateProfile({ 
+      // Update local profile state immediately (don't wait for refetch)
+      const newProfile = { 
+        ...profile,
         active: newActiveStatus,
         status: newActiveStatus ? 'active' : 'inactive' 
-      });
+      };
       
-  // Force a re-fetch to ensure consistency - but preserve existing data
-  if (refetchData) {
-    // Give time for both systems to update before refetching
-    setTimeout(() => refetchData(), 500);
-  }
+      console.log('Updating local profile state:', newProfile);
+      updateProfile(newProfile);
+      
+      console.log('=== TOGGLE STATUS SUCCESS ===');
       
       toast({
         title: newActiveStatus ? "Subunternehmer aktiviert" : "Subunternehmer deaktiviert",
@@ -95,6 +94,7 @@ export default function SubcontractorDetail() {
           : "Der Subunternehmer erhält keine Erinnerungen mehr.",
       });
     } catch (error) {
+      console.error('=== TOGGLE STATUS ERROR ===');
       console.error('Error toggling contractor status:', error);
       toast({
         title: "Fehler",

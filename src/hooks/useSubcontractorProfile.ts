@@ -302,8 +302,12 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     reviewRequirement,
     sendReminder,
     refetchData: () => {
+      console.log('=== REFETCH DATA START ===');
+      
       // Force re-load of contractor data
       const contractor = getContractor(subcontractorId);
+      console.log('Contractor from localStorage:', contractor);
+      
       if (contractor) {
         const profileData: SubcontractorProfileData = {
           id: contractor.id,
@@ -325,7 +329,17 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
           updated_at: new Date().toISOString()
         };
         
+        console.log('Setting new profile data:', profileData);
         setProfile(profileData);
+        console.log('=== REFETCH DATA SUCCESS ===');
+      } else {
+        console.error('=== REFETCH DATA ERROR ===');
+        console.error('Contractor not found in localStorage during refetch!');
+        
+        // Instead of failing, try to preserve current profile data
+        if (profile) {
+          console.log('Preserving current profile data:', profile);
+        }
       }
     }
   };
