@@ -268,10 +268,10 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         });
 
       const result = await sendEmail("reminder_missing", {
-        contractorId,
         to: contractorEmail ?? "",
-        contractorName: profile?.company_name || profile?.companyName || "",
+        contractorName: profile?.company_name || profile?.companyName || "Nachunternehmer",
         customerName: "Ihr Auftraggeber",
+        contractorId: contractorId,
         requiredDocs: missingDocs
       });
       
@@ -370,7 +370,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
        const result = await sendEmail("reminder_missing", {
          contractorId,
          to: email,
-         contractorName: contractor?.company_name || "",
+         contractorName: contractor?.company_name || "Nachunternehmer",
          customerName: "Ihr Auftraggeber",
          requiredDocs: missingDocs
        });
