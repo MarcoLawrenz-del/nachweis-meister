@@ -88,7 +88,8 @@ function checkRateLimit(contractorId: string, type: EmailType): boolean {
   const now = new Date();
   const hoursSinceLastSend = (now.getTime() - lastSent.getTime()) / (1000 * 60 * 60);
   
-  return hoursSinceLastSend >= 24; // 24 hour rate limit
+  // Temporarily reduce rate limit to 5 minutes for testing
+  return hoursSinceLastSend >= (1/12); // 5 minutes instead of 24 hours
 }
 
 function updateRateLimit(contractorId: string, type: EmailType) {
