@@ -56,13 +56,27 @@ export default function SubcontractorDetail() {
     
     setIsToggling(true);
     try {
+      // First try Supabase update
+      const { updateSupabaseContractorStatus } = await import('@/services/supabaseContractors');
+      const supabaseSuccess = await updateSupabaseContractorStatus(
+        profile.id, 
+        newActiveStatus ? 'active' : 'inactive'
+      );
+      
+      if (supabaseSuccess) {
+        console.log('Supabase update successful');
+      } else {
+        console.warn('Supabase update failed, falling back to localStorage');
+      }
+      
+      // Also update localStorage for consistency
       const updatedContractor = await updateContractor(profile.id, {
         active: newActiveStatus
       });
       
-      console.log('Contractor updated successfully:', updatedContractor);
+      console.log('LocalStorage updated successfully:', updatedContractor);
       
-      // Update local profile state - fix the format
+      // Update local profile state
       updateProfile({ 
         active: newActiveStatus,
         status: newActiveStatus ? 'active' : 'inactive' 
