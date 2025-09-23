@@ -37,7 +37,7 @@ export function SubnavAnchors({ items, className }: SubnavAnchorsProps) {
       // Find the currently visible section
       let currentSection = '';
       for (const section of sections) {
-        if (section && scrollTop >= section.offsetTop - 100) {
+        if (section && scrollTop >= section.offsetTop - 140) {
           currentSection = section.id;
         }
       }
@@ -52,7 +52,7 @@ export function SubnavAnchors({ items, className }: SubnavAnchorsProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 80; // Account for sticky header
+      const offset = 140; // Account for main header + sticky subnav
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -65,7 +65,7 @@ export function SubnavAnchors({ items, className }: SubnavAnchorsProps) {
 
   return (
     <div className={cn(
-      "sticky top-16 z-40 bg-background/95 backdrop-blur-sm border-b",
+      "sticky top-20 z-50 bg-background/95 backdrop-blur-sm border-b shadow-sm",
       className
     )}>
       <div className="max-w-5xl mx-auto px-4 md:px-6">
