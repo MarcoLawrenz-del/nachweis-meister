@@ -270,6 +270,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   // Handle requirement change
   const handleRequirementChange = async (documentTypeId: string, newRequirement: 'required' | 'optional') => {
     try {
+      console.log('Changing requirement for', documentTypeId, 'to', newRequirement);
+      
       // Update in local store
       updateDocumentRequirement(contractorId, documentTypeId, newRequirement);
       
@@ -282,6 +284,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
         description: `${docName} ist jetzt ${newRequirement === 'required' ? 'Pflicht' : 'Optional'}.`,
       });
     } catch (error) {
+      console.error('Error changing requirement:', error);
       toast({
         title: "Fehler",
         description: "Die Anforderung konnte nicht geändert werden.",
@@ -569,25 +572,16 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                          onValueChange={(value) => handleRequirementChange(doc.documentTypeId, value as 'required' | 'optional')}
                        >
                          <SelectTrigger className="w-32">
-                           <SelectValue>
-                             <Badge 
-                               variant={doc.requirement === 'required' ? 'dutyRequired' : 'dutyOptional'}
-                               className="text-xs"
-                             >
-                               {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
-                             </Badge>
+                           <SelectValue placeholder={doc.requirement === 'required' ? 'Pflicht' : 'Optional'}>
+                             {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
                            </SelectValue>
                          </SelectTrigger>
                          <SelectContent>
                            <SelectItem value="required">
-                             <Badge variant="dutyRequired" className="text-xs">
-                               Pflicht
-                             </Badge>
+                             Pflicht
                            </SelectItem>
                            <SelectItem value="optional">
-                             <Badge variant="dutyOptional" className="text-xs">
-                               Optional
-                             </Badge>
+                             Optional
                            </SelectItem>
                          </SelectContent>
                        </Select>

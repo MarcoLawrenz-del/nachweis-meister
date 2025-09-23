@@ -136,13 +136,19 @@ export function setContractorMeta(id:string, m:ContractorMeta){
 }
 
 export function updateDocumentRequirement(contractorId: string, documentTypeId: string, requirement: 'required' | 'optional') {
+  console.log('updateDocumentRequirement called:', { contractorId, documentTypeId, requirement });
   const docs = getDocs(contractorId);
+  console.log('Current docs:', docs);
   const docIndex = docs.findIndex(d => d.documentTypeId === documentTypeId);
+  console.log('Found doc at index:', docIndex);
   
   if (docIndex >= 0) {
     const updatedDoc = { ...docs[docIndex], requirement };
     const updatedDocs = [...docs];
     updatedDocs[docIndex] = updatedDoc;
+    console.log('Updated doc:', updatedDoc);
     setDocs(contractorId, updatedDocs);
+  } else {
+    console.log('Document not found!');
   }
 }
