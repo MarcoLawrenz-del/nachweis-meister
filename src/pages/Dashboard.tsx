@@ -208,7 +208,12 @@ export default function Dashboard() {
                   {recentlyRequested.map((item) => (
                     <TableRow key={item.contractor.id}>
                       <TableCell className="font-medium">
-                        {item.contractor.company_name}
+                        <Link 
+                          to={`/app/subcontractors/${item.contractor.id}`}
+                          className="text-primary hover:underline cursor-pointer"
+                        >
+                          {item.contractor.company_name}
+                        </Link>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDateTime(item.lastRequestedAt)}
