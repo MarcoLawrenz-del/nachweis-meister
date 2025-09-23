@@ -58,6 +58,8 @@ export async function createMagicLink(
   options?: { sendEmail?: boolean; validityDays?: number }
 ): Promise<string> {
   
+  console.info("[magicLinks] Creating magic link", { contractorId, email });
+  
   if (isSupabaseAvailable()) {
     try {
       // Use Backend Edge Function
@@ -70,7 +72,10 @@ export async function createMagicLink(
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[magicLinks] Backend creation error:", error);
+        throw error;
+      }
       
       if (data.success) {
         console.info("[magicLinks] Backend token created", { 
@@ -80,36 +85,19 @@ export async function createMagicLink(
         });
         return data.token;
       } else {
+        console.error("[magicLinks] Backend creation failed:", data.error);
         throw new Error(data.error || 'Failed to create magic link');
       }
       
     } catch (error) {
-      console.error("[magicLinks] Backend creation failed, using fallback:", error);
-      // Fall through to localStorage fallback
+      console.error("[magicLinks] Backend creation failed:", error);
+      throw error;
     }
   }
 
-  // Fallback: localStorage implementation
-  const token = generateToken();
-  const now = new Date().toISOString();
-  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(); // 14 days
-  
-  const magicLink: MagicLink = {
-    id: crypto.randomUUID(),
-    token,
-    contractorId,
-    email,
-    expiresAt,
-    usedCount: 0,
-    createdAt: now
-  };
-
-  const links = loadFromStorage();
-  links.push(magicLink);
-  saveToStorage(links);
-
-  console.info("[magicLinks] Fallback token created", { contractorId, email, token: token.substring(0, 8) + "..." });
-  return token;
+  // No fallback - always use backend
+  console.error("[magicLinks] Supabase not available");
+  throw new Error("Backend not available");
 }
 
 // Resolve token to contractor info - Backend implementation
@@ -123,6 +111,8 @@ export async function resolveMagicLink(token: string): Promise<{
   error: 'not_found' | 'expired';
 }> {
   
+  console.info("[magicLinks] Resolving token:", token.substring(0, 8) + "...");
+  
   if (isSupabaseAvailable()) {
     try {
       // Use Backend Edge Function (no auth required)
@@ -130,7 +120,10 @@ export async function resolveMagicLink(token: string): Promise<{
         body: { token }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[magicLinks] Backend resolution error:", error);
+        return { success: false, error: 'not_found' };
+      }
 
       if (data.success) {
         console.info("[magicLinks] Backend token resolved", { 
@@ -144,38 +137,19 @@ export async function resolveMagicLink(token: string): Promise<{
           expiresAt: data.expiresAt
         };
       } else {
+        console.info("[magicLinks] Backend resolution failed:", data.error);
         return { success: false, error: data.error };
       }
       
     } catch (error) {
-      console.error("[magicLinks] Backend resolution failed, using fallback:", error);
-      // Fall through to localStorage fallback
+      console.error("[magicLinks] Backend resolution failed:", error);
+      return { success: false, error: 'not_found' };
     }
   }
 
-  // Fallback: localStorage implementation
-  const links = loadFromStorage();
-  const link = links.find(l => l.token === token);
-  
-  if (!link) {
-    return { success: false, error: 'not_found' };
-  }
-  
-  if (new Date(link.expiresAt) <= new Date()) {
-    return { success: false, error: 'expired' };
-  }
-  
-  // Update usage stats
-  link.lastSeenAt = new Date().toISOString();
-  link.usedCount++;
-  saveToStorage(links);
-  
-  return {
-    success: true,
-    contractorId: link.contractorId,
-    email: link.email,
-    expiresAt: link.expiresAt
-  };
+  // No fallback - always use backend
+  console.error("[magicLinks] Supabase not available");
+  return { success: false, error: 'not_found' };
 }
 
 // Get base URL for magic links
