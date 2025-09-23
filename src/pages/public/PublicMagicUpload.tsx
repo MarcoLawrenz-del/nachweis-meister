@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { resolveMagicLink } from "@/services/magicLinks";
-import { listContractors } from "@/services/contractors.store";
+import { getSupabaseContractor } from "@/services/supabaseContractors";
 import { getDocs, markUploaded } from "@/services/contractorDocs.store";
+import { createContractor } from "@/services/contractors.store";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -68,20 +69,41 @@ export default function PublicMagicUpload() {
           return;
         }
 
-        const contractors = listContractors();
-        console.log('[PublicMagicUpload] Available contractors:', contractors.length);
-        const contractor = contractors.find(c => c.id === linkResult.contractorId);
+        console.log('[PublicMagicUpload] Fetching contractor from Supabase:', linkResult.contractorId);
+        const contractor = await getSupabaseContractor(linkResult.contractorId);
         if (!contractor) {
-          console.log('[PublicMagicUpload] Contractor not found:', linkResult.contractorId);
+          console.log('[PublicMagicUpload] Contractor not found in Supabase:', linkResult.contractorId);
           setError('not_found');
           setLoading(false);
           return;
         }
 
         console.log('[PublicMagicUpload] Found contractor:', contractor.company_name);
+        
+        // Create a temporary entry in localStorage for the document system to work
+        const localContractor = {
+          id: contractor.id,
+          company_name: contractor.company_name,
+          contact_name: contractor.contact_name,
+          email: contractor.contact_email,
+          phone: contractor.phone,
+          country: contractor.country_code,
+          address: contractor.address,
+          notes: contractor.notes,
+          created_at: contractor.created_at,
+          active: contractor.status === 'active'
+        };
+        
+        try {
+          createContractor(localContractor);
+          console.log('[PublicMagicUpload] Created temporary localStorage entry for contractor');
+        } catch (error) {
+          console.log('[PublicMagicUpload] Contractor already exists in localStorage or error creating:', error);
+        }
+        
         setContractorId(linkResult.contractorId);
         setContractorName(contractor.company_name);
-        setContractorEmail(contractor.email);
+        setContractorEmail(contractor.contact_email);
 
         // Load contractor documents and build upload form
         const existingDocs = getDocs(linkResult.contractorId);
