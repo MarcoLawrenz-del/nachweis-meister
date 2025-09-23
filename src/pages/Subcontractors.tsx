@@ -90,11 +90,21 @@ export default function Subcontractors() {
   }, [isDemo]);
 
   useEffect(() => {
-    const filtered = subcontractors.filter(sub =>
-      (sub.company_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (sub.contact_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (sub.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
+    const filtered = subcontractors
+      .filter(sub =>
+        (sub.company_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (sub.contact_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (sub.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => {
+        // First sort by active status (active first)
+        if (a.status === 'active' && b.status === 'inactive') return -1;
+        if (a.status === 'inactive' && b.status === 'active') return 1;
+        
+        // Then sort by creation date (newest first within each group)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    
     setFilteredSubcontractors(filtered);
   }, [subcontractors, searchTerm]);
 
