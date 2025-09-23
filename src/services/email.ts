@@ -1,8 +1,9 @@
 // ============= Central Email Service =============
-// Production-ready email system with Resend + Demo-Stub
+// Production-ready email system with Supabase Edge Function + Resend
 
-import { getContractor } from './contractors.store';
+import { listContractors } from './contractors.store';
 import { createUploadToken } from './uploadLinks';
+import { supabase } from '@/integrations/supabase/client';
 import { isErr, type Result } from "@/utils/result";
 
 export type EmailType =
@@ -97,46 +98,47 @@ function updateRateLimit(contractorId: string, type: EmailType) {
   saveRateLimitStore(store);
 }
 
-async function sendViaResend(type: EmailType, payload: EmailPayload): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = import.meta.env.VITE_RESEND_API_KEY;
-  const from = import.meta.env.VITE_MAIL_FROM || "onboarding@resend.dev";
-  
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY not configured");
-  }
-
-  const { subject, html, text } = getEmailTemplate(type, payload);
-
+// Send via Supabase Edge Function
+async function sendViaEdgeFunction(type: EmailType, payload: EmailPayload): Promise<{ ok: boolean; error?: string }> {
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [payload.to],
-        subject,
-        html,
-        text,
-      }),
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        to: payload.to,
+        type,
+        payload: {
+          contractorName: payload.contractorName,
+          companyName: payload.customerName,
+          magicLink: payload.magicLink,
+          requiredDocs: payload.requiredDocs,
+          docName: payload.docLabel,
+          reason: payload.reason,
+          daysUntilExpiry: payload.days,
+        }
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      if (response.status === 401 || response.status === 403) {
+    if (error) {
+      console.error('Edge function error:', error);
+      
+      // Handle specific error types
+      if (error.message?.includes('auth') || data?.error === 'auth') {
         return { 
           ok: false, 
           error: "Senden fehlgeschlagen. Bitte Domain bei Resend verifizieren oder Absender konfigurieren." 
         };
       }
-      return { ok: false, error: errorData.message || `HTTP ${response.status}` };
+      
+      return { ok: false, error: error.message || 'Email sending failed' };
     }
 
-    return { ok: true };
+    if (data?.success) {
+      return { ok: true };
+    }
+
+    return { ok: false, error: data?.error || 'Unknown error' };
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "Network error" };
+    console.error('Email edge function error:', error);
+    return { ok: false, error: error instanceof Error ? error.message : 'Network error' };
   }
 }
 
@@ -568,7 +570,8 @@ export async function sendEmail(
 ): Promise<{ ok: true; mode: "resend" | "stub" } | { ok: false; error: string }> {
   try {
     // Check if contractor exists and is active
-    const contractor = getContractor(payload.contractorId);
+    const contractors = listContractors();
+    const contractor = contractors.find(c => c.id === payload.contractorId);
     if (!contractor) {
       return { ok: false, error: "Nachunternehmer nicht gefunden" };
     }
@@ -594,20 +597,9 @@ export async function sendEmail(
       }
     }
     
-    // Send email
-    const hasResendKey = !!import.meta.env.VITE_RESEND_API_KEY;
-    let result: { ok: boolean; error?: string };
-    let mode: "resend" | "stub";
-    
-    if (hasResendKey) {
-      result = await sendViaResend(type, payload);
-      mode = "resend";
-    } else {
-      // Stub mode
-      console.info('[email:stub]', { type, payload: { ...payload, magicLink: payload.magicLink ? '***MASKED***' : undefined } });
-      result = { ok: true };
-      mode = "stub";
-    }
+    // Send email via Edge Function
+    const result = await sendViaEdgeFunction(type, payload);
+    const mode: "resend" | "stub" = result.ok ? "resend" : "stub";
     
     // Update rate limit and log activity
     if (result.ok) {

@@ -115,6 +115,14 @@ class EdgeFunctionService {
   }) {
     return this.invoke('complete-setup', payload);
   }
+
+  async sendEmail(payload: {
+    to: string;
+    type: string;
+    payload: any;
+  }) {
+    return this.invoke('send-email', payload, { showToast: false });
+  }
 }
 
 export const edgeFunctions = new EdgeFunctionService();
