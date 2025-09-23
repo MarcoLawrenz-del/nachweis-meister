@@ -134,3 +134,15 @@ export function setContractorMeta(id:string, m:ContractorMeta){
   localStorage.setItem(META_KEY(id), JSON.stringify(cur));
   listeners.get(id)?.forEach(fn=>fn());
 }
+
+export function updateDocumentRequirement(contractorId: string, documentTypeId: string, requirement: 'required' | 'optional') {
+  const docs = getDocs(contractorId);
+  const docIndex = docs.findIndex(d => d.documentTypeId === documentTypeId);
+  
+  if (docIndex >= 0) {
+    const updatedDoc = { ...docs[docIndex], requirement };
+    const updatedDocs = [...docs];
+    updatedDocs[docIndex] = updatedDoc;
+    setDocs(contractorId, updatedDocs);
+  }
+}

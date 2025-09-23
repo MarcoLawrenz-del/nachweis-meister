@@ -43,7 +43,7 @@ import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
 import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta, getDocs, setContractorMeta, markUploaded } from "@/services/contractorDocs.store";
+import { getContractorMeta, getDocs, setContractorMeta, markUploaded, updateDocumentRequirement } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";
@@ -262,6 +262,29 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       toast({
         title: "Fehler beim Senden",
         description: getEmailErrorMessage(error),
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle requirement change
+  const handleRequirementChange = async (documentTypeId: string, newRequirement: 'required' | 'optional') => {
+    try {
+      // Update in local store
+      updateDocumentRequirement(contractorId, documentTypeId, newRequirement);
+      
+      const docType = DOCUMENT_TYPES.find(t => t.id === documentTypeId);
+      const doc = docs.find(d => d.documentTypeId === documentTypeId);
+      const docName = displayName(documentTypeId, docType?.label || '', doc?.customName, doc?.label);
+      
+      toast({
+        title: "Anforderung geändert",
+        description: `${docName} ist jetzt ${newRequirement === 'required' ? 'Pflicht' : 'Optional'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Die Anforderung konnte nicht geändert werden.",
         variant: "destructive"
       });
     }
@@ -541,11 +564,33 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
                      </TableCell>
                     
                      <TableCell>
-                       <Badge 
-                         variant={doc.requirement === 'required' ? 'dutyRequired' : 'dutyOptional'}
+                       <Select 
+                         value={doc.requirement} 
+                         onValueChange={(value) => handleRequirementChange(doc.documentTypeId, value as 'required' | 'optional')}
                        >
-                         {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
-                       </Badge>
+                         <SelectTrigger className="w-32">
+                           <SelectValue>
+                             <Badge 
+                               variant={doc.requirement === 'required' ? 'dutyRequired' : 'dutyOptional'}
+                               className="text-xs"
+                             >
+                               {doc.requirement === 'required' ? 'Pflicht' : 'Optional'}
+                             </Badge>
+                           </SelectValue>
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="required">
+                             <Badge variant="dutyRequired" className="text-xs">
+                               Pflicht
+                             </Badge>
+                           </SelectItem>
+                           <SelectItem value="optional">
+                             <Badge variant="dutyOptional" className="text-xs">
+                               Optional
+                             </Badge>
+                           </SelectItem>
+                         </SelectContent>
+                       </Select>
                      </TableCell>
                     
                      <TableCell>
