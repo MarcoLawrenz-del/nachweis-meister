@@ -9,7 +9,11 @@ import {
   Clock, 
   CheckCircle, 
   XCircle, 
-  Upload
+  Upload,
+  Mail,
+  Phone,
+  MapPin,
+  User
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { aggregateContractorStatusById, type ContractorDocument } from "@/services/contractors";
@@ -112,6 +116,77 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
           </Badge>
         </div>
       </div>
+
+      {/* Contact Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Kontaktdaten
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {profile?.contact_name && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-full">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Ansprechpartner</p>
+                  <p className="text-sm">{profile.contact_name}</p>
+                </div>
+              </div>
+            )}
+            
+            {profile?.contact_email && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-full">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">E-Mail</p>
+                  <a 
+                    href={`mailto:${profile.contact_email}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {profile.contact_email}
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {profile?.phone && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-full">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Telefon</p>
+                  <a 
+                    href={`tel:${profile.phone}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {profile.phone}
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {profile?.address && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-full">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Adresse</p>
+                  <p className="text-sm">{profile.address}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* No Required Documents Message */}
       {!hasRequired && (
