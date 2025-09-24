@@ -374,8 +374,8 @@ export default function RequestDocumentsDialog({
       )}
       
       {/* Documents Table */}
-      <div className="border rounded-xl">
-        <div className="grid grid-cols-2 px-3 py-2 text-xs uppercase text-muted-foreground">
+      <div className="border rounded-xl max-h-96 overflow-y-auto">
+        <div className="grid grid-cols-2 px-3 py-2 text-xs uppercase text-muted-foreground sticky top-0 bg-background border-b">
           <div>Dokument</div><div>Anforderung</div>
         </div>
         

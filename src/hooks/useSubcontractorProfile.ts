@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { RequirementStatus, ComplianceStatus } from '@/types/compliance';
 import { useToast } from '@/hooks/use-toast';
 import { sendReminderMissing } from '@/services/email';
-import { getContractor, updateContractor } from '@/services/contractors.store';
+import { getSupabaseContractor, updateSupabaseContractorStatus } from '@/services/supabaseContractors';
 import { useContractorDocuments } from '@/hooks/useContractorDocuments';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface SubcontractorProfileData {
   id: string;
@@ -88,30 +89,34 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
       setIsLoading(true);
       
       try {
-        // Load profile from local storage
-        const contractor = getContractor(subcontractorId);
+        console.log('Loading subcontractor profile:', subcontractorId);
+        
+        // Load profile from Supabase
+        const contractor = await getSupabaseContractor(subcontractorId);
         if (!contractor) {
           throw new Error('Nachunternehmer nicht gefunden');
         }
+        
+        console.log('Loaded contractor from Supabase:', contractor);
         
         const profileData: SubcontractorProfileData = {
           id: contractor.id,
           company_name: contractor.company_name,
           contact_name: contractor.contact_name || null,
-          contact_email: contractor.email,
+          contact_email: contractor.contact_email,
           phone: contractor.phone || null,
           address: contractor.address || null,
-          country_code: 'DE',
-          company_type: 'baubetrieb',
-          status: contractor.active ? 'active' : 'inactive',
-          compliance_status: 'non_compliant' as ComplianceStatus,
+          country_code: contractor.country_code,
+          company_type: contractor.company_type,
+          status: contractor.status,
+          compliance_status: contractor.compliance_status as ComplianceStatus,
           notes: contractor.notes || null,
           requires_employees: null,
           has_non_eu_workers: null,
           employees_not_employed_in_germany: null,
-          active: contractor.active,
+          active: contractor.status === 'active',
           created_at: contractor.created_at,
-          updated_at: new Date().toISOString()
+          updated_at: contractor.updated_at
         };
         
         setProfile(profileData);
@@ -173,7 +178,7 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
         console.error('Error loading profile data:', error);
         toast({
           title: "Fehler beim Laden",
-          description: error.message,
+          description: "Profile konnte nicht geladen werden: " + error.message,
           variant: "destructive",
         });
       } finally {
@@ -188,42 +193,44 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
 
   const updateProfile = async (updates: Partial<SubcontractorProfileData>) => {
     try {
-      // Handle both active boolean and status string
-      let activeStatus: boolean;
-      if ('active' in updates) {
-        activeStatus = updates.active!;
-      } else if ('status' in updates) {
-        activeStatus = updates.status === 'active';
-      } else {
-        activeStatus = profile?.active || false;
-      }
-
-      const success = await updateContractor(subcontractorId, {
-        company_name: updates.company_name,
-        contact_name: updates.contact_name || undefined,
-        email: updates.contact_email || '',
-        phone: updates.phone || undefined,
-        address: updates.address || undefined,
-        active: activeStatus,
-        notes: updates.notes || undefined
-      });
-
-      if (!success) {
-        throw new Error('Fehler beim Aktualisieren des Profils');
-      }
-
-      // Ensure both active and status fields are updated
-      const normalizedUpdates = {
-        ...updates,
-        active: activeStatus,
-        status: activeStatus ? 'active' : 'inactive'
-      };
-
-      setProfile(prev => prev ? { ...prev, ...normalizedUpdates } : null);
+      console.log('Updating profile:', updates);
       
+      // Handle status updates
+      if ('status' in updates || 'active' in updates) {
+        const newStatus = updates.status || (updates.active ? 'active' : 'inactive');
+        console.log('Updating status to:', newStatus);
+        
+        const success = await updateSupabaseContractorStatus(
+          subcontractorId, 
+          newStatus as 'active' | 'inactive'
+        );
+
+        if (!success) {
+          throw new Error('Fehler beim Aktualisieren des Status');
+        }
+
+        // Update local state
+        const normalizedUpdates = {
+          ...updates,
+          active: newStatus === 'active',
+          status: newStatus
+        };
+
+        setProfile(prev => prev ? { ...prev, ...normalizedUpdates } : null);
+        
+        toast({
+          title: "Status aktualisiert",
+          description: `Nachunternehmer ist jetzt ${newStatus === 'active' ? 'aktiv' : 'inaktiv'}.`,
+        });
+
+        return true;
+      }
+
+      // Handle other profile updates (company_name, contact_email, etc.)
+      // For now, only status updates are supported
       toast({
-        title: "Profil aktualisiert",
-        description: "Die Änderungen wurden erfolgreich gespeichert.",
+        title: "Info",
+        description: "Nur Status-Updates werden derzeit unterstützt.",
       });
 
       return true;
@@ -311,45 +318,44 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
     updateProfile,
     reviewRequirement,
     sendReminder,
-    refetchData: () => {
+    refetchData: async () => {
       console.log('=== REFETCH DATA START ===');
       
-      // Force re-load of contractor data
-      const contractor = getContractor(subcontractorId);
-      console.log('Contractor from localStorage:', contractor);
-      
-      if (contractor) {
-        const profileData: SubcontractorProfileData = {
-          id: contractor.id,
-          company_name: contractor.company_name,
-          contact_name: contractor.contact_name || null,
-          contact_email: contractor.email,
-          phone: contractor.phone || null,
-          address: contractor.address || null,
-          country_code: 'DE',
-          company_type: 'baubetrieb',
-          status: contractor.active ? 'active' : 'inactive',
-          compliance_status: 'non_compliant' as ComplianceStatus,
-          notes: contractor.notes || null,
-          requires_employees: null,
-          has_non_eu_workers: null,
-          employees_not_employed_in_germany: null,
-          active: contractor.active,
-          created_at: contractor.created_at,
-          updated_at: new Date().toISOString()
-        };
+      try {
+        // Re-load from Supabase
+        const contractor = await getSupabaseContractor(subcontractorId);
+        console.log('Contractor from Supabase:', contractor);
         
-        console.log('Setting new profile data:', profileData);
-        setProfile(profileData);
-        console.log('=== REFETCH DATA SUCCESS ===');
-      } else {
-        console.error('=== REFETCH DATA ERROR ===');
-        console.error('Contractor not found in localStorage during refetch!');
-        
-        // Instead of failing, try to preserve current profile data
-        if (profile) {
-          console.log('Preserving current profile data:', profile);
+        if (contractor) {
+          const profileData: SubcontractorProfileData = {
+            id: contractor.id,
+            company_name: contractor.company_name,
+            contact_name: contractor.contact_name || null,
+            contact_email: contractor.contact_email,
+            phone: contractor.phone || null,
+            address: contractor.address || null,
+            country_code: contractor.country_code,
+            company_type: contractor.company_type,
+            status: contractor.status,
+            compliance_status: contractor.compliance_status as ComplianceStatus,
+            notes: contractor.notes || null,
+            requires_employees: null,
+            has_non_eu_workers: null,
+            employees_not_employed_in_germany: null,
+            active: contractor.status === 'active',
+            created_at: contractor.created_at,
+            updated_at: contractor.updated_at
+          };
+          
+          console.log('Setting new profile data:', profileData);
+          setProfile(profileData);
+          console.log('=== REFETCH DATA SUCCESS ===');
+        } else {
+          console.error('=== REFETCH DATA ERROR ===');
+          console.error('Contractor not found in Supabase during refetch!');
         }
+      } catch (error) {
+        console.error('Error during refetch:', error);
       }
     }
   };

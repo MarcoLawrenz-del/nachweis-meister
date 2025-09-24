@@ -1,199 +1,115 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Clock, 
-  User, 
-  CheckCircle, 
-  XCircle, 
-  Upload,
-  Eye,
-  FileText,
-  AlertTriangle,
-  UserPlus
-} from 'lucide-react';
-import { format } from 'date-fns';
+import { Clock, Mail, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 interface ActivityTabProps {
-  reviewHistory: any[];
+  emailLogs: any[];
 }
 
-export function ActivityTab({ reviewHistory }: ActivityTabProps) {
-  // Get activity icon and color
-  const getActivityConfig = (action: string) => {
-    const configs = {
-        approved: { 
-          icon: CheckCircle, 
-          color: 'text-success-600',
-          bg: 'bg-success-50',
-          label: 'Genehmigt'
-        },
-        rejected: { 
-          icon: XCircle, 
-          color: 'text-danger-600',
-          bg: 'bg-danger-50',
-          label: 'Abgelehnt'
-        },
-        submitted: { 
-          icon: Upload, 
-          color: 'text-info-600',
-          bg: 'bg-info-50',
-          label: 'Eingereicht'
-        },
-        assigned: { 
-          icon: UserPlus, 
-          color: 'text-text-muted',
-          bg: 'bg-surface-muted',
-          label: 'Zugewiesen'
-        },
-      escalated: { 
-        icon: AlertTriangle, 
-        color: 'text-warn-600',
-        bg: 'bg-warn-50',
-        label: 'Eskaliert'
-      },
-        updated: { 
-          icon: FileText, 
-          color: 'text-text-muted',
-          bg: 'bg-surface-muted',
-          label: 'Aktualisiert'
-        }
-    };
-    
-    return configs[action] || configs.updated;
+export function ActivityTab({ emailLogs }: ActivityTabProps) {
+  // Generate some activity items from email logs and other events
+  const activities = [
+    ...emailLogs.map(log => ({
+      id: log.id,
+      type: 'email',
+      action: 'E-Mail gesendet',
+      description: `${log.template_key} an ${log.to_email}`,
+      timestamp: log.created_at,
+      status: log.status
+    })),
+    // Add placeholder activities for demo
+    {
+      id: 'activity-1',
+      type: 'document',
+      action: 'Dokument hochgeladen',
+      description: 'Gewerbeerlaubnis hochgeladen',
+      timestamp: new Date().toISOString(),
+      status: 'success'
+    },
+    {
+      id: 'activity-2', 
+      type: 'status',
+      action: 'Status geändert',
+      description: 'Status auf "Aktiv" gesetzt',
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      status: 'success'
+    }
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'email':
+        return Mail;
+      case 'document':
+        return FileText;
+      case 'status':
+        return CheckCircle;
+      default:
+        return Clock;
+    }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'success':
+      case 'sent':
+        return 'bg-success-50 text-success-600';
+      case 'failed':
+      case 'error':
+        return 'bg-danger-50 text-danger-600';
+      case 'pending':
+      case 'queued':
+        return 'bg-warn-50 text-warn-600';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Aktivitätsverlauf ({reviewHistory.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {reviewHistory.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p>Noch keine Aktivitäten vorhanden.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {reviewHistory.map((activity, index) => {
-                const config = getActivityConfig(activity.action);
-                const ActivityIcon = config.icon;
-                const isLast = index === reviewHistory.length - 1;
-
-                return (
-                  <div key={activity.id} className="relative">
-                    <div className="flex gap-4">
-                      {/* Timeline indicator */}
-                      <div className="relative flex flex-col items-center">
-                        <div className={`p-2 rounded-full ${config.bg}`}>
-                          <ActivityIcon className={`h-4 w-4 ${config.color}`} />
-                        </div>
-                        {!isLast && (
-                          <div className="w-px h-8 bg-border mt-2" />
-                        )}
-                      </div>
-
-                      {/* Activity content */}
-                      <div className="flex-1 pb-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className={config.color}>
-                                {config.label}
-                              </Badge>
-                              
-                              {activity.requirements?.document_types && (
-                                <span className="font-medium text-sm">
-                                  {activity.requirements.document_types.name_de}
-                                </span>
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <User className="h-3 w-3" />
-                              Reviewer ID: {activity.reviewer_id}
-                              <span>•</span>
-                              <span>
-                                {format(new Date(activity.created_at), 'dd.MM.yyyy HH:mm', { locale: de })}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <div className="text-sm text-muted-foreground">
-                            {format(new Date(activity.created_at), 'HH:mm', { locale: de })}
-                          </div>
-                        </div>
-
-                        {/* Status changes */}
-                        {activity.old_status && activity.new_status && (
-                          <div className="text-sm text-muted-foreground mb-2">
-                            Status: 
-                            <Badge variant="outline" className="mx-2">
-                              {activity.old_status}
-                            </Badge>
-                            →
-                            <Badge variant="outline" className="mx-2">
-                              {activity.new_status}
-                            </Badge>
-                          </div>
-                        )}
-
-                        {/* Comments */}
-                        {activity.comment && (
-                          <div className="mt-2 p-3 bg-muted/50 rounded-lg">
-                            <p className="text-sm">{activity.comment}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Activity Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Aktivitäts-Übersicht</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {(Object.entries(
-              reviewHistory.reduce((acc, activity) => {
-                acc[activity.action] = (acc[activity.action] || 0) + 1;
-                return acc;
-              }, {} as Record<string, number>)
-            ) as [string, number][]).map(([action, count]) => {
-              const config = getActivityConfig(action);
-              const ActivityIcon = config.icon;
-              
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Aktivitätsverlauf
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Noch keine Aktivitäten vorhanden.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities.map((activity) => {
+              const Icon = getActivityIcon(activity.type);
               return (
-                <div key={action} className="text-center p-3 border rounded-lg">
-                  <div className={`p-2 rounded-full ${config.bg} w-fit mx-auto mb-2`}>
-                    <ActivityIcon className={`h-5 w-5 ${config.color}`} />
+                <div key={activity.id} className="flex items-start gap-3 pb-4 border-b last:border-b-0">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <div className="font-bold text-lg">{count}</div>
-                  <div className="text-sm text-muted-foreground">{config.label}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-sm font-medium">{activity.action}</p>
+                      <Badge variant="outline" className={getStatusColor(activity.status)}>
+                        {activity.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(parseISO(activity.timestamp), 'dd.MM.yyyy HH:mm', { locale: de })}
+                    </p>
+                  </div>
                 </div>
               );
             })}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
