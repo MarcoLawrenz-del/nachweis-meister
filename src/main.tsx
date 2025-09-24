@@ -5,6 +5,10 @@ import "./index.css";
 import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { demoAuthService } from "@/services/demoAuth";
+
+// Initialize demo mode for immediate Supabase access
+demoAuthService.initializeAppDemo().catch(console.error);
 
 // Screenshot mode detection
 if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('screenshot') === '1') {

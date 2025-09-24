@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { verifyPassword } from '@/auth/users.store';
 import { debug } from '@/lib/debug';
+import { demoAuthService } from '@/services/demoAuth';
 
 // Local auth user interface
 interface User {
@@ -24,26 +25,36 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session in localStorage
-    const storedUser = localStorage.getItem('subfix.auth.user.v1');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-        // Create profile from user data
-        setProfile({
-          id: userData.id,
-          tenant_id: 'local-tenant',
-          name: userData.name,
-          email: userData.email,
-          role: 'owner'
-        });
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('subfix.auth.user.v1');
+    const initializeAuth = async () => {
+      // Check for existing session in localStorage
+      const storedUser = localStorage.getItem('subfix.auth.user.v1');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          
+          // Initialize demo mode with Supabase
+          const demoUser = await demoAuthService.initializeDemoMode(userData);
+          
+          // Create profile from user data
+          setProfile({
+            id: userData.id,
+            tenant_id: demoUser?.tenant_id || 'local-tenant',
+            name: userData.name,
+            email: userData.email,
+            role: 'owner'
+          });
+          
+          console.log('[useAuth] User loaded and demo mode initialized:', { userData, demoUser });
+        } catch (error) {
+          console.error('Error parsing stored user or initializing demo mode:', error);
+          localStorage.removeItem('subfix.auth.user.v1');
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -55,18 +66,25 @@ export function useAuth() {
       }
 
       const userData = result.user;
+      
+      // Store user in localStorage for persistence
+      localStorage.setItem('subfix.auth.user.v1', JSON.stringify(userData));
       setUser(userData);
+      
+      // Initialize demo mode with Supabase
+      const demoUser = await demoAuthService.initializeDemoMode(userData);
       
       // Create profile from user data
       const profileData = {
         id: userData.id,
-        tenant_id: 'local-tenant',
+        tenant_id: demoUser?.tenant_id || 'local-tenant',
         name: userData.name,
         email: userData.email,
         role: 'owner' as const
       };
       setProfile(profileData);
       
+      console.log('[useAuth] Sign in successful, demo mode initialized:', { userData, demoUser });
       return { error: null };
     } catch (error) {
       console.error('Sign in error:', error);
@@ -77,8 +95,10 @@ export function useAuth() {
   const signOut = async () => {
     try {
       localStorage.removeItem('subfix.auth.user.v1');
+      demoAuthService.clearDemoMode();
       setUser(null);
       setProfile(null);
+      console.log('[useAuth] Sign out successful, demo mode cleared');
       return { error: null };
     } catch (error) {
       console.error('Sign out error:', error);
