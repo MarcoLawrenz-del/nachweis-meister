@@ -94,7 +94,9 @@ export const useSubcontractorProfile = (subcontractorId: string) => {
         // Load profile from Supabase
         const contractor = await getSupabaseContractor(subcontractorId);
         if (!contractor) {
-          throw new Error('Nachunternehmer nicht gefunden');
+          console.log('Nachunternehmer nicht gefunden:', subcontractorId);
+          setProfile(null);
+          return;
         }
         
         console.log('Loaded contractor from Supabase:', contractor);
