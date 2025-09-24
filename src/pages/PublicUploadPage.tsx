@@ -116,7 +116,7 @@ export default function PublicUploadPage() {
     try {
       setLoading(true);
 
-      // Step 1: Resolve magic link to get contractor ID
+      // Step 1: Resolve magic link to get contractor ID and snapshot
       console.info('[PublicUpload] Resolving magic link...');
       const resolved = await resolveMagicLink(token);
       
@@ -137,17 +137,24 @@ export default function PublicUploadPage() {
         throw new Error('Contractor not found');
       }
 
-      // Step 3: Load requirements snapshot
-      console.info('[PublicUpload] Loading requirements snapshot...');
-      const snapshot = await fetchLatestSnapshot(resolved.contractorId);
+      // Step 3: Use snapshot from resolve response or fetch separately
+      let snapshot = resolved.snapshot;
+      if (!snapshot || snapshot.length === 0) {
+        console.info('[PublicUpload] Loading requirements snapshot from database...');
+        snapshot = await fetchLatestSnapshot(resolved.contractorId);
+      }
       
       if (snapshot.length === 0) {
         console.warn('[PublicUpload] No requirements snapshot found');
+        setError(true);
+        setLoading(false);
+        return;
       }
 
       setContractor(contractorData);
       setRequirements(snapshot);
       setLocale((contractorData.tenant?.locale_default as 'de' | 'en') || 'de');
+      setLoading(false);
       
     } catch (error: any) {
       console.error('[PublicUpload] Initialization failed:', error);
@@ -156,8 +163,9 @@ export default function PublicUploadPage() {
         description: getText('linkInvalid', 'Dieser Link ist ungültig oder abgelaufen.'),
         variant: "destructive"
       });
-    } finally {
+      setError(true);
       setLoading(false);
+    }
     }
   };
 

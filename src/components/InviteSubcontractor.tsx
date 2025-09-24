@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { createMagicLink } from "@/services/magicLinks";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { sendInvitation } from "@/services/email";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -56,25 +57,19 @@ Mit freundlichen Grüßen`
     try {
       setLoading(true);
 
-      // Generate unique token for this project-sub combination
-      const token = crypto.randomUUID();
-      
-      // Store invitation via Edge Function (bypasses TypeScript type issues)
-      const { error: inviteError } = await supabase.functions.invoke('create-invitation', {
-        body: {
-          project_sub_id: projectSubId,
-          email: subcontractorEmail,
-          token: token,
-          subject: inviteData.subject,
-          message: inviteData.message,
-          invited_by: profile.id
-        }
-      });
+      // Get contractor ID from project_sub relation
+      const { data: projectSubData, error: projectSubError } = await supabase
+        .from('project_subs')
+        .select('subcontractor_id')
+        .eq('id', projectSubId)
+        .single();
 
-      if (inviteError) throw inviteError;
+      if (projectSubError || !projectSubData) {
+        throw new Error('Projekt-Subunternehmer nicht gefunden');
+      }
 
-      // Send invitation via new interface
-      const magicLink = `${window.location.origin}/upload/${token}`;
+      // Create magic link for contractor
+      const { token, url: magicLink } = await createMagicLink(projectSubData.subcontractor_id);
       await sendInvitation({
         to: subcontractorEmail,
         inviteMessage: inviteData.message.replace('{UPLOAD_LINK}', magicLink),

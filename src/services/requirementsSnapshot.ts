@@ -1,5 +1,5 @@
-// Requirements Snapshot Service - Backend storage for requested documents
-// Temporary implementation using localStorage until contractor_requirements table is available
+// Requirements Snapshot Service - Supabase backend storage (with localStorage fallback)
+import { supabase } from '@/integrations/supabase/client';
 
 export interface DocRequirement {
   type: string;
@@ -16,9 +16,9 @@ export interface RequirementSnapshot {
   createdAt: string;
 }
 
+// Temporary localStorage fallback until contractor_requirements table is available
 const STORAGE_KEY = "subfix.requirements.snapshots.v1";
 
-// Get localStorage fallback data
 function getStorageData(): RequirementSnapshot[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -29,7 +29,6 @@ function getStorageData(): RequirementSnapshot[] {
   }
 }
 
-// Save localStorage fallback data
 function saveStorageData(snapshots: RequirementSnapshot[]) {
   if (typeof window === 'undefined') return;
   try {
@@ -47,8 +46,29 @@ export async function createRequirementsSnapshot(
   console.info('[requirementsSnapshot] Creating snapshot for contractor:', contractorId, { docCount: docs.length });
   
   try {
-    // TODO: Use Supabase when contractor_requirements table is available
-    // For now, use localStorage as fallback
+    // Try Supabase first
+    try {
+      const { data, error } = await (supabase as any)
+        .from('contractor_requirements')
+        .upsert({
+          contractor_id: contractorId,
+          docs,
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'contractor_id'
+        })
+        .select('contractor_id')
+        .single();
+
+      if (!error && data) {
+        console.info('[requirementsSnapshot] Snapshot created successfully (Supabase):', data.contractor_id);
+        return data.contractor_id;
+      }
+    } catch (supabaseError) {
+      console.warn('[requirementsSnapshot] Supabase not available, using localStorage:', supabaseError);
+    }
+
+    // Fallback to localStorage
     const snapshots = getStorageData();
     const newSnapshot: RequirementSnapshot = {
       id: `snapshot-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
@@ -74,8 +94,28 @@ export async function fetchLatestSnapshot(contractorId: string): Promise<DocRequ
   console.info('[requirementsSnapshot] Fetching latest snapshot for contractor:', contractorId);
   
   try {
-    // TODO: Use Supabase when contractor_requirements table is available
-    // For now, use localStorage as fallback
+    // Try Supabase first
+    try {
+      const { data, error } = await (supabase as any)
+        .from('contractor_requirements')
+        .select('docs')
+        .eq('contractor_id', contractorId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data?.docs) {
+        console.info('[requirementsSnapshot] Snapshot fetched successfully (Supabase):', { 
+          contractorId, 
+          docCount: data.docs?.length || 0 
+        });
+        return data.docs || [];
+      }
+    } catch (supabaseError) {
+      console.warn('[requirementsSnapshot] Supabase not available, using localStorage:', supabaseError);
+    }
+
+    // Fallback to localStorage
     const snapshots = getStorageData();
     const contractorSnapshots = snapshots
       .filter(s => s.contractorId === contractorId)
@@ -105,8 +145,34 @@ export async function fetchSnapshotHistory(contractorId: string): Promise<Requir
   console.info('[requirementsSnapshot] Fetching snapshot history for contractor:', contractorId);
   
   try {
-    // TODO: Use Supabase when contractor_requirements table is available
-    // For now, use localStorage as fallback
+    // Try Supabase first
+    try {
+      const { data, error } = await (supabase as any)
+        .from('contractor_requirements')
+        .select('contractor_id, docs, created_at')
+        .eq('contractor_id', contractorId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const snapshots: RequirementSnapshot[] = (data || []).map((item: any) => ({
+          id: `${item.contractor_id}-${item.created_at}`,
+          contractorId: item.contractor_id,
+          docs: item.docs,
+          createdAt: item.created_at
+        }));
+
+        console.info('[requirementsSnapshot] History fetched successfully (Supabase):', { 
+          contractorId, 
+          snapshotCount: snapshots.length 
+        });
+        
+        return snapshots;
+      }
+    } catch (supabaseError) {
+      console.warn('[requirementsSnapshot] Supabase not available, using localStorage:', supabaseError);
+    }
+
+    // Fallback to localStorage
     const snapshots = getStorageData();
     const contractorSnapshots = snapshots
       .filter(s => s.contractorId === contractorId)

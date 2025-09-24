@@ -56,7 +56,7 @@ const RouteNotFound = lazy(() => import("./components/RouteNotFound"));
 const Demo = lazy(() => import("./pages/Demo"));
 const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 const PublicUploadDemo = lazy(() => import("./pages/PublicUploadDemo"));
-const PublicMagicUpload = lazy(() => import("./pages/public/PublicMagicUpload"));
+
 const DemoSubcontractorUpload = lazy(() => import("./pages/DemoSubcontractorUpload"));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -188,7 +188,7 @@ const App = () => (
                       {/* Legacy Magic Link Route - Redirect to new format */}
                       <Route path="/u/:token" element={
                         <Suspense fallback={<LoadingSpinner />}>
-                          <PublicMagicUpload />
+                          <PublicUploadPage />
                         </Suspense>
                       } />
 

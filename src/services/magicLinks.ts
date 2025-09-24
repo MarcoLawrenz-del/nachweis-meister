@@ -8,17 +8,16 @@ export interface MagicLinkResult {
 
 export interface ResolvedMagicLink {
   contractorId: string;
-  email?: string;
-  payload?: Record<string, any>;
+  snapshot?: any[];
 }
 
 // Create new magic link - Supabase only
-export async function createMagicLink(contractorId: string): Promise<MagicLinkResult> {
+export async function createMagicLink(contractorId: string, requirements?: any[]): Promise<MagicLinkResult> {
   console.info('[magicLinks] Creating magic link for contractor:', contractorId);
   
   try {
     const { data, error } = await supabase.functions.invoke('create-magic-link', {
-      body: { contractorId }
+      body: { contractorId, requirements }
     });
 
     if (error) {
@@ -68,8 +67,7 @@ export async function resolveMagicLink(token: string): Promise<ResolvedMagicLink
       
       return {
         contractorId: data.contractorId,
-        email: data.email,
-        payload: data.payload
+        snapshot: data.snapshot
       };
     } else {
       console.info('[magicLinks] Backend resolution failed:', data.error);

@@ -9,8 +9,6 @@ verify_jwt = false
 [functions.complete-setup]
 verify_jwt = true
 
-[functions.create-invitation]
-verify_jwt = true
 
 [functions.create-magic-link]
 verify_jwt = false

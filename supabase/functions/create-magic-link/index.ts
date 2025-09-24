@@ -9,9 +9,7 @@ const corsHeaders = {
 
 interface CreateMagicLinkRequest {
   contractorId: string;
-  email?: string;
-  sendEmail?: boolean;
-  validityDays?: number; // Optional, defaults to 14
+  requirements?: any[]; // Optional requirements snapshot to store
 }
 
 interface CreateMagicLinkResponse {
@@ -42,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { contractorId, email, sendEmail = false, validityDays = 14 }: CreateMagicLinkRequest = await req.json();
+    const { contractorId, requirements }: CreateMagicLinkRequest = await req.json();
 
     // Validate required fields
     if (!contractorId) {
@@ -55,12 +53,12 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Generate secure token (32 characters)
-    const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').substring(0, 4);
+    // Generate secure token (40-64 hex characters)
+    const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
     
-    // Calculate expiration date
+    // Calculate expiration date (14 days from now)
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + validityDays);
+    expiresAt.setDate(expiresAt.getDate() + 14);
 
     console.info('[create-magic-link] Generating token for contractor:', contractorId);
 
@@ -70,9 +68,8 @@ const handler = async (req: Request): Promise<Response> => {
       .insert({
         token,
         contractor_id: contractorId,
-        email: email || '',
         expires_at: expiresAt.toISOString(),
-        created_by: null // Will be set by auth context if user is logged in
+        revoked: false
       })
       .select()
       .single();
@@ -88,51 +85,33 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Build magic link URL
-    const baseUrl = req.headers.get('origin') || 'https://your-domain.com';
-    const magicLink = `${baseUrl}/upload/${token}`;
-
     console.info('[create-magic-link] Magic link created successfully:', { token: token.substring(0, 8) + '...', contractorId });
 
-    // Send email if requested
-    if (sendEmail) {
-      const resendApiKey = Deno.env.get('RESEND_API_KEY');
-      if (resendApiKey) {
-        try {
-          const resend = new Resend(resendApiKey);
-          
-          const emailResult = await resend.emails.send({
-            from: "Subfix <noreply@resend.dev>",
-            to: [email],
-            subject: "Dokumente hochladen - Subfix",
-            html: `
-              <h2>Dokumente hochladen</h2>
-              <p>Hallo,</p>
-              <p>bitte laden Sie Ihre Unterlagen über den folgenden Link hoch:</p>
-              <p><a href="${magicLink}" style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Dokumente hochladen</a></p>
-              <p>Der Link ist 14 Tage gültig. Sie können jederzeit zurückkehren und den Upload-Vorgang fortsetzen.</p>
-              <p>Falls Sie Fragen haben, kontaktieren Sie uns gerne.</p>
-              <p>Mit freundlichen Grüßen,<br>Ihr Subfix Team</p>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-              <p style="font-size: 12px; color: #666;">Link: ${magicLink}</p>
-            `,
-          });
+    // Store requirements snapshot if provided
+    if (requirements && requirements.length > 0) {
+      console.info('[create-magic-link] Storing requirements snapshot:', requirements.length, 'documents');
+      
+      const { error: snapshotError } = await supabase
+        .from('contractor_requirements')
+        .upsert({
+          contractor_id: contractorId,
+          docs: requirements,
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'contractor_id'
+        });
 
-          console.info('[create-magic-link] Email sent successfully:', emailResult.id);
-        } catch (emailError) {
-          console.error('[create-magic-link] Email sending failed:', emailError);
-          // Don't fail the request if email fails, just log it
-        }
+      if (snapshotError) {
+        console.error('[create-magic-link] Error storing requirements snapshot:', snapshotError);
+        // Don't fail the request if snapshot storage fails
       } else {
-        console.warn('[create-magic-link] Resend API key not configured, skipping email');
+        console.info('[create-magic-link] Requirements snapshot stored successfully');
       }
     }
 
     const response: CreateMagicLinkResponse = {
       success: true,
-      token,
-      magicLink,
-      expiresAt: expiresAt.toISOString()
+      token
     };
 
     return new Response(JSON.stringify(response), {

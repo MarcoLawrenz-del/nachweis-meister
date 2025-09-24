@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,9 +13,8 @@ interface ResolveMagicLinkRequest {
 interface ResolveMagicLinkResponse {
   success: boolean;
   contractorId?: string;
-  email?: string;
-  expiresAt?: string;
-  error?: 'not_found' | 'expired' | 'invalid';
+  snapshot?: any[];
+  error?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -32,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Initialize Supabase client (using service role key for RLS bypass)
+    // Initialize Supabase client with service role key
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -44,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!token) {
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'invalid' 
+        error: 'Token is required' 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -53,24 +52,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.info('[resolve-magic-link] Resolving token:', token.substring(0, 8) + '...');
 
-    // First, clean up expired tokens
-    await supabase
-      .from('magic_links')
-      .delete()
-      .lt('expires_at', new Date().toISOString());
-
-    // Find the magic link
-    const { data: magicLink, error: dbError } = await supabase
+    // Find and validate magic link
+    const { data: magicLinkData, error: dbError } = await supabase
       .from('magic_links')
       .select('*')
       .eq('token', token)
+      .eq('revoked', false)
       .single();
 
-    if (dbError || !magicLink) {
-      console.info('[resolve-magic-link] Token not found:', token.substring(0, 8) + '...');
+    if (dbError || !magicLinkData) {
+      console.error('[resolve-magic-link] Token not found:', dbError);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'not_found' 
+        error: 'Token not found' 
       }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -78,51 +72,61 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Check if token is expired
-    const expiresAt = new Date(magicLink.expires_at);
-    const now = new Date();
-    
-    if (expiresAt < now) {
-      console.info('[resolve-magic-link] Token expired:', { 
-        token: token.substring(0, 8) + '...', 
-        expiresAt: expiresAt.toISOString() 
-      });
-      
-      // Delete expired token
-      await supabase
-        .from('magic_links')
-        .delete()
-        .eq('token', token);
-
+    if (magicLinkData.expires_at && new Date(magicLinkData.expires_at) < new Date()) {
+      console.error('[resolve-magic-link] Token expired:', magicLinkData.expires_at);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'expired' 
+        error: 'Token expired' 
       }), {
         status: 410,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Update last seen timestamp and usage count
-    await supabase
+    // Update last_used_at
+    const { error: updateError } = await supabase
       .from('magic_links')
-      .update({
-        last_seen_at: new Date().toISOString(),
-        used_count: magicLink.used_count + 1
+      .update({ 
+        last_used_at: new Date().toISOString(),
+        used_count: (magicLinkData.used_count || 0) + 1
       })
       .eq('token', token);
 
-    console.info('[resolve-magic-link] Token resolved successfully:', {
-      contractorId: magicLink.contractor_id,
-      email: magicLink.email,
-      usedCount: magicLink.used_count + 1
-    });
+    if (updateError) {
+      console.error('[resolve-magic-link] Error updating last_used_at:', updateError);
+    }
+
+    // Get latest requirements snapshot
+    let snapshot = null;
+    try {
+      const { data: snapshotData, error: snapshotError } = await supabase
+        .from('contractor_requirements')
+        .select('docs')
+        .eq('contractor_id', magicLinkData.contractor_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (snapshotError) {
+        console.warn('[resolve-magic-link] No requirements snapshot found:', snapshotError);
+      } else {
+        snapshot = snapshotData?.docs || null;
+        console.info('[resolve-magic-link] Found requirements snapshot with', snapshot?.length || 0, 'documents');
+      }
+    } catch (error) {
+      console.warn('[resolve-magic-link] Error loading snapshot:', error);
+    }
 
     const response: ResolveMagicLinkResponse = {
       success: true,
-      contractorId: magicLink.contractor_id,
-      email: magicLink.email,
-      expiresAt: magicLink.expires_at
+      contractorId: magicLinkData.contractor_id,
+      snapshot: snapshot
     };
+
+    console.info('[resolve-magic-link] Token resolved successfully:', { 
+      contractorId: magicLinkData.contractor_id,
+      hasSnapshot: !!snapshot
+    });
 
     return new Response(JSON.stringify(response), {
       status: 200,
@@ -133,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.error('[resolve-magic-link] Unexpected error:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: 'invalid' 
+      error: error.message || 'Internal server error' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
