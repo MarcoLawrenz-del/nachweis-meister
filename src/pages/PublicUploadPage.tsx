@@ -118,7 +118,7 @@ export default function PublicUploadPage() {
       setLoading(true);
 
       // Step 1: Resolve magic link to get contractor ID and snapshot
-      console.info('[PublicUpload] Resolving magic link...');
+      console.info('[magic-link]', { step: 'page_loaded', token: token.substring(0, 8) + '...' });
       const resolved = await resolveMagicLink(token);
       
       // Step 2: Load contractor data from Supabase
@@ -132,26 +132,25 @@ export default function PublicUploadPage() {
           tenant:tenants(name, logo_url, locale_default)
         `)
         .eq('id', resolved.contractorId)
-        .single();
+        .maybeSingle();
 
       if (contractorError || !contractorData) {
         throw new Error('Contractor not found');
       }
 
-      // Step 3: Use snapshot from resolve response or fetch separately
-      let snapshot = resolved.snapshot;
-      if (!snapshot || snapshot.length === 0) {
-        console.info('[PublicUpload] Loading requirements snapshot from database...');
-        snapshot = await fetchLatestSnapshot(resolved.contractorId);
-      }
+      // Step 3: Use snapshot from resolve response - no fallback computation
+      const snapshot = resolved.snapshot || [];
       
       if (snapshot.length === 0) {
-        console.warn('[PublicUpload] No requirements snapshot found');
-        setError(true);
+        console.warn('[PublicUpload] No requirements snapshot found - showing error state');
+        setContractor(contractorData);
+        setRequirements([]);
+        setLocale((contractorData.tenant?.locale_default as 'de' | 'en') || 'de');
         setLoading(false);
         return;
       }
 
+      console.info('[magic-link]', { step: 'snapshot_loaded', contractorId: resolved.contractorId, count: snapshot.length });
       setContractor(contractorData);
       setRequirements(snapshot);
       setLocale((contractorData.tenant?.locale_default as 'de' | 'en') || 'de');

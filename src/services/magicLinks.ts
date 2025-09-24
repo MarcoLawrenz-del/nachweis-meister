@@ -1,4 +1,3 @@
-// Magic-Link Service - Supabase only (no localStorage fallbacks)
 import { supabase } from '@/integrations/supabase/client';
 
 export interface MagicLinkResult {
@@ -11,85 +10,76 @@ export interface ResolvedMagicLink {
   snapshot?: any[];
 }
 
-// Create new magic link - Supabase only
-export async function createMagicLink(contractorId: string, requirements?: any[]): Promise<MagicLinkResult> {
-  console.info('[magicLinks] Creating magic link for contractor:', contractorId);
-  
+export const createMagicLink = async (
+  contractorId: string, 
+  requirements?: any[]
+): Promise<MagicLinkResult> => {
   try {
+    console.info('[magic-link]', { step: 'creating', contractorId });
+    
     const { data, error } = await supabase.functions.invoke('create-magic-link', {
-      body: { contractorId, requirements }
+      body: { 
+        contractorId,
+        requirements 
+      }
     });
 
     if (error) {
-      console.error('[magicLinks] Backend creation error:', error);
-      throw error;
+      console.error('[MagicLinks] Error creating magic link:', error);
+      throw new Error(`Failed to create magic link: ${error.message}`);
     }
-    
-    if (data.success) {
-      console.info('[magicLinks] Backend token created', { 
-        contractorId, 
-        token: data.token.substring(0, 8) + '...' 
-      });
-      
-      return {
-        token: data.token,
-        url: getMagicLinkUrl(data.token)
-      };
-    } else {
-      console.error('[magicLinks] Backend creation failed:', data.error);
-      throw new Error(data.error || 'Failed to create magic link');
+
+    if (!data?.token) {
+      throw new Error('No token received from create-magic-link function');
     }
+
+    const url = `${window.location.origin}/upload/${data.token}`;
     
-  } catch (error) {
-    console.error('[magicLinks] Backend creation failed:', error);
+    console.info('[magic-link]', { step: 'created', token: data.token.substring(0, 8) + '...', contractorId });
+    return {
+      token: data.token,
+      url
+    };
+  } catch (error: any) {
+    console.error('[MagicLinks] createMagicLink failed:', error);
     throw error;
   }
-}
+};
 
-// Resolve token to contractor info - Supabase only
-export async function resolveMagicLink(token: string): Promise<ResolvedMagicLink> {
-  console.info('[magicLinks] Resolving token:', token.substring(0, 8) + '...');
-  
+export const resolveMagicLink = async (token: string): Promise<ResolvedMagicLink> => {
   try {
+    console.info('[magic-link]', { step: 'resolving', token: token.substring(0, 8) + '...' });
+    
     const { data, error } = await supabase.functions.invoke('resolve-magic-link', {
       body: { token }
     });
 
     if (error) {
-      console.error('[magicLinks] Backend resolution error:', error);
-      throw new Error('Token not found or expired');
+      console.error('[MagicLinks] Error resolving magic link:', error);
+      throw new Error(`Failed to resolve magic link: ${error.message}`);
     }
 
-    if (data.success) {
-      console.info('[magicLinks] Backend token resolved', { 
-        contractorId: data.contractorId
-      });
-      
-      return {
-        contractorId: data.contractorId,
-        snapshot: data.snapshot
-      };
-    } else {
-      console.info('[magicLinks] Backend resolution failed:', data.error);
-      throw new Error(data.error === 'expired' ? 'Token expired' : 'Token not found');
+    if (!data?.contractorId) {
+      throw new Error('Invalid magic link response');
     }
+
+    console.info('[magic-link]', { 
+      step: 'resolved', 
+      token: token.substring(0, 8) + '...', 
+      contractorId: data.contractorId,
+      snapshotCount: data.snapshot?.length || 0 
+    });
     
-  } catch (error) {
-    console.error('[magicLinks] Backend resolution failed:', error);
+    return {
+      contractorId: data.contractorId,
+      snapshot: data.snapshot || []
+    };
+  } catch (error: any) {
+    console.error('[MagicLinks] resolveMagicLink failed:', error);
     throw error;
   }
-}
+};
 
-// Get base URL for magic links
-export function getMagicLinkBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-  return "https://82c1eb4c-716d-4b6f-912f-24d7b39acd25.lovableproject.com";
-}
-
-// Generate full magic link URL
-export function getMagicLinkUrl(token: string): string {
-  const baseUrl = getMagicLinkBaseUrl();
-  return `${baseUrl}/upload/${token}`;
-}
+export const getMagicLinkUrl = (token: string): string => {
+  return `${window.location.origin}/upload/${token}`;
+};

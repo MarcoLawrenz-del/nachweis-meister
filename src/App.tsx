@@ -49,7 +49,6 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const Register = lazy(() => import("./pages/Register"));
-const MagicLinkWizard = lazy(() => import("./pages/MagicLinkWizard"));
 const Setup = lazy(() => import("./pages/Setup"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RouteNotFound = lazy(() => import("./components/RouteNotFound"));

@@ -52,6 +52,30 @@ export type Database = {
           },
         ]
       }
+      contractor_requirements: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          docs: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          docs?: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          docs?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       document_types: {
         Row: {
           code: string
