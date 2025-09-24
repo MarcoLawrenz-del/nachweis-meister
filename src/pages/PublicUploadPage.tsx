@@ -168,7 +168,6 @@ export default function PublicUploadPage() {
       setLoading(false);
     }
   };
-  };
 
   const handleFileUpload = async () => {
     if (!uploadData.file || !selectedRequirement || !contractor || !token) return;

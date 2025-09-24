@@ -1,6 +1,8 @@
+import React, { useState } from 'react';
 import { createMagicLink } from "@/services/magicLinks";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { sendInvitation } from "@/services/email";
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,10 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/client';
-import { useAuthContext } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Mail } from 'lucide-react';
-import { sendInvitation } from '@/services/email';
 
 interface InviteSubcontractorProps {
   projectSubId: string;
