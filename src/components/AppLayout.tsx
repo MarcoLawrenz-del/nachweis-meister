@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 import { Logo } from '@/components/Brand/Logo';
 import { TrialBanner } from '@/components/TrialBanner';
+import { SystemStatusBanner } from '@/components/SystemStatusBanner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -75,6 +76,11 @@ export function AppLayout() {
           {/* Trial Banner */}
           <div className="px-4 py-2">
             <TrialBanner />
+          </div>
+          
+          {/* System Status Banner */}
+          <div className="px-4">
+            <SystemStatusBanner />
           </div>
           
           {/* Main content */}

@@ -12,6 +12,7 @@ import { ROUTES } from "@/lib/ROUTES";
 import Landing from "./pages/Landing";
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
 import { SupabaseProtectedRoute } from "@/components/SupabaseProtectedRoute";
+import { featureFlags } from "@/config/flags";
 
 // Lazy Loading für Performance-Optimierung
 const AppLayout = lazy(() => import("./components/AppLayout").then(module => ({ default: module.AppLayout })));
@@ -57,6 +58,9 @@ const PublicDemo = lazy(() => import("./pages/PublicDemo"));
 const PublicUploadDemo = lazy(() => import("./pages/PublicUploadDemo"));
 
 const DemoSubcontractorUpload = lazy(() => import("./pages/DemoSubcontractorUpload"));
+const PublicUploadDisabled = lazy(() => import("./pages/PublicUploadDisabled"));
+const MagicLinkTests = lazy(() => import("./pages/admin/MagicLinkTests"));
+const PermissionGuardComponent = lazy(() => import("./components/PermissionGuard").then(module => ({ default: module.PermissionGuard })));
 import { Loader2, Building2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,9 +104,28 @@ const App = () => (
 
                        {/* Magic Link Upload - MUST be before other routes */}
                        <Route path="/upload/:token" element={
-                         <Suspense fallback={<LoadingSpinner />}>
-                           <PublicUploadPage />
-                         </Suspense>
+                         featureFlags.publicUploadEnabled ? (
+                           <Suspense fallback={<LoadingSpinner />}>
+                             <PublicUploadPage />
+                           </Suspense>
+                         ) : (
+                           <Suspense fallback={<LoadingSpinner />}>
+                             <PublicUploadDisabled />
+                           </Suspense>
+                         )
+                       } />
+                       
+                       {/* Catch all /upload/* routes */}
+                       <Route path="/upload/*" element={
+                         featureFlags.publicUploadEnabled ? (
+                           <Suspense fallback={<LoadingSpinner />}>
+                             <PublicUploadPage />
+                           </Suspense>
+                         ) : (
+                           <Suspense fallback={<LoadingSpinner />}>
+                             <PublicUploadDisabled />
+                           </Suspense>
+                         )
                        } />
 
                       {/* Auth Route */}
@@ -153,6 +176,13 @@ const App = () => (
                         <Route path="hilfe/dokumente" element={
                           <Suspense fallback={<LoadingSpinner />}>
                             <DocumentsGuide />
+                          </Suspense>
+                        } />
+                        <Route path="admin/tests/magic-link" element={
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <PermissionGuardComponent requiredRoles={['owner', 'admin']}>
+                              <MagicLinkTests />
+                            </PermissionGuardComponent>
                           </Suspense>
                         } />
                         {/* Fallback 404 im App-Scope */}

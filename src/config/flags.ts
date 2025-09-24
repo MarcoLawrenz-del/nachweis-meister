@@ -16,6 +16,12 @@ export const featureFlags = {
   
   // Magic link email domain allowlist
   magicAllowlistEnabled: import.meta.env.VITE_MAGIC_ALLOWLIST_ENABLED === 'true',
+  
+  // Safe mode for emergency shutdown
+  safeMode: import.meta.env.VITE_SAFE_MODE === 'true',
+  
+  // Public upload functionality
+  publicUploadEnabled: import.meta.env.VITE_PUBLIC_UPLOAD_ENABLED === 'true',
 } as const;
 
 // Helper functions for feature flag checks

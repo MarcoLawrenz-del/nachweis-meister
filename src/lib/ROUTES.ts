@@ -7,4 +7,5 @@ export const ROUTES = {
   subPackage: (projectId: string, subId: string) => `${APP_BASE}/projects/${projectId}/subs/${subId}/package`,
   settings: `${APP_BASE}/einstellungen`,
   home: `${APP_BASE}`,
+  adminMagicLinkTests: `${APP_BASE}/admin/tests/magic-link`,
 } as const;

@@ -117,12 +117,14 @@ export default function PublicUploadPage() {
     try {
       setLoading(true);
 
-      // Step 1: Resolve magic link to get contractor ID and snapshot
+      // CRITICAL: NO localStorage usage in public flow - Supabase only
       console.info('[magic-link]', { step: 'page_loaded', token: token.substring(0, 8) + '...' });
+      
+      // Step 1: Resolve magic link to get contractor ID and snapshot (single source of truth)
       const resolved = await resolveMagicLink(token);
       
       // Step 2: Load contractor data from Supabase
-      console.info('[PublicUpload] Loading contractor data:', resolved.contractorId);
+      console.info('[public-upload]', { step: 'loading_contractor', contractorId: resolved.contractorId });
       const { data: contractorData, error: contractorError } = await supabase
         .from('subcontractors')
         .select(`
@@ -138,11 +140,11 @@ export default function PublicUploadPage() {
         throw new Error('Contractor not found');
       }
 
-      // Step 3: Use snapshot from resolve response - no fallback computation
+      // Step 3: Use ONLY snapshot from resolve response - no fallbacks, no computation
       const snapshot = resolved.snapshot || [];
       
       if (snapshot.length === 0) {
-        console.warn('[PublicUpload] No requirements snapshot found - showing error state');
+        console.warn('[public-upload]', { step: 'no_snapshot', contractorId: resolved.contractorId });
         setContractor(contractorData);
         setRequirements([]);
         setLocale((contractorData.tenant?.locale_default as 'de' | 'en') || 'de');
@@ -150,14 +152,21 @@ export default function PublicUploadPage() {
         return;
       }
 
-      console.info('[magic-link]', { step: 'snapshot_loaded', contractorId: resolved.contractorId, count: snapshot.length });
+      console.info('[public-upload]', { 
+        step: 'snapshot_loaded', 
+        contractorId: resolved.contractorId, 
+        count: snapshot.length,
+        required: snapshot.filter(r => r.requirement === 'required').length,
+        optional: snapshot.filter(r => r.requirement === 'optional').length
+      });
+      
       setContractor(contractorData);
       setRequirements(snapshot);
       setLocale((contractorData.tenant?.locale_default as 'de' | 'en') || 'de');
       setLoading(false);
       
     } catch (error: any) {
-      console.error('[PublicUpload] Initialization failed:', error);
+      console.error('[public-upload]', { step: 'initialization_failed', error: error.message });
       toast({
         title: getText('notFound', 'Link nicht gefunden'),
         description: getText('linkInvalid', 'Dieser Link ist ungültig oder abgelaufen.'),
