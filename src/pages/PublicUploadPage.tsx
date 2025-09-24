@@ -55,6 +55,7 @@ export default function PublicUploadPage() {
   const [contractor, setContractor] = useState<ContractorData | null>(null);
   const [requirements, setRequirements] = useState<DocRequirement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedRequirement, setSelectedRequirement] = useState<DocRequirement | null>(null);
@@ -166,7 +167,7 @@ export default function PublicUploadPage() {
       setError(true);
       setLoading(false);
     }
-    }
+  };
   };
 
   const handleFileUpload = async () => {
@@ -239,6 +240,32 @@ export default function PublicUploadPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">{getText('loading', 'Lade Daten...')}</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">
+              {getText('notFound', 'Link nicht gefunden')}
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              {getText('linkInvalid', 'Dieser Link ist ungültig oder abgelaufen.')}
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => window.close()}
+              className="w-full"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Schließen
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
