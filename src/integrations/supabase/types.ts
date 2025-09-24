@@ -1099,6 +1099,10 @@ export type Database = {
           subcontractor_id: string
         }[]
       }
+      get_demo_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_tenant_kpis: {
         Args: { tenant_id: string }
         Returns: {
@@ -1124,6 +1128,19 @@ export type Database = {
       send_compliance_reminders: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      set_demo_user_id: {
+        Args: { user_id: string }
+        Returns: undefined
+      }
+      sync_local_user: {
+        Args: {
+          local_user_id: string
+          tenant_name?: string
+          user_email: string
+          user_name: string
+        }
+        Returns: string
       }
       update_requirement_status_by_date: {
         Args: Record<PropertyKey, never>
