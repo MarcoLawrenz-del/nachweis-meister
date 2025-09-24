@@ -19,10 +19,6 @@ class DemoAuthService {
     
     try {
       console.log('[DemoAuth] Initializing fallback demo mode...');
-      
-      // Set demo user ID to first available user for immediate RLS access
-      await supabase.rpc('set_demo_user_id', { user_id: null });  // This will use the fallback in the function
-      
       this.initialized = true;
       console.log('[DemoAuth] Fallback demo mode initialized');
     } catch (error) {
@@ -70,9 +66,6 @@ class DemoAuthService {
         name: userData.name,
         tenant_id: userData.tenant_id
       };
-
-      // Set demo user ID for RLS policies
-      await supabase.rpc('set_demo_user_id', { user_id: userData.id });
 
       console.log('[DemoAuth] Demo user set successfully:', this.currentDemoUser);
       return this.currentDemoUser;

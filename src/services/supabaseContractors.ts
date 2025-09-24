@@ -22,7 +22,7 @@ export async function getSupabaseContractor(id: string): Promise<SupabaseContrac
     .from('subcontractors')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching contractor:', error);
