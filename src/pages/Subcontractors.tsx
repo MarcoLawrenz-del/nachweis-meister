@@ -65,15 +65,12 @@ export default function Subcontractors() {
   useEffect(() => {
     if (isDemo) {
       debug.log('🎯 Subcontractors: Using demo data');
-      // Convert demo data to match new interface
-      const convertedDemo = demoSubcontractors.map(sub => ({
+      // Use demo data directly - map to Subcontractor type
+      const mappedDemo = demoSubcontractors.map(sub => ({
         ...sub,
-        email: sub.contact_email,
-        active: sub.status === 'active',
-        contact_email: sub.contact_email,
-        country_code: sub.country_code
+        active: sub.status === 'active'
       })) as Subcontractor[];
-      setSubcontractors(convertedDemo);
+      setSubcontractors(mappedDemo);
       setLoading(false);
       return;
     }
@@ -95,7 +92,7 @@ export default function Subcontractors() {
       .filter(sub =>
         (sub.company_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (sub.contact_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (sub.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+        (sub.contact_email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       )
       .sort((a, b) => {
         // First sort by active status (active first)

@@ -38,7 +38,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
 
       const result = await sendMagicInvitation({
         contractorId: contractor.id,
-        email: contractor.email,
+        email: contractor.contact_email,
         contractorName: contractor.company_name,
         companyName: "Ihr Auftraggeber", // TODO: Get from tenant/user context
         requiredDocs
@@ -52,7 +52,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
         title: result.isStub ? "Demo: Einladung simuliert" : "Einladung versendet",
         description: result.isStub 
           ? `Demo-Modus: Magic-Link wurde erstellt aber keine E-Mail versendet.`
-          : `Eine E-Mail mit dem Upload-Link wurde an ${contractor.email} gesendet.`,
+          : `Eine E-Mail mit dem Upload-Link wurde an ${contractor.contact_email} gesendet.`,
       });
 
     } catch (error: any) {
@@ -104,7 +104,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
           <div>
             <Label htmlFor="email">E-Mail-Adresse</Label>
             <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-              {contractor.email}
+              {contractor.contact_email}
             </div>
           </div>
 

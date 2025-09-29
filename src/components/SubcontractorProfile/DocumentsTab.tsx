@@ -444,18 +444,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        markUploaded({
-          contractorId,
-          type: doc.documentTypeId,
-          file: {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            dataUrl
-          },
-          uploadedBy: 'admin',
-          accept: false
-        });
+        markUploaded(contractorId, doc.documentTypeId);
         
         const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
         const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
@@ -582,9 +571,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               Dokumente ({filteredDocs.length})
             </div>
             <div className="flex items-center gap-2">
-              {meta.lastRequestedAt && (
+              {!isLoadingMeta && meta?.lastRequestedAt && (
                 <Badge variant="secondary" className="text-xs">
-                  Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), { 
+                  Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), {
                     addSuffix: true, 
                     locale: de 
                   })}

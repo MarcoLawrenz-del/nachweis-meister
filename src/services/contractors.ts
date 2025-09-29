@@ -132,7 +132,7 @@ export async function setDocumentStatus(input: {
   const currentReq = currentDoc?.requirement ?? "required";
   
   // Preserve all existing fields and only update the status-related ones
-  upsertDoc(input.contractorId, {
+  upsertDoc({
     ...currentDoc, // Preserve all existing fields including fileUrl, fileName, etc.
     contractorId: input.contractorId,
     documentTypeId: input.documentTypeId,

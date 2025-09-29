@@ -90,7 +90,7 @@ export function DocumentReviewDrawer({
         meta
       });
       
-      upsertDoc(contractorId, updatedDoc);
+      upsertDoc(updatedDoc);
     }
   };
 
@@ -110,7 +110,10 @@ export function DocumentReviewDrawer({
       userUnknownExpiry: neverExpires
     };
     
-    upsertDoc(contractorId, updatedDoc);
+    upsertDoc({
+      ...updatedDoc,
+      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
+    } as any);
     addHistoryEntry('validity_changed', 'admin', { 
       validUntil: newValidUntil, 
       validitySource: newValiditySource 
@@ -156,7 +159,10 @@ export function DocumentReviewDrawer({
       }
     };
     
-    upsertDoc(contractorId, updatedDoc);
+    upsertDoc({
+      ...updatedDoc,
+      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
+    } as any);
     addHistoryEntry('accepted', 'admin', { validUntil: finalValidUntil });
     
     // Send email if settings allow
@@ -218,7 +224,10 @@ export function DocumentReviewDrawer({
       }
     };
     
-    upsertDoc(contractorId, updatedDoc);
+    upsertDoc({
+      ...updatedDoc,
+      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
+    } as any);
     addHistoryEntry('rejected', 'admin', { reason: rejectReason });
     
     // Send email if settings allow
@@ -294,7 +303,10 @@ export function DocumentReviewDrawer({
         }
       };
       
-      upsertDoc(contractorId, updatedDoc);
+      upsertDoc({
+        ...updatedDoc,
+        requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
+      } as any);
       addHistoryEntry('replaced', 'admin', { fileName: file.name, fileSize: file.size });
       
       console.info('[analytics] review', { 

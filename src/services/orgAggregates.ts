@@ -66,13 +66,13 @@ export function calculateOrgKPIs(): OrgKPIs {
   };
 }
 
-export function getRecentlyRequested(limit = 5): RecentlyRequestedItem[] {
+export async function getRecentlyRequested(limit = 5): Promise<RecentlyRequestedItem[]> {
   const contractors = listContractors().filter(c => c.active);
   const items: RecentlyRequestedItem[] = [];
 
   for (const contractor of contractors) {
-    const meta = getContractorMeta(contractor.id);
-    if (meta.lastRequestedAt) {
+    const meta = await getContractorMeta(contractor.id);
+    if (meta?.lastRequestedAt) {
       items.push({
         contractor,
         lastRequestedAt: meta.lastRequestedAt

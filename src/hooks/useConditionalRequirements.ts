@@ -68,7 +68,7 @@ export function useConditionalRequirements({
     if (autoSave) {
       try {
         setIsLoading(true);
-        await updateOrgFlags(contractorId, newFlags);
+        await updateOrgFlags(newFlags);
         
         if (autoApply) {
           await applyRequirementsToStore(deriveRequirements(conditionalAnswers, newFlags));
@@ -108,7 +108,7 @@ export function useConditionalRequirements({
       setError(null);
 
       await updateConditionalAnswers(contractorId, conditionalAnswers);
-      await updateOrgFlags(contractorId, orgFlags);
+      await updateOrgFlags(orgFlags);
       await applyRequirementsToStore(derivedRequirements);
 
       return true;

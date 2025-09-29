@@ -102,19 +102,7 @@ export default function PublicUploadDemo() {
             reader.readAsDataURL(doc.file!);
           });
           
-          markUploaded({
-            contractorId,
-            type: doc.id,
-            file: {
-              name: doc.file.name,
-              type: doc.file.type,
-              size: doc.file.size,
-              dataUrl
-            },
-            uploadedBy: 'contractor',
-            accept: false,
-            validUntil: doc.validUntil || null
-          });
+          markUploaded(contractorId, doc.id);
         }
       }
 

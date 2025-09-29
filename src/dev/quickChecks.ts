@@ -69,28 +69,31 @@ export async function runQuickChecks() {
     // ========== Test 3: Aggregation with 1 Missing Required Doc ==========
     
     // Create test contractor
-    const testContractor = await createContractor({
+    const testContractorId = await createContractor({
       company_name: 'Test Contractor GmbH',
       contact_name: 'Test User',
-      email: 'test@example.com',
+      contact_email: 'test@example.com',
       phone: '123456789',
       address: 'Test Address 123',
-      country: 'DE'
+      country_code: 'DE',
+      status: 'inactive',
+      compliance_status: 'non_compliant',
+      company_type: 'baubetrieb'
     });
 
     // Clear any existing test data
-    clearTestData(testContractor.id);
+    clearTestData(testContractorId);
 
     // Add one missing required document
-    await upsertDoc(testContractor.id, {
-      contractorId: testContractor.id,
+    await upsertDoc({
+      contractorId: testContractorId,
       documentTypeId: 'liability_insurance',
       requirement: 'required',
       status: 'missing'
     });
 
     // Test aggregation
-    const aggregation = aggregateContractorStatusById(testContractor.id);
+    const aggregation = aggregateContractorStatusById(testContractorId);
     console.assert(
       aggregation.status === 'missing',
       '❌ Aggregation failed: 1 missing required doc should result in "missing" status'
@@ -109,16 +112,16 @@ export async function runQuickChecks() {
     // ========== Test 4: Aggregation with All Complete ==========
 
     // Clear and add accepted required document
-    clearTestData(testContractor.id);
+    clearTestData(testContractorId);
     
-    await upsertDoc(testContractor.id, {
-      contractorId: testContractor.id,
+    await upsertDoc({
+      contractorId: testContractorId,
       documentTypeId: 'liability_insurance',
       requirement: 'required',
       status: 'accepted'
     });
 
-    const completeAggregation = aggregateContractorStatusById(testContractor.id);
+    const completeAggregation = aggregateContractorStatusById(testContractorId);
     console.assert(
       completeAggregation.status === 'complete',
       '❌ Aggregation failed: accepted required doc should result in "complete" status'
@@ -130,7 +133,7 @@ export async function runQuickChecks() {
     );
 
     // Clean up test data
-    clearTestData(testContractor.id);
+    clearTestData(testContractorId);
 
     console.log('✅ All quick checks passed!');
     

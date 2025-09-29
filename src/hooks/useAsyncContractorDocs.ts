@@ -30,7 +30,7 @@ export function useAsyncContractorDocs(contractorId: string) {
     loadDocs();
     
     // Subscribe to changes for this contractor
-    const unsubscribe = subscribe(contractorId, () => {
+    const unsubscribe = subscribe(() => {
       loadDocs();
     });
 

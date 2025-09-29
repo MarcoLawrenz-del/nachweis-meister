@@ -118,7 +118,7 @@ export default function RequestDocumentsDialog({
     setOrgFlags(newFlags);
     // Sofort speichern
     try {
-      await updateOrgFlags(contractorId, newFlags);
+      await updateOrgFlags(newFlags);
     } catch (error) {
       console.error('Error updating org flags:', error);
     }
