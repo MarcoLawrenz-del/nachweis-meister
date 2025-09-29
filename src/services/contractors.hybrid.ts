@@ -122,7 +122,8 @@ export async function createContractor(data: Omit<Contractor, "id"|"created_at"|
     address: data.address,
     notes: data.notes,
     company_type: 'baubetrieb' as const,
-    tenant_id: '', // Will be handled by supabaseContractors service
+    // For demo mode, use a fixed tenant_id that matches our RLS policies
+    tenant_id: '00000000-0000-0000-0000-000000000001',
     requires_employees: data.hasEmployees,
     has_non_eu_workers: data.providesAbroad,
     employees_not_employed_in_germany: data.providesAbroad,
