@@ -28,7 +28,7 @@ import {
 import { ArrowLeft, ArrowRight, Send, CheckCircle2, Package, Mail, Plus, X } from 'lucide-react';
 import { useAppAuth } from '@/hooks/useAppAuth';
 import { useToast } from '@/hooks/use-toast';
-import { createContractor, updateContractor } from '@/services/contractors.store';
+import { supabase } from '@/integrations/supabase/client';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { COMPLIANCE_PACKAGES, type ConditionalFlags } from '@/config/packages';
 import { sendEmail } from '@/services/email';
@@ -45,7 +45,7 @@ import {
   deriveRequirements, 
   OrgFlags 
 } from '@/services/requirements/deriveRequirements';
-import { createDocumentsForContractor } from '@/services/wizardDocuments';
+// Removed createDocumentsForContractor - using Supabase requirements system
 
 const FormSchema = z.object({
   name: z.string().min(2, "Bitte Name angeben"),
@@ -251,11 +251,31 @@ export function NewSubcontractorWizard({
 
       if (editingSubcontractor) {
         try {
-          const contractor = await updateContractor(editingSubcontractor.id, subData);
+          // Update in Supabase instead of localStorage
+          const { data: contractor, error } = await supabase
+            .from('subcontractors')
+            .update({
+              company_name: subData.company_name,
+              contact_name: subData.contact_name,
+              contact_email: subData.email,
+              phone: subData.phone,
+              address: subData.address,
+              country_code: subData.country || 'DE',
+              notes: subData.notes,
+              requires_employees: conditionalFlags.hasEmployees,
+              has_non_eu_workers: conditionalAnswers.sendsAbroad === 'yes',
+              employees_not_employed_in_germany: conditionalAnswers.sendsAbroad === 'yes',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', editingSubcontractor.id)
+            .select()
+            .single();
+          
+          if (error) throw error;
           
           toast({
             title: "Änderungen gespeichert",
-            description: `${subcontractorData.company_name} wurde erfolgreich aktualisiert.`
+            description: `${subData.company_name} wurde erfolgreich aktualisiert.`
           });
 
           navigate(ROUTES.contractor(contractor.id));
@@ -272,12 +292,33 @@ export function NewSubcontractorWizard({
       } else {
         let contractorId: string;
         try {
-          const contractor = createContractor(subData);
+          // Create in Supabase instead of localStorage
+          const { data: contractor, error } = await supabase
+            .from('subcontractors')
+            .insert({
+              company_name: subData.company_name,
+              contact_name: subData.contact_name,
+              contact_email: subData.email,
+              phone: subData.phone,
+              address: subData.address,
+              country_code: subData.country || 'DE',
+              notes: subData.notes,
+              tenant_id: profile?.tenant_id,
+              company_type: 'baubetrieb',
+              requires_employees: conditionalFlags.hasEmployees,
+              has_non_eu_workers: conditionalAnswers.sendsAbroad === 'yes',
+              employees_not_employed_in_germany: conditionalAnswers.sendsAbroad === 'yes',
+              status: 'active'
+            })
+            .select()
+            .single();
+          
+          if (error) throw error;
           contractorId = contractor.id;
           
           toast({
             title: "Nachunternehmer erstellt",
-            description: `${subcontractorData.company_name} wurde erfolgreich erstellt.`
+            description: `${subData.company_name} wurde erfolgreich erstellt.`
           });
         } catch (error: any) {
           console.error('Error creating subcontractor:', error);
@@ -292,8 +333,8 @@ export function NewSubcontractorWizard({
         }
 
         try {
-          // Create documents directly in the store with "lastRequestedAt"
-          createDocumentsForContractor(contractorId, requirements);
+          // Documents will be created via requirements system, not localStorage
+          // Skip legacy createDocumentsForContractor call
           
           if (subcontractorData.contact_email && sendInvitationFlag) {
             // Get required documents for email
@@ -308,7 +349,7 @@ export function NewSubcontractorWizard({
             const result = await sendEmail("invitation", {
               contractorId,
               to: subcontractorData.contact_email,
-              contractorName: subcontractorData.company_name,
+              contractorName: subData.company_name,
               customerName: "Ihr Auftraggeber",
               requiredDocs
             });
