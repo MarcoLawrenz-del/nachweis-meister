@@ -19,7 +19,7 @@ import { useParams } from 'react-router-dom';
 import { aggregateContractorStatusById, type ContractorDocument } from "@/services/contractors";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequestDocumentsDialogSupabase from "@/components/RequestDocumentsDialogSupabase";
-import { useContractorDocuments } from "@/hooks/useContractorDocuments";
+import { useSupabaseRequirements } from "@/hooks/useSupabaseRequirements";
 import { displayName } from "@/utils/customDocs";
 
 interface OverviewTabProps {
@@ -32,18 +32,32 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
   const subId = urlSubId!;
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   
-  // Get docs from store (with safety fallback)
-  const docs = useContractorDocuments(subId) ?? [];
+  // Get requirements from Supabase
+  const { requirements, loading, error } = useSupabaseRequirements(subId);
 
-  // Get aggregated status and counts from centralized function
-  const agg = aggregateContractorStatusById(subId);
-  const { status, counts, hasRequired } = agg;
-  
-  // Use counts from aggregation
-  const missing = counts.missing;
-  const reviewing = counts.reviewing; 
-  const expiring = counts.expiring;
-  const valid = counts.valid;
+  // Convert requirements to docs format for compatibility
+  const docs = requirements.map(req => ({
+    contractorId: subId,
+    documentTypeId: req.document_type_id,
+    status: req.status as any,
+    requirement: 'required' as const, // All requirements from Supabase are required by default
+    fileName: req.documents?.[0]?.file_name,
+    fileUrl: req.documents?.[0]?.file_url,
+    uploadedAt: req.documents?.[0]?.uploaded_at,
+    validUntil: req.documents?.[0]?.valid_to,
+    customName: undefined,
+    label: undefined,
+  }));
+
+  // Calculate counts manually
+  const missing = docs.filter(doc => doc.status === 'missing').length;
+  const reviewing = docs.filter(doc => doc.status === 'in_review' || doc.status === 'submitted').length;
+  const expiring = docs.filter(doc => doc.status === 'expiring').length;
+  const valid = docs.filter(doc => doc.status === 'valid').length;
+  const hasRequired = docs.some(doc => doc.requirement === 'required');
+
+  // Status based on counts
+  const status = missing > 0 ? 'attention' : 'complete';
 
   // Get next steps: first 3 required documents that need action (missing|rejected|expired)
   const nextSteps = docs
@@ -52,7 +66,7 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
     .slice(0, 3)
     .map(doc => {
       const docType = DOCUMENT_TYPES.find(dt => dt.id === doc.documentTypeId);
-      const docName = displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName, doc.label);
+      const docName = displayName(doc.documentTypeId, docType?.label || doc.documentTypeId, doc.customName || '', doc.label || '');
       
       return {
         id: doc.documentTypeId,
