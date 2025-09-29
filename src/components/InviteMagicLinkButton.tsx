@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendMagicInvitation } from "@/services/email";
 import { getDocs } from "@/services/contractorDocs.store";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import type { Contractor } from "@/services/contractors.store";
+import type { Contractor } from "@/types/contractor";
 
 interface InviteMagicLinkButtonProps {
   contractor: Contractor;
@@ -38,8 +38,8 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
 
       const result = await sendMagicInvitation({
         contractorId: contractor.id,
-        email: contractor.contact_email,
-        contractorName: contractor.company_name,
+        email: contractor.contactEmail,
+        contractorName: contractor.companyName,
         companyName: "Ihr Auftraggeber", // TODO: Get from tenant/user context
         requiredDocs
       });
@@ -52,7 +52,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
         title: result.isStub ? "Demo: Einladung simuliert" : "Einladung versendet",
         description: result.isStub 
           ? `Demo-Modus: Magic-Link wurde erstellt aber keine E-Mail versendet.`
-          : `Eine E-Mail mit dem Upload-Link wurde an ${contractor.contact_email} gesendet.`,
+          : `Eine E-Mail mit dem Upload-Link wurde an ${contractor.contactEmail} gesendet.`,
       });
 
     } catch (error: any) {
@@ -96,7 +96,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
         <DialogHeader>
           <DialogTitle>Magic-Link Einladung senden</DialogTitle>
           <DialogDescription>
-            Sende eine Einladung mit sicherem Upload-Link an {contractor.company_name}.
+            Sende eine Einladung mit sicherem Upload-Link an {contractor.companyName}.
           </DialogDescription>
         </DialogHeader>
 
@@ -104,7 +104,7 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
           <div>
             <Label htmlFor="email">E-Mail-Adresse</Label>
             <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-              {contractor.contact_email}
+              {contractor.contactEmail}
             </div>
           </div>
 

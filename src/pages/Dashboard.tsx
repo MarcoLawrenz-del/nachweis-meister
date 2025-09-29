@@ -382,10 +382,11 @@ export default function Dashboard() {
 
        {/* NewSubcontractorWizard Dialog */}
        {showNewSubcontractorWizard && (
-        <NewSubcontractorWizard
-           isOpen={showNewSubcontractorWizard}
-           onClose={() => setShowNewSubcontractorWizard(false)}
-         />
+         <NewSubcontractorWizard
+            isOpen={showNewSubcontractorWizard}
+            onClose={() => setShowNewSubcontractorWizard(false)}
+            onSuccess={() => setShowNewSubcontractorWizard(false)}
+          />
        )}
      </div>
    );
