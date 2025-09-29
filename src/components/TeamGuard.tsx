@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { canManageTeam } from '@/services/team.store';
+import { useNewAuth } from '@/contexts/NewAuthContext';
+import { canManageTeam, useCurrentUserRole } from '@/services/team.supabase';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ShieldX } from 'lucide-react';
 
@@ -11,9 +11,18 @@ interface TeamGuardProps {
 }
 
 export function TeamGuard({ children, fallback }: TeamGuardProps) {
-  const { userRole } = useAuthContext();
+  const { user } = useNewAuth();
+  const { role: userRole, loading } = useCurrentUserRole();
 
-  if (!canManageTeam(userRole)) {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user || !canManageTeam(userRole)) {
     if (fallback) {
       return <>{fallback}</>;
     }

@@ -13,48 +13,35 @@ import { Users, Plus, Edit, Trash2, Shield, Crown, User, AlertCircle } from 'luc
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { 
-  listTeamMembers, 
   createTeamMember, 
   updateTeamMember, 
   deleteTeamMember, 
-  subscribe,
   canEditMember,
   getRoleDisplayName,
+  useTeamMembers,
+  useCurrentUserRole,
   type TeamMember,
-  type UserRole,
-  getCurrentUserRole
-} from '@/services/team.store';
+  type UserRole
+} from '@/services/team.supabase';
 
 export default function Team() {
   const { user } = useSupabaseAuthContext();
   const { toast } = useToast();
-  const [members, setMembers] = useState<TeamMember[]>([]);
+  const { members, loading: membersLoading } = useTeamMembers();
+  const { role: currentUserRole, loading: roleLoading } = useCurrentUserRole();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [inviteData, setInviteData] = useState({ name: '', email: '', role: 'staff' as UserRole });
   
-  const currentUserRole = getCurrentUserRole();
-  
-  // Guard: return loading if no user context yet
-  if (!user) {
+  // Guard: return loading if no user context yet or still loading
+  if (!user || membersLoading || roleLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
       </div>
     );
   }
-
-  useEffect(() => {
-    const loadMembers = () => setMembers(listTeamMembers());
-    
-    // Ensure current user is in team
-    const { ensureCurrentUserInTeam } = require('@/services/team.store');
-    ensureCurrentUserInTeam();
-    
-    loadMembers();
-    return subscribe(loadMembers);
-  }, []);
 
   const handleInviteMember = async () => {
     if (!inviteData.name.trim() || !inviteData.email.trim()) {
@@ -78,12 +65,20 @@ export default function Team() {
     }
 
     try {
-      createTeamMember({
+      const result = await createTeamMember({
         name: inviteData.name.trim(),
         email: inviteData.email.trim().toLowerCase(),
-        role: inviteData.role,
-        invited_by: 'current-user'
+        role: inviteData.role
       });
+
+      if (!result.success) {
+        toast({
+          title: 'Fehler',
+          description: result.error || 'Mitglied konnte nicht hinzugefügt werden.',
+          variant: 'destructive'
+        });
+        return;
+      }
 
       toast({
         title: 'Mitglied eingeladen',
@@ -105,9 +100,18 @@ export default function Team() {
     if (!editingMember) return;
 
     try {
-      updateTeamMember(editingMember.id, {
+      const result = await updateTeamMember(editingMember.id, {
         role: editingMember.role
       });
+
+      if (!result.success) {
+        toast({
+          title: 'Fehler',
+          description: result.error || 'Rolle konnte nicht geändert werden.',
+          variant: 'destructive'
+        });
+        return;
+      }
 
       toast({
         title: 'Rolle aktualisiert',
@@ -131,7 +135,16 @@ export default function Team() {
     }
 
     try {
-      deleteTeamMember(member.id);
+      const result = await deleteTeamMember(member.id);
+
+      if (!result.success) {
+        toast({
+          title: 'Fehler',
+          description: result.error || 'Mitglied konnte nicht entfernt werden.',
+          variant: 'destructive'
+        });
+        return;
+      }
 
       toast({
         title: 'Mitglied entfernt',
@@ -223,7 +236,7 @@ export default function Team() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        {canEditMember(currentUserRole, member.role) && member.id !== 'current-user' && (
+                        {canEditMember(currentUserRole, member.role) && member.id !== user?.id && (
                           <>
                             <Tooltip>
                               <TooltipTrigger asChild>

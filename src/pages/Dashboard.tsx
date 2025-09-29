@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ActivityFeedSupabase } from "@/components/ActivityFeedSupabase";
-import { useDemoData } from '@/hooks/useDemoData';
+import { useAppMode } from '@/hooks/useAppMode';
 import { supabase } from '@/integrations/supabase/client';
 
 function NavigationCard({ 
@@ -64,7 +64,7 @@ export default function Dashboard() {
   const [recentlyRequested, setRecentlyRequested] = useState<any[]>([]);
   const [expiringDocs, setExpiringDocs] = useState<any[]>([]);
   const [showNewSubcontractorWizard, setShowNewSubcontractorWizard] = useState(false);
-  const { isDemo } = useDemoData();
+  const { isDemo } = useAppMode();
   const [loading, setLoading] = useState(true);
 
   // Load Supabase data

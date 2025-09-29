@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppAuth } from '@/hooks/useAppAuth';
-import { useDemoData } from '@/hooks/useDemoData';
+import { useAppMode } from '@/hooks/useAppMode';
 import { useToast } from '@/hooks/use-toast';
 import { debug } from '@/lib/debug';
 import { 
@@ -65,7 +65,8 @@ export default function Projects() {
   });
   const { profile } = useAppAuth();
   const { toast } = useToast();
-  const { isDemo, demoProjects } = useDemoData();
+  const { isDemo } = useAppMode();
+  const demoProjects = []; // Remove demo dependency
 
   useEffect(() => {
     if (isDemo) {

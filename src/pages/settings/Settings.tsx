@@ -21,15 +21,14 @@ import {
   Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getRoleDisplayName, canManageTeam } from '@/services/team.store';
+import { getRoleDisplayName, canManageTeam, useCurrentUserRole } from '@/services/team.supabase';
 
 export default function Settings() {
   const { user, profile } = useNewAuth();
   const [currentTab, setCurrentTab] = useState('profile');
   const { toast } = useToast();
+  const { role: userRole, loading: roleLoading } = useCurrentUserRole();
   
-  // For now, default to 'staff' role - this can be enhanced with proper role management
-  const userRole = 'staff';
   const canAccessTeam = canManageTeam(userRole);
 
   const handleTabChange = (value: string) => {
