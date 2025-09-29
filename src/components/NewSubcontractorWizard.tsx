@@ -319,6 +319,14 @@ export function NewSubcontractorWizard({
           if (error) throw error;
           contractorId = contractor.id;
           
+          // Refresh the hybrid cache so the new contractor can be found
+          await import('@/services/contractors.hybrid').then(async module => {
+            // Force cache refresh by calling listContractors which triggers refreshCache
+            module.listContractors();
+            // Small delay to ensure cache is updated
+            await new Promise(resolve => setTimeout(resolve, 100));
+          });
+          
           toast({
             title: "Nachunternehmer erstellt",
             description: `${subData.company_name} wurde erfolgreich erstellt.`
@@ -327,8 +335,8 @@ export function NewSubcontractorWizard({
           console.error('Error creating subcontractor:', error);
           toast({
             title: "Fehler",
-            description: error.message.includes('duplicate') 
-              ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits."
+            description: error.message.includes('duplicate') || error.message.includes('already exists')
+              ? "Ein Nachunternehmer mit dieser E-Mail existiert bereits für diesen Mandanten."
               : "Nachunternehmer konnte nicht gespeichert werden.",
             variant: "destructive"
           });
