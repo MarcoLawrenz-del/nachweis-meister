@@ -126,6 +126,11 @@ export function ActivityTab({ emailLogs, contractorId }: ActivityTabProps) {
       <CardContent>
         {loading ? (
           <div className="text-center py-8 text-muted-foreground">
+            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50 animate-pulse" />
+            <p>Aktivitäten werden geladen...</p>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>Noch keine Aktivitäten vorhanden.</p>
           </div>
