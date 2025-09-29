@@ -71,6 +71,41 @@ export async function createSupabaseContractor(
     orgFlags?: { hrRegistered?: boolean };
   }
 ): Promise<SupabaseContractor> {
+  // For demo mode, ensure we have a valid tenant_id
+  let effectiveTenantId = data.tenant_id;
+  
+  if (!effectiveTenantId) {
+    console.log('No tenant_id provided, creating demo environment...');
+    
+    // Create or sync demo user/tenant  
+    const { data: demoUserId, error: syncError } = await supabase.rpc('sync_local_user', {
+      local_user_id: 'demo-user',
+      user_email: 'demo@subfix.de', 
+      user_name: 'Demo User',
+      tenant_name: 'Demo Tenant'
+    });
+    
+    if (syncError) {
+      console.error('Failed to sync demo user:', syncError);
+      throw new Error(`Failed to prepare demo environment: ${syncError.message}`);
+    }
+    
+    // Get the tenant ID for demo
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('name', 'Demo Tenant')
+      .single();
+      
+    if (tenantError || !tenant) {
+      console.error('Failed to get demo tenant:', tenantError);
+      throw new Error('Demo tenant not found');
+    }
+    
+    effectiveTenantId = tenant.id;
+    console.log('Using demo tenant ID:', effectiveTenantId);
+  }
+
   const { data: contractor, error } = await supabase
     .from('subcontractors')
     .insert({
@@ -81,7 +116,7 @@ export async function createSupabaseContractor(
       address: data.address,
       country_code: data.country_code || 'DE',
       notes: data.notes,
-      tenant_id: data.tenant_id,
+      tenant_id: effectiveTenantId,
       company_type: data.company_type || 'baubetrieb',
       requires_employees: data.requires_employees,
       has_non_eu_workers: data.has_non_eu_workers,
