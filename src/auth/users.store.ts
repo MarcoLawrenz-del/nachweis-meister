@@ -29,22 +29,15 @@ export async function sha256Base64(text: string): Promise<string> {
   return btoa(text).replace(/[^a-zA-Z0-9]/g, '').substring(0, 32);
 }
 
-// Get all users from localStorage
+// DEPRECATED: localStorage users removed - use Supabase auth
 function getUsers(): User[] {
-  if (typeof window === "undefined") return [];
-  
-  try {
-    const stored = localStorage.getItem(LS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
+  console.warn('[users.store.ts] DEPRECATED: Use NewAuthContext instead');
+  return [];
 }
 
-// Save users to localStorage
+// DEPRECATED: localStorage users removed - use Supabase auth
 function saveUsers(users: User[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LS_KEY, JSON.stringify(users));
+  console.warn('[users.store.ts] DEPRECATED: Use NewAuthContext instead');
 }
 
 // Initialize demo user on first run

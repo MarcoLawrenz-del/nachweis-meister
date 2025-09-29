@@ -17,18 +17,9 @@ export function getSession(): Session | null {
   if (typeof window === "undefined") return null;
   
   try {
-    const stored = localStorage.getItem(LS_KEY);
-    if (!stored) return null;
-    
-    const session: Session = JSON.parse(stored);
-    
-    // Check if session is expired
-    if (Date.now() > session.expiresAt) {
-      localStorage.removeItem(LS_KEY);
-      return null;
-    }
-    
-    return session;
+    // DEPRECATED: localStorage auth removed - use Supabase auth
+    console.warn('[auth.ts] DEPRECATED: Use NewAuthContext instead');
+    return null;
   } catch {
     return null;
   }
@@ -64,8 +55,8 @@ export async function signIn({ email, password }: { email: string; password: str
     expiresAt: Date.now() + SESSION_DURATION
   };
   
-  // Persist to localStorage
-  localStorage.setItem(LS_KEY, JSON.stringify(session));
+  // DEPRECATED: localStorage removed - use Supabase auth
+  console.warn('[auth.ts] DEPRECATED: Use NewAuthContext signIn instead');
   
   // Notify listeners
   notifyAuthStateChange();
@@ -75,7 +66,7 @@ export async function signIn({ email, password }: { email: string; password: str
 
 export function signOut(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(LS_KEY);
+  // DEPRECATED: localStorage removed - use Supabase auth
   
   // Notify listeners
   notifyAuthStateChange();

@@ -19,23 +19,14 @@ const listeners = new Set<() => void>();
 const LS_KEY = "subfix.team.v1";
 
 function load(): TeamMember[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem(LS_KEY);
-    const parsed = stored ? JSON.parse(stored) : [];
-    // Defensive: ensure we return an array
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.warn("Failed to load team data:", error);
-    return [];
-  }
+  // DEPRECATED: localStorage team removed - use Supabase team.supabase.ts
+  console.warn('[team.store.ts] DEPRECATED: Use team.supabase.ts instead');
+  return [];
 }
 
 function save(members: TeamMember[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(members));
-  } catch {}
+  // DEPRECATED: localStorage team removed - use Supabase team.supabase.ts
+  console.warn('[team.store.ts] DEPRECATED: Use team.supabase.ts instead');
 }
 
 function loadToMap() {

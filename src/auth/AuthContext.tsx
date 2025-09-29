@@ -18,18 +18,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydration aus localStorage
+  // DEPRECATED: localStorage auth removed - using Supabase only
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const userData = JSON.parse(raw);
-        setUser({
-          ...userData,
-          createdAt: userData.createdAt || new Date().toISOString()
-        });
-      }
-    } catch {}
+    console.warn('[AuthContext.tsx] DEPRECATED: Use NewAuthContext instead');
     setLoading(false);
   }, []);
 
@@ -45,18 +36,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString()
     };
     
-    localStorage.setItem(LS_KEY, JSON.stringify(userData));
+    // DEPRECATED: localStorage auth removed - using Supabase only
     setUser(userData);
   };
 
   const logout = () => {
-    try {
-      localStorage.removeItem(LS_KEY);
-      setUser(null);
-    } catch (error) {
-      console.warn('Logout cleanup failed:', error);
-      setUser(null);
-    }
+    // DEPRECATED: localStorage auth removed - using Supabase only
+    console.warn('[AuthContext.tsx] DEPRECATED: Use NewAuthContext instead');
+    setUser(null);
   };
 
   const isAuthenticated = useMemo(() => user !== null, [user]);

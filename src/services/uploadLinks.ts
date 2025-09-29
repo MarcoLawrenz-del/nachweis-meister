@@ -10,20 +10,14 @@ interface UploadToken {
 }
 
 function getTokenStore(): Record<string, UploadToken> {
-  if (typeof window === "undefined") return {};
-  try {
-    const data = localStorage.getItem(LS_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
+  // DEPRECATED: localStorage upload tokens removed - use Supabase magic_links table
+  console.warn('[uploadLinks.ts] DEPRECATED: Use uploadLinks.supabase.ts instead');
+  return {};
 }
 
 function saveTokenStore(store: Record<string, UploadToken>) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(store));
-  } catch {}
+  // DEPRECATED: localStorage upload tokens removed - use Supabase magic_links table
+  console.warn('[uploadLinks.ts] DEPRECATED: Use uploadLinks.supabase.ts instead');
 }
 
 function generateToken(): string {

@@ -26,31 +26,8 @@ export function useAuth() {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      // Check for existing session in localStorage
-      const storedUser = localStorage.getItem('subfix.auth.user.v1');
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          
-          // Initialize demo mode with Supabase
-          const demoUser = await demoAuthService.initializeDemoMode(userData);
-          
-          // Create profile from user data
-          setProfile({
-            id: userData.id,
-            tenant_id: demoUser?.tenant_id || 'local-tenant',
-            name: userData.name,
-            email: userData.email,
-            role: 'owner'
-          });
-          
-          console.log('[useAuth] User loaded and demo mode initialized:', { userData, demoUser });
-        } catch (error) {
-          console.error('Error parsing stored user or initializing demo mode:', error);
-          localStorage.removeItem('subfix.auth.user.v1');
-        }
-      }
+      // DEPRECATED: localStorage auth removed - using Supabase auth only
+      console.log('[useAuth] DEPRECATED: localStorage-based auth should not be used');
       setLoading(false);
     };
 
@@ -67,8 +44,8 @@ export function useAuth() {
 
       const userData = result.user;
       
-      // Store user in localStorage for persistence
-      localStorage.setItem('subfix.auth.user.v1', JSON.stringify(userData));
+      // DEPRECATED: localStorage removed - using Supabase auth only
+      console.warn('[useAuth] DEPRECATED: Use NewAuthContext instead');
       setUser(userData);
       
       // Initialize demo mode with Supabase
@@ -94,7 +71,7 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      localStorage.removeItem('subfix.auth.user.v1');
+      // DEPRECATED: localStorage removed - using Supabase auth only
       demoAuthService.clearDemoMode();
       setUser(null);
       setProfile(null);

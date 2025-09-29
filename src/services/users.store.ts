@@ -23,8 +23,9 @@ export async function changePassword(email: string, currentPassword: string, new
     const currentHashArray = Array.from(new Uint8Array(currentHashBuffer));
     const currentHashHex = currentHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Get stored password hash (in demo, we'll use a simple hash for demo@subfix.de)
-    const storedHash = localStorage.getItem(`password_${email}`) || '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // 'password' in SHA-256
+    // DEPRECATED: localStorage passwords removed - use Supabase auth
+    console.warn('[users.store.ts] DEPRECATED: Use NewAuthContext instead');
+    const storedHash = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // Default hash
 
     if (currentHashHex !== storedHash) {
       return { success: false, error: 'Aktuelles Passwort ist falsch' };
@@ -36,8 +37,8 @@ export async function changePassword(email: string, currentPassword: string, new
     const newHashArray = Array.from(new Uint8Array(newHashBuffer));
     const newHashHex = newHashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Store new password hash
-    localStorage.setItem(`password_${email}`, newHashHex);
+    // DEPRECATED: localStorage passwords removed - use Supabase auth
+    console.warn('[users.store.ts] DEPRECATED: Use NewAuthContext instead');
 
     return { success: true };
   } catch (error) {

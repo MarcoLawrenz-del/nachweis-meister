@@ -26,39 +26,14 @@ let currentSettings: Settings = { ...defaultSettings };
 const listeners = new Set<() => void>();
 
 function loadSettings(): Settings {
-  if (typeof window === 'undefined') return { ...defaultSettings };
-  
-  try {
-    const stored = localStorage.getItem(SETTINGS_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      // Defensive merge with validation
-      return {
-        notifications: {
-          remindersEnabled: parsed.notifications?.remindersEnabled ?? defaultSettings.notifications.remindersEnabled,
-          statusUpdatesEnabled: parsed.notifications?.statusUpdatesEnabled ?? defaultSettings.notifications.statusUpdatesEnabled,
-        },
-        system: {
-          locale: parsed.system?.locale ?? defaultSettings.system.locale,
-          demoMode: parsed.system?.demoMode ?? defaultSettings.system.demoMode,
-        }
-      };
-    }
-  } catch (error) {
-    console.warn('Failed to load settings:', error);
-  }
-  
+  // DEPRECATED: localStorage settings removed - use Supabase user_settings
+  console.warn('[settings.store.ts] DEPRECATED: Use settings.supabase.ts instead');
   return { ...defaultSettings };
 }
 
 function saveSettings(settings: Settings): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch (error) {
-    console.warn('Failed to save settings:', error);
-  }
+  // DEPRECATED: localStorage settings removed - use Supabase user_settings
+  console.warn('[settings.store.ts] DEPRECATED: Use settings.supabase.ts instead');
 }
 
 export function getSettings(): Settings {

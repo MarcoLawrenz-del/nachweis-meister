@@ -47,34 +47,19 @@ interface ActivityEntry {
 }
 
 function getRateLimitStore(): Record<string, RateLimitEntry> {
-  if (typeof window === "undefined") return {};
-  try {
-    const data = localStorage.getItem(RATE_LIMIT_KEY);
-    return data ? JSON.parse(data) : {};
-  } catch {
-    return {};
-  }
+  // DEPRECATED: localStorage rate limiting removed - use Supabase edge functions
+  console.warn('[email.ts] DEPRECATED: Use email.supabase.ts for rate limiting');
+  return {};
 }
 
 function saveRateLimitStore(store: Record<string, RateLimitEntry>) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(store));
-  } catch {}
+  // DEPRECATED: localStorage rate limiting removed - use Supabase edge functions
+  console.warn('[email.ts] DEPRECATED: Use email.supabase.ts for rate limiting');
 }
 
 function logActivity(entry: ActivityEntry) {
-  if (typeof window === "undefined") return;
-  try {
-    const existing = localStorage.getItem(ACTIVITY_LOG_KEY);
-    const activities: ActivityEntry[] = existing ? JSON.parse(existing) : [];
-    activities.push(entry);
-    // Keep only last 1000 entries
-    if (activities.length > 1000) {
-      activities.splice(0, activities.length - 1000);
-    }
-    localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(activities));
-  } catch {}
+  // DEPRECATED: localStorage activity logging removed - use Supabase email_logs table
+  console.warn('[email.ts] DEPRECATED: Use email.supabase.ts for activity logging');
 }
 
 function checkRateLimit(contractorId: string, type: EmailType): boolean {
@@ -642,13 +627,9 @@ export async function sendEmail(
 
 // Export activity log for admin views
 export function getEmailActivity(): ActivityEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const data = localStorage.getItem(ACTIVITY_LOG_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
+  // DEPRECATED: localStorage email activity removed - use Supabase email_logs table
+  console.warn('[email.ts] DEPRECATED: Use email.supabase.ts getEmailLogs instead');
+  return [];
 }
 
 // Legacy functions for backward compatibility

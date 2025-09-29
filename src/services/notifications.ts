@@ -23,22 +23,14 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
 };
 
 export function getNotificationSettings(): NotificationSettings {
-  if (typeof window === "undefined") return DEFAULT_NOTIFICATION_SETTINGS;
-  try {
-    const data = localStorage.getItem(SETTINGS_KEY);
-    return data ? { ...DEFAULT_NOTIFICATION_SETTINGS, ...JSON.parse(data) } : DEFAULT_NOTIFICATION_SETTINGS;
-  } catch {
-    return DEFAULT_NOTIFICATION_SETTINGS;
-  }
+  // DEPRECATED: localStorage notifications removed - use Supabase user_settings
+  console.warn('[notifications.ts] DEPRECATED: Use notifications.supabase.ts instead');
+  return DEFAULT_NOTIFICATION_SETTINGS;
 }
 
 export function saveNotificationSettings(settings: Partial<NotificationSettings>) {
-  if (typeof window === "undefined") return;
-  try {
-    const current = getNotificationSettings();
-    const updated = { ...current, ...settings };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-  } catch {}
+  // DEPRECATED: localStorage notifications removed - use Supabase user_settings
+  console.warn('[notifications.ts] DEPRECATED: Use notifications.supabase.ts instead');
 }
 
 export async function tickDaily(): Promise<{
