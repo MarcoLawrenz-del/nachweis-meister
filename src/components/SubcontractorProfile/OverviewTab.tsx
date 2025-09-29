@@ -18,7 +18,7 @@ import {
 import { useParams } from 'react-router-dom';
 import { aggregateContractorStatusById, type ContractorDocument } from "@/services/contractors";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
+import RequestDocumentsDialogSupabase from "@/components/RequestDocumentsDialogSupabase";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
 import { displayName } from "@/utils/customDocs";
 
@@ -303,7 +303,7 @@ export function OverviewTab({ profile, projectId }: OverviewTabProps) {
       {showRequestDialog && (
         <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
           <DialogContent className="max-w-2xl">
-            <RequestDocumentsDialog
+            <RequestDocumentsDialogSupabase
               contractorId={subId}
               contractorEmail={profile?.contact_email}
               onClose={() => setShowRequestDialog(false)}

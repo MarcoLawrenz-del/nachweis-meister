@@ -43,7 +43,7 @@ import { getNotificationSettings } from '@/services/notifications';
 import { isErr } from '@/utils/result';
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useContractorDocuments } from "@/hooks/useContractorDocuments";
-import RequestDocumentsDialog from "@/components/RequestDocumentsDialog";
+import RequestDocumentsDialogSupabase from "@/components/RequestDocumentsDialogSupabase";
 import { useToast } from "@/hooks/use-toast";
 import { getContractorMeta, getDocs, setContractorMeta, markUploaded, updateDocumentRequirement } from "@/services/contractorDocs.store";
 import { formatDistanceToNow } from "date-fns";
@@ -855,7 +855,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       {showRequestDialog && (
         <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
           <DialogContent className="max-w-2xl">
-            <RequestDocumentsDialog
+            <RequestDocumentsDialogSupabase
               contractorId={contractorId}
               contractorEmail={profile?.contact_email}
               onClose={() => setShowRequestDialog(false)}
