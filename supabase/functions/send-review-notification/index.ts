@@ -132,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: EMAIL_CONFIG.reviews.from,
       to: [recipientEmail],
-      reply_to: EMAIL_CONFIG.reviews.replyTo,
+      replyTo: EMAIL_CONFIG.reviews.replyTo,
       subject: subject,
       html: htmlContent,
     });

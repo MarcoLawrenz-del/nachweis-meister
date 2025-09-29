@@ -166,7 +166,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { error: emailError } = await resend.emails.send({
       from: EMAIL_CONFIG.team.from,
       to: [email],
-      reply_to: EMAIL_CONFIG.team.replyTo,
+      replyTo: EMAIL_CONFIG.team.replyTo,
       subject: `Einladung zum Team ${tenantData.name}`,
       html: emailHtml,
     });

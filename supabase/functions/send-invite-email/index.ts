@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: EMAIL_CONFIG.invitations.from,
       to: [to],
-      reply_to: EMAIL_CONFIG.invitations.replyTo,
+      replyTo: EMAIL_CONFIG.invitations.replyTo,
       subject: subject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
