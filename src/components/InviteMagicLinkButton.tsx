@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Mail, Copy, ExternalLink, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { sendMagicInvitation } from "@/services/email";
-import { getDocs } from "@/services/contractorDocs.store";
+import { sendMagicInvitation } from "@/services/email.supabase";
+import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import type { Contractor } from "@/types/contractor";
 

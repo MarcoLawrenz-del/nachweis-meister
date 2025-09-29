@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import RequirementSelector from "@/components/RequirementSelector";
-import { getDocs, setDocs, setContractorMeta } from "@/services/contractorDocs.store";
-import { getContractor } from "@/services/contractors";
+import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
+import { useSupabaseContractors } from '@/hooks/useSupabaseContractors';
 import type { ContractorDocument, Requirement } from "@/services/contractors";
-import { sendMagicInvitation, getEmailErrorMessage } from "@/services/email";
+import { sendMagicInvitation, getEmailErrorMessage } from "@/services/email.supabase";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import {
   deriveRequirements, 
   OrgFlags 
 } from '@/services/requirements/deriveRequirements';
-import { updateConditionalAnswers, updateOrgFlags } from '@/services/contractors.store';
+import { updateConditionalAnswers, updateOrgFlags } from '@/services/contractorsSupabase';
 
 export default function RequestDocumentsDialog({ 
   contractorId, 

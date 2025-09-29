@@ -27,10 +27,9 @@ import { de } from 'date-fns/locale';
 import { ContractorDocument } from '@/types/contractor';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { displayName } from '@/utils/customDocs';
-import { upsertDoc, getDocs } from '@/services/contractorDocs.store';
-import { getContractor } from '@/services/contractors';
-import { sendEmail } from '@/services/email';
-import { getNotificationSettings } from '@/services/notifications';
+import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
+import { sendEmail } from '@/services/email.supabase';
+import { getNotificationSettings } from '@/services/notifications.supabase';
 import { computeValidUntil } from '@/utils/validity';
 
 interface DocumentReviewDrawerProps {

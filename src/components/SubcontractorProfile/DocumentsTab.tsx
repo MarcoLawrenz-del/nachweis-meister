@@ -45,7 +45,7 @@ import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
 import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
 import RequestDocumentsDialogSupabase from "@/components/RequestDocumentsDialogSupabase";
 import { useToast } from "@/hooks/use-toast";
-import { getContractorMeta, getDocs, setContractorMeta, markUploaded, updateDocumentRequirement } from "@/services/contractorDocs.store";
+import { useSupabaseContractors } from '@/hooks/useSupabaseContractors';
 import { formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import { displayName, isCustomDoc } from "@/utils/customDocs";

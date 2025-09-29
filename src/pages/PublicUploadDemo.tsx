@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
-import { getDocs, markUploaded } from "@/services/contractorDocs.store";
-import { setDocumentStatus } from "@/services/contractors";
+import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
+import { useSupabaseContractors } from '@/hooks/useSupabaseContractors';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
