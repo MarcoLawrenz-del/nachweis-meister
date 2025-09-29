@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,41 +19,57 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ limit = 10, daysBack = 7, onReviewClick, className }: ActivityFeedProps) {
-  const contractors = getContractors();
-  const events = getAllRecentEvents(daysBack);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Convert events to activity items
-  const activities = events.slice(0, limit).map(event => {
-    const contractor = contractors.find(c => c.id === event.contractorId);
-    const docType = DOCUMENT_TYPES.find(t => t.id === event.docType);
-    const docDisplayName = displayName(event.docType, docType?.label || '', undefined, undefined);
-    
-    let actionLabel = '';
-    switch (event.kind) {
-      case 'file_uploaded':
-        actionLabel = 'hochgeladen';
-        break;
-      case 'status_set_accepted':
-        actionLabel = 'angenommen';
-        break;
-      case 'status_set_rejected':
-        actionLabel = 'abgelehnt';
-        break;
-      default:
-        actionLabel = event.kind.replace('status_set_', '').replace('_', ' ');
-    }
-    
-    return {
-      id: event.id,
-      contractorId: event.contractorId,
-      contractorName: contractor?.company_name || 'Unbekannt',
-      docType: event.docType,
-      docName: docDisplayName,
-      action: actionLabel,
-      timestamp: event.tsISO,
-      actor: event.actor
+  useEffect(() => {
+    const loadActivities = async () => {
+      try {
+        const contractors = await getContractors();
+        const events = await getAllRecentEvents(daysBack);
+        
+        const activityItems = events.slice(0, limit).map(event => {
+          const contractor = contractors.find(c => c.id === event.contractorId);
+          const docType = DOCUMENT_TYPES.find(t => t.id === event.docType);
+          const docDisplayName = displayName(event.docType, docType?.label || '', undefined, undefined);
+          
+          let actionLabel = '';
+          switch (event.kind) {
+            case 'file_uploaded':
+              actionLabel = 'hochgeladen';
+              break;
+            case 'status_set_accepted':
+              actionLabel = 'angenommen';
+              break;
+            case 'status_set_rejected':
+              actionLabel = 'abgelehnt';
+              break;
+            default:
+              actionLabel = event.kind.replace('status_set_', '').replace('_', ' ');
+          }
+          
+          return {
+            id: event.id,
+            contractorId: event.contractorId,
+            contractorName: contractor?.company_name || 'Unbekannt',
+            docType: event.docType,
+            docName: docDisplayName,
+            action: actionLabel,
+            timestamp: event.tsISO,
+            actor: event.actor
+          };
+        });
+        
+        setActivities(activityItems);
+      } catch (error) {
+        console.error('Error loading activities:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  });
+    
+    loadActivities();
+  }, [limit, daysBack]);
 
   const formatDateTime = (dateStr: string) => {
     try {

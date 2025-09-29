@@ -6,14 +6,14 @@ import { aggregateContractorStatusById } from '@/services/contractors';
 import { isExpiring } from '@/utils/validity';
 import { slugifyPreserveGerman } from '@/utils/slug';
 import { upsertDoc, setDocs } from '@/services/contractorDocs.store';
-import { createContractor } from '@/services/contractors.store';
+import { createContractor, type Contractor } from '@/services/contractors.store';
 
 function clearTestData(contractorId: string) {
   // Clear documents for the test contractor
   setDocs(contractorId, []);
 }
 
-export function runQuickChecks() {
+export async function runQuickChecks() {
   if (import.meta.env.PROD) return; // Skip in production
 
   console.log('🔍 Running quick regression checks...');
@@ -69,7 +69,7 @@ export function runQuickChecks() {
     // ========== Test 3: Aggregation with 1 Missing Required Doc ==========
     
     // Create test contractor
-    const testContractor = createContractor({
+    const testContractor = await createContractor({
       company_name: 'Test Contractor GmbH',
       contact_name: 'Test User',
       email: 'test@example.com',
@@ -82,14 +82,11 @@ export function runQuickChecks() {
     clearTestData(testContractor.id);
 
     // Add one missing required document
-    upsertDoc(testContractor.id, {
+    await upsertDoc(testContractor.id, {
       contractorId: testContractor.id,
       documentTypeId: 'liability_insurance',
       requirement: 'required',
-      status: 'missing',
-      label: 'Haftpflichtversicherung',
-      customName: undefined,
-      validUntil: undefined
+      status: 'missing'
     });
 
     // Test aggregation
@@ -114,14 +111,11 @@ export function runQuickChecks() {
     // Clear and add accepted required document
     clearTestData(testContractor.id);
     
-    upsertDoc(testContractor.id, {
+    await upsertDoc(testContractor.id, {
       contractorId: testContractor.id,
       documentTypeId: 'liability_insurance',
       requirement: 'required',
-      status: 'accepted',
-      label: 'Haftpflichtversicherung',
-      customName: undefined,
-      validUntil: undefined // No expiry
+      status: 'accepted'
     });
 
     const completeAggregation = aggregateContractorStatusById(testContractor.id);
