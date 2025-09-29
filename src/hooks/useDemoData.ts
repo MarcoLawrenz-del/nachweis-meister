@@ -18,6 +18,8 @@ export function useDemoData() {
   useEffect(() => {
     if (demoMode) {
       debug.log('🎯 Demo mode activated - using enhanced sample data');
+    } else {
+      debug.log('🎯 Production mode - using Supabase data');
     }
   }, [demoMode]);
   

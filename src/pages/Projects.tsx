@@ -75,6 +75,7 @@ export default function Projects() {
       return;
     }
     
+    debug.log('🎯 Projects: Using Supabase data');
     if (profile) {
       fetchProjects();
     }

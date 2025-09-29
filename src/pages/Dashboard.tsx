@@ -12,6 +12,8 @@ import { subscribe as subscribeContractors } from "@/services/contractors.store"
 import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
 import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
 import { ActivityFeed } from "@/components/ActivityFeed";
+import { ActivityFeedSupabase } from "@/components/ActivityFeedSupabase";
+import { useDemoData } from '@/hooks/useDemoData';
 
 function NavigationCard({ 
   title, 
@@ -59,6 +61,7 @@ export default function Dashboard() {
   const [recentlyRequested, setRecentlyRequested] = useState(() => getRecentlyRequested());
   const [expiringDocs, setExpiringDocs] = useState(() => getExpiringDocs());
   const [showNewSubcontractorWizard, setShowNewSubcontractorWizard] = useState(false);
+  const { isDemo } = useDemoData();
 
   // Update data when stores change
   useEffect(() => {
@@ -188,7 +191,11 @@ export default function Dashboard() {
       {/* Tables */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Activity Feed */}
-        <ActivityFeed className="lg:col-span-1" />
+        {isDemo ? (
+          <ActivityFeed className="lg:col-span-1" />
+        ) : (
+          <ActivityFeedSupabase className="lg:col-span-1" />
+        )}
         
         <div className="lg:col-span-2 space-y-6">
           {/* Recently Requested */}
