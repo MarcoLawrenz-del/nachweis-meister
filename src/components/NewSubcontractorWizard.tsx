@@ -344,8 +344,22 @@ export function NewSubcontractorWizard({
         }
 
         try {
-          // Documents will be created via requirements system, not localStorage
-          // Skip legacy createDocumentsForContractor call
+          // Create requirements for the new contractor using the compute-requirements edge function
+          try {
+            const { data: reqData, error: reqError } = await supabase.functions.invoke('compute-requirements', {
+              body: {
+                subcontractor_id: contractorId
+              }
+            });
+            
+            if (reqError) {
+              console.warn('Failed to compute requirements:', reqError);
+            } else {
+              console.log('Requirements computed successfully:', reqData);
+            }
+          } catch (reqError) {
+            console.warn('Failed to compute requirements, but contractor was created:', reqError);
+          }
           
           if (subcontractorData.contact_email && sendInvitationFlag) {
             // Get required documents for email

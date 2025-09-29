@@ -9,35 +9,8 @@ interface ReviewsTabProps {
 }
 
 export function ReviewsTab({ reviewHistory }: ReviewsTabProps) {
-  // Generate some review items for demo
-  const reviews = [
-    ...reviewHistory,
-    // Add placeholder reviews for demo
-    {
-      id: 'review-1',
-      action: 'approved',
-      document_name: 'Gewerbeerlaubnis',
-      reviewer_name: 'Max Mustermann',
-      created_at: new Date().toISOString(),
-      comment: 'Dokument geprüft und genehmigt'
-    },
-    {
-      id: 'review-2',
-      action: 'rejected', 
-      document_name: 'Handwerkskarte',
-      reviewer_name: 'Anna Schmidt',
-      created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      comment: 'Dokument ist nicht mehr gültig - bitte aktuelles Dokument hochladen'
-    },
-    {
-      id: 'review-3',
-      action: 'submitted',
-      document_name: 'BG-Mitgliedschaft',
-      reviewer_name: null,
-      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      comment: 'Dokument eingereicht und wartet auf Prüfung'
-    }
-  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  // Use only real review history data (remove hardcoded demo data)
+  const reviews = reviewHistory.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const getReviewIcon = (action: string) => {
     switch (action) {

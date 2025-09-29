@@ -9,34 +9,15 @@ interface ActivityTabProps {
 }
 
 export function ActivityTab({ emailLogs }: ActivityTabProps) {
-  // Generate some activity items from email logs and other events
-  const activities = [
-    ...emailLogs.map(log => ({
-      id: log.id,
-      type: 'email',
-      action: 'E-Mail gesendet',
-      description: `${log.template_key} an ${log.to_email}`,
-      timestamp: log.created_at,
-      status: log.status
-    })),
-    // Add placeholder activities for demo
-    {
-      id: 'activity-1',
-      type: 'document',
-      action: 'Dokument hochgeladen',
-      description: 'Gewerbeerlaubnis hochgeladen',
-      timestamp: new Date().toISOString(),
-      status: 'success'
-    },
-    {
-      id: 'activity-2', 
-      type: 'status',
-      action: 'Status geändert',
-      description: 'Status auf "Aktiv" gesetzt',
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      status: 'success'
-    }
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  // Generate activity items from email logs only (remove hardcoded demo data)
+  const activities = emailLogs.map(log => ({
+    id: log.id,
+    type: 'email',
+    action: 'E-Mail gesendet',
+    description: `${log.template_key} an ${log.to_email}`,
+    timestamp: log.created_at,
+    status: log.status
+  })).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const getActivityIcon = (type: string) => {
     switch (type) {
