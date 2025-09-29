@@ -79,7 +79,15 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   
   
   // Load requirements from Supabase
-  const { requirements: supabaseRequirements, loading: requirementsLoading } = useSupabaseRequirements(contractorId);
+  const { requirements: supabaseRequirements, loading: requirementsLoading, error: requirementsError } = useSupabaseRequirements(contractorId);
+  
+  // Add debugging
+  console.log('DocumentsTab Debug:', {
+    contractorId,
+    supabaseRequirements,
+    requirementsLoading,
+    requirementsError
+  });
   
   // Convert Supabase requirements to the format expected by the UI
   const docs = supabaseRequirements.map(req => ({
@@ -93,9 +101,11 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     fileName: req.documents?.[0]?.file_name || null,
     fileType: req.documents?.[0]?.file_url?.includes('.pdf') ? 'application/pdf' : 'unknown',
     uploadedAt: req.documents?.[0]?.uploaded_at || null,
-    label: req.document_types.name_de,
+    label: req.document_types?.name_de || req.document_type_id,
     customName: undefined
   }));
+  
+  console.log('Converted docs:', docs);
   
   // Load meta data
   const meta = getContractorMeta(contractorId);
@@ -618,11 +628,10 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
             </TableHeader>
             <TableBody>
               {filteredDocs.map((doc) => {
-                const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
-                const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);
+                // Use the document type data from Supabase instead of the config
+                const docName = doc.label || doc.customName || doc.documentTypeId;
                 
-                if (!docType && !doc.customName) return null;
-                
+                // Don't filter out documents - show all requirements from database
                 const statusConfig = getStatusConfig(doc.status);
                 const StatusIcon = statusConfig.icon;
                 
