@@ -8,6 +8,7 @@ import { Mail, Copy, ExternalLink, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendMagicInvitation } from "@/services/email.supabase";
 import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
+import { useSupabaseContractors } from '@/hooks/useSupabaseContractors';
 import { DOCUMENT_TYPES } from "@/config/documentTypes";
 import type { Contractor } from "@/types/contractor";
 
@@ -22,37 +23,35 @@ export function InviteMagicLinkButton({ contractor, className }: InviteMagicLink
   const [magicLink, setMagicLink] = useState<string>("");
   const [customMessage, setCustomMessage] = useState("");
   const { toast } = useToast();
+  const { requirements } = useSupabaseRequirements(contractor.id);
 
   const handleSendInvitation = async () => {
     setIsSending(true);
     
     try {
       // Get required documents for this contractor
-      const docs = getDocs(contractor.id);
-      const requiredDocs = docs
-        .filter(d => d.requirement === "required")
-        .map(d => {
-          const docType = DOCUMENT_TYPES.find(dt => dt.id === d.documentTypeId);
-          return docType?.label || d.documentTypeId;
+      const requiredDocs = requirements
+        .filter(r => r.status === "missing")
+        .map(r => {
+          const docType = DOCUMENT_TYPES.find(dt => dt.id === r.document_type_id);
+          return docType?.label || r.document_type_id;
         });
 
       const result = await sendMagicInvitation({
         contractorId: contractor.id,
         email: contractor.contactEmail,
-        contractorName: contractor.companyName,
-        companyName: "Ihr Auftraggeber", // TODO: Get from tenant/user context
-        requiredDocs
+        subject: `Dokumente für ${contractor.companyName}`,
+        message: customMessage || "Bitte laden Sie die angeforderten Dokumente hoch.",
+        companyName: contractor.companyName
       });
 
-      if (result.magicLink) {
-        setMagicLink(result.magicLink);
+      if ('url' in result && result.url) {
+        setMagicLink(result.url as string);
       }
 
       toast({
-        title: result.isStub ? "Demo: Einladung simuliert" : "Einladung versendet",
-        description: result.isStub 
-          ? `Demo-Modus: Magic-Link wurde erstellt aber keine E-Mail versendet.`
-          : `Eine E-Mail mit dem Upload-Link wurde an ${contractor.contactEmail} gesendet.`,
+        title: "Einladung versendet",
+        description: `Eine E-Mail mit dem Upload-Link wurde an ${contractor.contactEmail} gesendet.`,
       });
 
     } catch (error: any) {

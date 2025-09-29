@@ -107,8 +107,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   
   console.log('Converted docs:', docs);
   
-  // Load meta data
-  const meta = getContractorMeta(contractorId);
+  // TODO: Load meta data from Supabase
+  const meta = null;
 
   // Filter documents
   const filteredDocs = docs.filter(doc => {
@@ -229,7 +229,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     if (!showRejectDialog) return;
     
     const rejectDocType = DOCUMENT_TYPES.find(t => t.id === showRejectDialog.documentTypeId);
-    const rejectedDoc = getDocs(contractorId).find(d => d.documentTypeId === showRejectDialog.documentTypeId);
+    const rejectedDoc = docs.find(d => d.documentTypeId === showRejectDialog.documentTypeId);
     const rejectDocName = displayName(showRejectDialog.documentTypeId, rejectDocType?.label || '', rejectedDoc?.customName, rejectedDoc?.label);
     
     await setDocumentStatus({
@@ -268,7 +268,7 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     const contractorEmail = profile?.contact_email;
     
     // Find missing required docs for this contractor
-    const allDocs = getDocs(contractorId);
+    const allDocs = docs;
     const missingDocs = allDocs
       .filter(d => d.requirement === 'required' && ['missing', 'rejected', 'expired'].includes(d.status))
       .map(d => {
@@ -336,8 +336,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
     try {
       console.log('Changing requirement for', documentTypeId, 'to', newRequirement);
       
-      // Update in local store
-      updateDocumentRequirement(contractorId, documentTypeId, newRequirement);
+      // TODO: Update requirement in Supabase
+      console.log('[requirement]', contractorId, documentTypeId, newRequirement);
       
       const docType = DOCUMENT_TYPES.find(t => t.id === documentTypeId);
       const doc = docs.find(d => d.documentTypeId === documentTypeId);
@@ -420,8 +420,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
          return;
        }
        
-       // Update lastRequestedAt after successful send
-       setContractorMeta(contractorId, { lastRequestedAt: new Date().toISOString() });
+        // TODO: Update lastRequestedAt in Supabase
+        console.log('[meta] lastRequestedAt:', new Date().toISOString());
        
        toast({
          title: result.mode === "stub" ? "Im Demo-Modus gesendet (Stub)" : "Erinnerung versendet",
@@ -444,7 +444,8 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        markUploaded(contractorId, doc.documentTypeId);
+        // TODO: Mark uploaded in Supabase
+        console.log('[upload]', contractorId, doc.documentTypeId);
         
         const docType = DOCUMENT_TYPES.find(t => t.id === doc.documentTypeId);
         const docName = displayName(doc.documentTypeId, docType?.label || '', doc.customName, doc.label);

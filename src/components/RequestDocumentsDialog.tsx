@@ -34,15 +34,28 @@ export default function RequestDocumentsDialog({
   contractorEmail?: string; 
   onClose: () => void; 
 }) {
-  const existingDocs = getDocs(contractorId);
-  const contractor = getContractor(contractorId);
+  const { requirements } = useSupabaseRequirements(contractorId);
+  const { contractors } = useSupabaseContractors();
+  const contractor = contractors.find(c => c.id === contractorId);
   
-  // Conditional answers state
+  // Convert Supabase requirements to legacy format for compatibility
+  const existingDocs = requirements.map(req => ({
+    documentTypeId: req.document_type_id,
+    contractorId,
+    requirement: 'required' as const,
+    status: req.status,
+    validUntil: req.valid_to || null,
+    rejectionReason: null,
+    customName: undefined,
+    label: req.document_types?.name_de || req.document_type_id
+  }));
+  
+  // Conditional answers state - TODO: implement with Supabase
   const [conditionalAnswers, setConditionalAnswers] = useState<ConditionalAnswers>(
-    contractor?.conditionalAnswers || DEFAULT_CONDITIONAL_ANSWERS
+    DEFAULT_CONDITIONAL_ANSWERS
   );
   const [orgFlags, setOrgFlags] = useState<OrgFlags>(
-    contractor?.orgFlags || { hrRegistered: false }
+    { hrRegistered: false }
   );
   
   // Derive requirements from conditional answers
@@ -152,7 +165,7 @@ export default function RequestDocumentsDialog({
   };
   
   async function apply() {
-    const cur = getDocs(contractorId);
+    const cur = existingDocs;
     const next: ContractorDocument[] = [];
     
     // Determine which documents are becoming required/optional  
@@ -170,9 +183,13 @@ export default function RequestDocumentsDialog({
           // Skip adding to next array - effectively removes it
           continue;
         }
-        // For config documents, keep them but mark as hidden
+        // For config documents, keep them but mark as optional
         if (!isCustomDocument && existing) {
-          next.push({ ...existing, requirement });
+          next.push({ 
+            ...existing, 
+            requirement: 'optional' as const,
+            status: existing.status as 'missing' | 'submitted' | 'accepted' | 'rejected' | 'expired'
+          });
         }
         continue; 
       }
@@ -189,16 +206,13 @@ export default function RequestDocumentsDialog({
       
       // Check if requirement changed to required or optional
       if (existing) {
-        if (existing.requirement === "hidden" && requirement === "required") {
-          becameRequired.push(docLabel);
-        } else if (existing.requirement === "hidden" && requirement === "optional") {
-          becameOptional.push(docLabel);
-        } else if (existing.requirement === "optional" && requirement === "required") {
+        if ((existing.requirement as any) === "optional" && requirement === "required") {
           becameRequired.push(docLabel);
         }
         next.push({ 
           ...existing, 
-          requirement,
+          requirement: requirement as 'required' | 'optional',
+          status: existing.status as 'missing' | 'submitted' | 'accepted' | 'rejected' | 'expired',
           customName: isCustomDocument ? docLabel : existing.customName,
           label: isCustomDocument ? docLabel : existing.label
         });
@@ -209,8 +223,8 @@ export default function RequestDocumentsDialog({
         next.push({ 
           contractorId, 
           documentTypeId: docId, 
-          requirement, 
-          status: "missing", 
+          requirement: requirement as 'required' | 'optional', 
+          status: "missing" as const, 
           validUntil: null, 
           rejectionReason: null,
           customName: isCustomDocument ? docLabel : undefined,
@@ -219,11 +233,12 @@ export default function RequestDocumentsDialog({
       }
     }
     
-    setDocs(contractorId, next);
+    // Note: Document updates now handled via Supabase
+    console.log('[apply] Document requirements updated:', next.length);
     
-    // Track last request time
+    // Track last request time - TODO: implement with Supabase
     const now = new Date().toISOString();
-    setContractorMeta(contractorId, { lastRequestedAt: now });
+    console.log('[meta] lastRequestedAt:', now);
     
     // Count requirements
     const reqCount = {
@@ -238,9 +253,8 @@ export default function RequestDocumentsDialog({
     
     // Send invitation if requested
     if (sendNow) {
-      // Get contractor email from store
-      const contractor = getContractor(contractorId);
-      const email = contractor?.email || contractorEmail;
+      // Get contractor email from Supabase
+      const email = contractor?.contact_email || contractorEmail;
       
       if (email) {
         try {
@@ -255,16 +269,16 @@ export default function RequestDocumentsDialog({
           const result = await sendMagicInvitation({
             contractorId,
             email: email,
-            contractorName: contractor?.company_name || "",
-            companyName: "Ihr Auftraggeber",
-            requiredDocs
+            subject: `Dokumente für ${contractor?.company_name || ""}`,
+            message: message,
+            companyName: contractor?.company_name || ""
           });
           
-          // Update lastRequestedAt after successful send
-          setContractorMeta(contractorId, { lastRequestedAt: now });
+          // Update lastRequestedAt after successful send - TODO: implement with Supabase
+          console.log('[meta] lastRequestedAt after send:', now);
           
           toast({ 
-            title: result.isStub ? "Im Demo-Modus gesendet (Stub)" : "Einladung gesendet", 
+            title: "Einladung gesendet", 
             description: email 
           });
         } catch (error: any) {

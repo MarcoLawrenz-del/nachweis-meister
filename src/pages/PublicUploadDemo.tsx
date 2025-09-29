@@ -32,8 +32,8 @@ export default function PublicUploadDemo() {
   useEffect(() => {
     if (!contractorId) return;
 
-    // Get existing contractor documents to determine requirements and upload status
-    const existingDocs = getDocs(contractorId);
+    // TODO: Replace with Supabase requirements lookup
+    const existingDocs: any[] = [];
     
     const relevantDocuments = DOCUMENT_TYPES
       .map(dt => {
@@ -102,7 +102,8 @@ export default function PublicUploadDemo() {
             reader.readAsDataURL(doc.file!);
           });
           
-          markUploaded(contractorId, doc.id);
+          // TODO: Mark uploaded in Supabase
+          console.log('[upload]', contractorId, doc.id);
         }
       }
 
@@ -196,8 +197,8 @@ export default function PublicUploadDemo() {
                         onClick={() => {
                           // Find the actual document data for preview
                           if (contractorId) {
-                            const existingDocs = getDocs(contractorId);
-                            const docData = existingDocs.find(d => d.documentTypeId === doc.id);
+                            // TODO: Replace with Supabase document lookup
+                            const docData = null;
                             if (docData?.fileUrl) {
                               setPreviewDoc(docData);
                             }

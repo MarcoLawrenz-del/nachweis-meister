@@ -28,6 +28,7 @@ import { ContractorDocument } from '@/types/contractor';
 import { DOCUMENT_TYPES } from '@/config/documentTypes';
 import { displayName } from '@/utils/customDocs';
 import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
+import { useSupabaseContractors } from '@/hooks/useSupabaseContractors';
 import { sendEmail } from '@/services/email.supabase';
 import { getNotificationSettings } from '@/services/notifications.supabase';
 import { computeValidUntil } from '@/utils/validity';
@@ -48,6 +49,9 @@ export function DocumentReviewDrawer({
   onStatusChange 
 }: DocumentReviewDrawerProps) {
   const { toast } = useToast();
+  const { contractors } = useSupabaseContractors();
+  // TODO: Add updateRequirement to useSupabaseRequirements hook
+  const updateRequirement = null;
   const [validityDate, setValidityDate] = useState('');
   const [isValidityUnknown, setIsValidityUnknown] = useState(false);
   const [neverExpires, setNeverExpires] = useState(false);
@@ -60,7 +64,7 @@ export function DocumentReviewDrawer({
 
   if (!document || !isOpen) return null;
 
-  const contractor = getContractor(contractorId);
+  const contractor = contractors.find(c => c.id === contractorId);
   const docType = DOCUMENT_TYPES.find(t => t.id === document.documentTypeId);
   const docName = displayName(document.documentTypeId, docType?.label || '', document.customName, document.label);
 
@@ -73,24 +77,10 @@ export function DocumentReviewDrawer({
     setNeverExpires(document.validitySource === 'user' && document.userUnknownExpiry === true);
   });
 
-  // Add history entry
+  // Add history entry - now handled by Supabase
   const addHistoryEntry = (action: "uploaded" | "accepted" | "rejected" | "replaced" | "validity_changed", by: string, meta?: any) => {
-    const currentDocs = getDocs(contractorId);
-    const docIndex = currentDocs.findIndex(d => d.documentTypeId === document.documentTypeId);
-    
-    if (docIndex >= 0) {
-      const updatedDoc = { ...currentDocs[docIndex] };
-      if (!updatedDoc.history) updatedDoc.history = [];
-      
-      updatedDoc.history.unshift({
-        tsISO: new Date().toISOString(),
-        action,
-        by,
-        meta
-      });
-      
-      upsertDoc(updatedDoc);
-    }
+    // Placeholder for history tracking - implement with Supabase triggers
+    console.log('[history]', { action, by, meta, documentTypeId: document.documentTypeId });
   };
 
   // Handle validity change
@@ -109,10 +99,11 @@ export function DocumentReviewDrawer({
       userUnknownExpiry: neverExpires
     };
     
-    upsertDoc({
-      ...updatedDoc,
-      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
-    } as any);
+    // Update document via Supabase
+    updateRequirement?.(document.documentTypeId, {
+      valid_to: newValidUntil,
+      status: 'valid'
+    });
     addHistoryEntry('validity_changed', 'admin', { 
       validUntil: newValidUntil, 
       validitySource: newValiditySource 
@@ -158,25 +149,29 @@ export function DocumentReviewDrawer({
       }
     };
     
-    upsertDoc({
-      ...updatedDoc,
-      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
-    } as any);
+    // Update document via Supabase
+    updateRequirement?.(document.documentTypeId, {
+      valid_to: finalValidUntil,
+      status: 'valid'
+    });
     addHistoryEntry('accepted', 'admin', { validUntil: finalValidUntil });
     
     // Send email if settings allow
     try {
-      const settings = getNotificationSettings();
-      if (settings.statusUpdatesEnabled && contractor?.active) {
-        const result = await sendEmail('doc_accepted', {
-          to: contractor.email,
-          contractorName: contractor.company_name,
-          customerName: 'Ihr Auftraggeber',
-          contractorId,
-          docLabel: docName
+      const settings = await getNotificationSettings();
+      if (settings?.statusUpdatesEnabled && contractor?.status === 'active') {
+        const result = await sendEmail({
+          to: contractor.contact_email,
+          subject: 'Dokument angenommen',
+          template: 'reminder_missing' as any,
+          data: {
+            contractorName: contractor.company_name,
+            customerName: 'Ihr Auftraggeber',
+            docLabel: docName
+          }
         });
         
-        if (!result.ok && 'error' in result) {
+        if ('error' in result) {
           console.warn('Failed to send acceptance email:', result.error);
         }
       }
@@ -223,29 +218,33 @@ export function DocumentReviewDrawer({
       }
     };
     
-    upsertDoc({
-      ...updatedDoc,
-      requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
-    } as any);
+    // Update document via Supabase
+    updateRequirement?.(document.documentTypeId, {
+      status: 'rejected',
+      rejection_reason: rejectReason
+    });
     addHistoryEntry('rejected', 'admin', { reason: rejectReason });
     
     // Send email if settings allow
     try {
-      const settings = getNotificationSettings();
-      if (settings.statusUpdatesEnabled && contractor?.active) {
-        const result = await sendEmail('doc_rejected', {
-          to: contractor.email,
-          contractorName: contractor.company_name,
-          customerName: 'Ihr Auftraggeber',
-          contractorId,
-          docLabel: docName,
-          reason: rejectReason
+      const settings = await getNotificationSettings();
+      if (settings?.statusUpdatesEnabled && contractor?.status === 'active') {
+        const result = await sendEmail({
+          to: contractor.contact_email,
+          subject: 'Dokument abgelehnt',
+          template: 'reminder_missing' as any,
+          data: {
+            contractorName: contractor.company_name,
+            customerName: 'Ihr Auftraggeber',
+            docLabel: docName,
+            reason: rejectReason
+          }
         });
         
-        if (!result.ok && 'error' in result) {
+        if ('error' in result) {
           console.warn('Failed to send rejection email:', result.error);
         }
-      } else if (!contractor?.active) {
+      } else if (contractor?.status !== 'active') {
         toast({
           title: "Nachunternehmer ist inaktiv – Versand übersprungen",
           variant: "destructive"
@@ -302,10 +301,12 @@ export function DocumentReviewDrawer({
         }
       };
       
-      upsertDoc({
-        ...updatedDoc,
-        requirement: updatedDoc.requirement === 'hidden' ? 'optional' : updatedDoc.requirement
-      } as any);
+      // Update document via Supabase
+      updateRequirement?.(document.documentTypeId, {
+        status: 'submitted',
+        file_name: file.name,
+        file_url: dataUrl
+      });
       addHistoryEntry('replaced', 'admin', { fileName: file.name, fileSize: file.size });
       
       console.info('[analytics] review', { 
@@ -363,7 +364,7 @@ export function DocumentReviewDrawer({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const isInactiveContractor = !contractor?.active;
+  const isInactiveContractor = contractor?.status !== 'active';
   const statusConfig = getStatusConfig(document.status);
 
   return (

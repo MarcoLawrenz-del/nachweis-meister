@@ -37,12 +37,9 @@ export default function SubcontractorDetail() {
     const openParam = searchParams.get('open');
     
     if (docParam && openParam === 'review') {
-      const docs = getDocs(id || '');
-      const targetDoc = docs.find(d => d.documentTypeId === docParam);
-      if (targetDoc) {
-        setSelectedDoc(docParam);
-        setIsDrawerOpen(true);
-      }
+      // TODO: Replace with Supabase requirements lookup
+      setSelectedDoc(docParam);
+      setIsDrawerOpen(true);
     }
   }, [searchParams, id]);
 
@@ -64,8 +61,9 @@ export default function SubcontractorDetail() {
     return <Navigate to="/app/subcontractors" replace />;
   }
 
-  const docs = getDocs(id);
-  const selectedDocument = selectedDoc ? docs.find(d => d.documentTypeId === selectedDoc) : null;
+  // TODO: Replace with Supabase requirements
+  const docs: any[] = [];
+  const selectedDocument = null;
 
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
