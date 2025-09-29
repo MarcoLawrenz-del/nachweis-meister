@@ -42,7 +42,7 @@ import { sendEmail, type EmailType } from '@/services/email';
 import { getNotificationSettings } from '@/services/notifications';
 import { isErr } from '@/utils/result';
 import { isExpired, isExpiring, computeValidUntil } from "@/utils/validity";
-import { useContractorDocuments } from "@/hooks/useContractorDocuments";
+import { useSupabaseRequirements } from '@/hooks/useSupabaseRequirements';
 import RequestDocumentsDialogSupabase from "@/components/RequestDocumentsDialogSupabase";
 import { useToast } from "@/hooks/use-toast";
 import { getContractorMeta, getDocs, setContractorMeta, markUploaded, updateDocumentRequirement } from "@/services/contractorDocs.store";
@@ -77,8 +77,25 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
   const [collapsedRejections, setCollapsedRejections] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   
-  // Load docs from store
-  const docs = useContractorDocuments(contractorId);
+  
+  // Load requirements from Supabase
+  const { requirements: supabaseRequirements, loading: requirementsLoading } = useSupabaseRequirements(contractorId);
+  
+  // Convert Supabase requirements to the format expected by the UI
+  const docs = supabaseRequirements.map(req => ({
+    documentTypeId: req.document_type_id,
+    contractorId,
+    requirement: 'required' as const,
+    status: req.status as any,
+    validUntil: req.valid_to || null,
+    rejectionReason: null,
+    fileUrl: req.documents?.[0]?.file_url || null,
+    fileName: req.documents?.[0]?.file_name || null,
+    fileType: req.documents?.[0]?.file_url?.includes('.pdf') ? 'application/pdf' : 'unknown',
+    uploadedAt: req.documents?.[0]?.uploaded_at || null,
+    label: req.document_types.name_de,
+    customName: undefined
+  }));
   
   // Load meta data
   const meta = getContractorMeta(contractorId);

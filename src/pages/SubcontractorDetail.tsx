@@ -135,7 +135,7 @@ export default function SubcontractorDetail() {
         </TabsContent>
 
         <TabsContent value="activity">
-          <ActivityTab emailLogs={emailLogs} />
+          <ActivityTab emailLogs={emailLogs} contractorId={id} />
         </TabsContent>
 
         <TabsContent value="reviews">
