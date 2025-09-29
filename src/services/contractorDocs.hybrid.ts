@@ -178,12 +178,22 @@ export async function markUploaded(args: {
 
 export type ContractorMeta = { lastRequestedAt?: string };
 
+// Simple in-memory storage for contractor meta data
+const contractorMetaCache = new Map<string, ContractorMeta>();
+
 export function getContractorMeta(contractorId: string): ContractorMeta {
-  return {};
+  return contractorMetaCache.get(contractorId) || {};
 }
 
 export function setContractorMeta(contractorId: string, meta: ContractorMeta): void {
   console.log('setContractorMeta called:', { contractorId, meta });
+  
+  // Update cache
+  const existing = contractorMetaCache.get(contractorId) || {};
+  contractorMetaCache.set(contractorId, { ...existing, ...meta });
+  
+  // TODO: In production, this should save to Supabase
+  // For now, we just store in memory for demo purposes
 }
 
 export function updateDocumentRequirement(
@@ -192,4 +202,39 @@ export function updateDocumentRequirement(
   requirement: 'required' | 'optional'
 ): void {
   console.log('updateDocumentRequirement called:', { contractorId, documentTypeId, requirement });
+  
+  // Get current docs for contractor
+  const currentDocs = docsCache.get(contractorId) || [];
+  
+  // Find or create document entry
+  let docIndex = currentDocs.findIndex(doc => doc.documentTypeId === documentTypeId);
+  
+  if (docIndex >= 0) {
+    // Update existing document requirement
+    currentDocs[docIndex] = {
+      ...currentDocs[docIndex],
+      requirement
+    };
+  } else {
+    // Create new document entry
+    const newDoc: ContractorDocument = {
+      contractorId,
+      documentTypeId,
+      status: 'missing',
+      requirement,
+      validitySource: 'admin'
+    };
+    currentDocs.push(newDoc);
+  }
+  
+  // Update cache
+  docsCache.set(contractorId, currentDocs);
+  
+  // Notify subscribers
+  const contractorListeners = listeners.get(contractorId);
+  if (contractorListeners) {
+    contractorListeners.forEach(fn => fn());
+  }
+  
+  console.log(`Updated ${documentTypeId} requirement to ${requirement} for contractor ${contractorId}`);
 }
