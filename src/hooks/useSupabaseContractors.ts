@@ -88,11 +88,14 @@ export function useSupabaseContractors() {
   // Create contractor in Supabase
   const createContractor = async (data: Omit<SupabaseContractor, "id" | "created_at" | "updated_at" | "status" | "compliance_status">) => {
     try {
+      // For demo mode, use fixed demo tenant_id when no profile
+      const effectiveTenantId = profile?.tenant_id || '00000000-0000-0000-0000-000000000001';
+      
       const { data: contractor, error } = await supabase
         .from('subcontractors')
         .insert({
           ...data,
-          tenant_id: profile?.tenant_id,
+          tenant_id: effectiveTenantId,
           status: 'active',
           compliance_status: 'non_compliant'
         })
