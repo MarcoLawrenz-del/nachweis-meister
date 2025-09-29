@@ -4,16 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { calculateOrgKPIs, getRecentlyRequested, getExpiringDocs } from "@/services/orgAggregates";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
-import { subscribe as subscribeContractors } from "@/services/contractors.store";
-import { subscribe as subscribeContractorDocs } from "@/services/contractorDocs.store";
 import { NewSubcontractorWizard } from "@/components/NewSubcontractorWizard";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { ActivityFeedSupabase } from "@/components/ActivityFeedSupabase";
 import { useDemoData } from '@/hooks/useDemoData';
+import { supabase } from '@/integrations/supabase/client';
 
 function NavigationCard({ 
   title, 
@@ -57,31 +55,110 @@ function NavigationCard({
 }
 
 export default function Dashboard() {
-  const [kpis, setKpis] = useState(() => calculateOrgKPIs());
-  const [recentlyRequested, setRecentlyRequested] = useState(() => getRecentlyRequested());
-  const [expiringDocs, setExpiringDocs] = useState(() => getExpiringDocs());
+  const [kpis, setKpis] = useState({
+    activeContractors: 0,
+    missingRequiredDocs: 0,
+    inReview: 0,
+    expiring: 0
+  });
+  const [recentlyRequested, setRecentlyRequested] = useState<any[]>([]);
+  const [expiringDocs, setExpiringDocs] = useState<any[]>([]);
   const [showNewSubcontractorWizard, setShowNewSubcontractorWizard] = useState(false);
   const { isDemo } = useDemoData();
+  const [loading, setLoading] = useState(true);
 
-  // Update data when stores change
+  // Load Supabase data
   useEffect(() => {
-    const updateData = () => {
-      setKpis(calculateOrgKPIs());
-      setRecentlyRequested(getRecentlyRequested());
-      setExpiringDocs(getExpiringDocs());
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Load active subcontractors count
+        const { data: subcontractors, error: subError } = await supabase
+          .from('subcontractors')
+          .select('id, status')
+          .eq('status', 'active');
+
+        if (subError) throw subError;
+
+        // Load missing requirements count
+        const { data: missingReqs, error: missingError } = await supabase
+          .from('requirements')
+          .select(`
+            id,
+            status,
+            project_subs!inner (
+              subcontractor_id,
+              project_id,
+              subcontractors!inner (status)
+            )
+          `)
+          .in('status', ['missing', 'expired', 'rejected'])
+          .eq('project_subs.subcontractors.status', 'active');
+
+        if (missingError) throw missingError;
+
+        // Load in_review requirements count
+        const { data: reviewReqs, error: reviewError } = await supabase
+          .from('requirements')
+          .select(`
+            id,
+            status,
+            project_subs!inner (
+              subcontractor_id,
+              project_id,
+              subcontractors!inner (status)
+            )
+          `)
+          .in('status', ['in_review', 'submitted'])
+          .eq('project_subs.subcontractors.status', 'active');
+
+        if (reviewError) throw reviewError;
+
+        // Load expiring documents count
+        const { data: expiringReqs, error: expiringError } = await supabase
+          .from('requirements')
+          .select(`
+            id,
+            status,
+            documents (valid_to),
+            project_subs!inner (
+              subcontractor_id,
+              project_id,
+              subcontractors!inner (status)
+            )
+          `)
+          .eq('status', 'valid')
+          .eq('project_subs.subcontractors.status', 'active');
+
+        if (expiringError) throw expiringError;
+
+        // Count expiring docs (valid_to within 30 days)
+        const now = new Date();
+        const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const expiringCount = expiringReqs?.filter(req => 
+          req.documents.some(doc => 
+            doc.valid_to && 
+            new Date(doc.valid_to) <= thirtyDaysFromNow &&
+            new Date(doc.valid_to) > now
+          )
+        ).length || 0;
+
+        setKpis({
+          activeContractors: subcontractors?.length || 0,
+          missingRequiredDocs: missingReqs?.length || 0,
+          inReview: reviewReqs?.length || 0,
+          expiring: expiringCount
+        });
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const unsubscribeContractors = subscribeContractors(updateData);
-    
-    // Subscribe to all contractor docs changes (we need to track all contractors)
-    const unsubscribers: (() => void)[] = [unsubscribeContractors];
-    
-    // Note: We can't easily subscribe to all contractor docs changes without knowing IDs
-    // For now, we'll rely on manual refresh or the data updating when navigating
-    
-    return () => {
-      unsubscribers.forEach(unsub => unsub());
-    };
+    loadDashboardData();
   }, []);
 
   const formatDate = (dateStr: string) => {
