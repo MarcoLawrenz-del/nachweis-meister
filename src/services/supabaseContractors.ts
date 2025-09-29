@@ -77,25 +77,31 @@ export async function createSupabaseContractor(
   let effectiveTenantId = data.tenant_id || '00000000-0000-0000-0000-000000000001';
   
   console.log('Using tenant_id:', effectiveTenantId);
+  console.log('auth.uid() check:', await supabase.auth.getUser());
+  
+  // Debug: Test RLS policy
+  const insertData = {
+    company_name: data.company_name,
+    contact_name: data.contact_name,
+    contact_email: data.contact_email,
+    phone: data.phone,
+    address: data.address,
+    country_code: data.country_code || 'DE',
+    notes: data.notes,
+    tenant_id: effectiveTenantId,
+    company_type: data.company_type || 'baubetrieb',
+    requires_employees: data.requires_employees,
+    has_non_eu_workers: data.has_non_eu_workers,
+    employees_not_employed_in_germany: data.employees_not_employed_in_germany,
+    status: data.active !== false ? 'active' : 'inactive',
+    compliance_status: 'non_compliant'
+  };
+  
+  console.log('Insert data with tenant_id:', insertData);
 
   const { data: contractor, error } = await supabase
     .from('subcontractors')
-    .insert({
-      company_name: data.company_name,
-      contact_name: data.contact_name,
-      contact_email: data.contact_email,
-      phone: data.phone,
-      address: data.address,
-      country_code: data.country_code || 'DE',
-      notes: data.notes,
-      tenant_id: effectiveTenantId,
-      company_type: data.company_type || 'baubetrieb',
-      requires_employees: data.requires_employees,
-      has_non_eu_workers: data.has_non_eu_workers,
-      employees_not_employed_in_germany: data.employees_not_employed_in_germany,
-      status: data.active !== false ? 'active' : 'inactive',
-      compliance_status: 'non_compliant'
-    })
+    .insert(insertData)
     .select()
     .single();
 
