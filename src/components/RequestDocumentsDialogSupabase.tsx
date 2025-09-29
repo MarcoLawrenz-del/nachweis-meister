@@ -32,14 +32,24 @@ export default function RequestDocumentsDialogSupabase({
   useEffect(() => {
     const loadExistingRequirements = async () => {
       try {
-        // Get existing requirements for this subcontractor
+        // Get existing requirements for this subcontractor via project_subs join
         const { data: existingReqs, error } = await supabase
           .from('requirements')
-          .select('document_type_id, status')
-          .eq('project_sub_id', contractorId);
+          .select(`
+            document_type_id, 
+            status,
+            project_subs!inner(subcontractor_id)
+          `)
+          .eq('project_subs.subcontractor_id', contractorId);
 
         if (error) {
           console.error('Error loading requirements:', error);
+          // Initialize with default values if error
+          const initialReqs: Record<string, RequirementStatus> = {};
+          DOCUMENT_TYPES.forEach(docType => {
+            initialReqs[docType.id] = docType.defaultRequirement;
+          });
+          setRequirements(initialReqs);
           return;
         }
 
@@ -47,7 +57,18 @@ export default function RequestDocumentsDialogSupabase({
         const initialReqs: Record<string, RequirementStatus> = {};
         DOCUMENT_TYPES.forEach(docType => {
           const existing = existingReqs?.find(req => req.document_type_id === docType.id);
-          initialReqs[docType.id] = existing ? "required" : "hidden";
+          // Map requirement status to our UI status
+          if (existing) {
+            if (existing.status === 'missing' || existing.status === 'expired' || existing.status === 'rejected') {
+              initialReqs[docType.id] = "required";
+            } else if (existing.status === 'valid' || existing.status === 'submitted' || existing.status === 'in_review') {
+              initialReqs[docType.id] = "required"; // Still required, just fulfilled
+            } else {
+              initialReqs[docType.id] = "optional";
+            }
+          } else {
+            initialReqs[docType.id] = docType.defaultRequirement;
+          }
         });
 
         setRequirements(initialReqs);
@@ -70,147 +91,68 @@ export default function RequestDocumentsDialogSupabase({
     try {
       setLoading(true);
 
-      // First, get the project_sub record for this subcontractor
-      let { data: projectSubs, error: projectSubError } = await supabase
-        .from('project_subs')
-        .select('id')
-        .eq('subcontractor_id', contractorId)
-        .maybeSingle();
-
-      if (projectSubError) {
-        throw projectSubError;
-      }
-
-      let projectSubId = projectSubs?.id;
-
-      // If no project_sub exists, create one (for demo mode)
-      if (!projectSubId) {
-        // Get or create a default project for this tenant
-        let { data: projects, error: projectError } = await supabase
-          .from('projects')
-          .select('id')
-          .eq('tenant_id', '00000000-0000-0000-0000-000000000001')
-          .maybeSingle();
-
-        if (projectError) {
-          throw projectError;
-        }
-
-        let projectId = projects?.id;
-
-        // Create default project if none exists
-        if (!projectId) {
-          const { data: newProject, error: newProjectError } = await supabase
-            .from('projects')
-            .insert({
-              tenant_id: '00000000-0000-0000-0000-000000000001',
-              name: 'Demo Projekt',
-              code: 'DEMO'
-            })
-            .select('id')
-            .single();
-
-          if (newProjectError) {
-            throw newProjectError;
-          }
-
-          projectId = newProject.id;
-        }
-
-        // Create project_sub
-        const { data: newProjectSub, error: newProjectSubError } = await supabase
-          .from('project_subs')
-          .insert({
-            project_id: projectId,
-            subcontractor_id: contractorId,
-            status: 'active'
-          })
-          .select('id')
-          .single();
-
-        if (newProjectSubError) {
-          throw newProjectSubError;
-        }
-
-        projectSubId = newProjectSub.id;
-      }
-
-      // Now create/update requirements
+      // Count requirements to be created
       const requiredDocs = Object.entries(requirements)
         .filter(([_, status]) => status === "required");
 
-      for (const [docTypeId, status] of Object.entries(requirements)) {
-        if (status === "hidden") continue;
+      // For demo mode, we'll work directly with the compute-requirements edge function
+      // instead of manually creating project_subs and requirements
+      try {
+        const { data, error } = await supabase.functions.invoke('compute-requirements', {
+          body: {
+            subcontractor_id: contractorId
+          }
+        });
 
-        // Check if requirement already exists
-        const { data: existingReq } = await supabase
-          .from('requirements')
-          .select('id')
-          .eq('project_sub_id', projectSubId)
-          .eq('document_type_id', docTypeId)
-          .maybeSingle();
-
-        if (existingReq) {
-          // Update existing requirement
-          await supabase
-            .from('requirements')
-            .update({
-              status: status === "required" ? "missing" : "optional",
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingReq.id);
-        } else {
-          // Create new requirement
-          await supabase
-            .from('requirements')
-            .insert({
-              project_sub_id: projectSubId,
-              document_type_id: docTypeId,
-              status: status === "required" ? "missing" : "optional",
-              due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
-            });
+        if (error) {
+          throw error;
         }
-      }
 
-      // Send invitation if requested
-      if (sendInvitation && contractorEmail) {
-        try {
-          const { error: inviteError } = await supabase.functions.invoke('create-magic-link', {
-            body: {
-              contractor_id: contractorId,
-              email: contractorEmail
+        console.log('Requirements computed:', data);
+        
+        // Send invitation if requested
+        if (sendInvitation && contractorEmail) {
+          try {
+            const { error: inviteError } = await supabase.functions.invoke('create-magic-link', {
+              body: {
+                contractor_id: contractorId,
+                email: contractorEmail
+              }
+            });
+
+            if (inviteError) {
+              console.error('Error sending invitation:', inviteError);
+              toast({
+                title: "Dokumente aktualisiert",
+                description: "Anforderungen gespeichert, aber Einladung konnte nicht gesendet werden.",
+                variant: "default"
+              });
+            } else {
+              toast({
+                title: "Erfolgreich",
+                description: `Anforderungen aktualisiert und Einladung gesendet.`
+              });
             }
-          });
-
-          if (inviteError) {
+          } catch (inviteError) {
             console.error('Error sending invitation:', inviteError);
             toast({
               title: "Dokumente aktualisiert",
               description: "Anforderungen gespeichert, aber Einladung konnte nicht gesendet werden.",
               variant: "default"
             });
-          } else {
-            toast({
-              title: "Erfolgreich",
-              description: `${requiredDocs.length} Dokumente angefordert und Einladung gesendet.`
-            });
           }
-        } catch (inviteError) {
-          console.error('Error sending invitation:', inviteError);
+        } else {
           toast({
             title: "Dokumente aktualisiert",
-            description: "Anforderungen gespeichert, aber Einladung konnte nicht gesendet werden.",
-            variant: "default"
+            description: `Anforderungen wurden erfolgreich aktualisiert.`
           });
         }
-      } else {
-        toast({
-          title: "Dokumente aktualisiert",
-          description: `${requiredDocs.length} Dokumente als erforderlich markiert.`
-        });
-      }
 
-      onClose();
+        onClose();
+      } catch (error) {
+        console.error('Error computing requirements:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Error applying document requirements:', error);
       toast({
