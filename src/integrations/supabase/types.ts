@@ -297,7 +297,7 @@ export type Database = {
           contractor_id: string
           created_at: string
           created_by: string | null
-          email: string
+          email: string | null
           expires_at: string
           id: string
           last_seen_at: string | null
@@ -309,7 +309,7 @@ export type Database = {
           contractor_id: string
           created_at?: string
           created_by?: string | null
-          email: string
+          email?: string | null
           expires_at?: string
           id?: string
           last_seen_at?: string | null
@@ -321,7 +321,7 @@ export type Database = {
           contractor_id?: string
           created_at?: string
           created_by?: string | null
-          email?: string
+          email?: string | null
           expires_at?: string
           id?: string
           last_seen_at?: string | null
