@@ -301,6 +301,7 @@ export type Database = {
           expires_at: string
           id: string
           last_seen_at: string | null
+          revoked: boolean
           token: string
           used_count: number
         }
@@ -312,6 +313,7 @@ export type Database = {
           expires_at?: string
           id?: string
           last_seen_at?: string | null
+          revoked?: boolean
           token: string
           used_count?: number
         }
@@ -323,6 +325,7 @@ export type Database = {
           expires_at?: string
           id?: string
           last_seen_at?: string | null
+          revoked?: boolean
           token?: string
           used_count?: number
         }
