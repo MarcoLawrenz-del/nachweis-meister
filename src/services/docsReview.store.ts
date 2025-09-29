@@ -1,5 +1,23 @@
-import { v4 as uuidv4 } from 'uuid';
+// ============= Reviews Store Migration to Supabase =============
+// This replaces docsReview.store.ts with Supabase integration
 
+export {
+  // Review operations
+  getSupabaseReviewHistory,
+  addSupabaseReviewEntry,
+  getRecentSupabaseActivity,
+  subscribeToReviewChanges,
+  
+  // Legacy compatibility
+  getAllRecentEvents,
+  appendEvent,
+  getDocReview,
+  
+  // Types
+  type SupabaseReviewHistory
+} from './supabaseReviews';
+
+// Legacy types for backward compatibility
 export type Uploader = "contractor" | "admin";
 export type ReviewDecision = "pending" | "accepted" | "rejected";
 
@@ -21,13 +39,7 @@ export interface ReviewEvent {
   contractorId: string;
   docType: string;
   tsISO: string;
-  kind:
-    | "file_uploaded"
-    | "status_set_submitted" 
-    | "status_set_in_review"
-    | "status_set_accepted"
-    | "status_set_rejected"
-    | "note_added";
+  kind: string;
   meta?: Record<string, any>;
   actor: "system" | "admin" | "contractor";
 }
@@ -47,51 +59,26 @@ export interface DocReviewAggregate {
   history: ReviewEvent[];
 }
 
-const STORAGE_KEY = 'subfix.docsReview.v1';
+// Import Supabase functions
+import { 
+  getAllRecentEvents,
+  appendEvent,
+  getDocReview
+} from './supabaseReviews';
 
-interface StoreData {
-  files: ReviewFile[];
-  decisions: ReviewDecisionState[];
-  events: ReviewEvent[];
-}
-
-function getStore(): StoreData {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) {
-    return { files: [], decisions: [], events: [] };
-  }
-  try {
-    return JSON.parse(data);
-  } catch {
-    return { files: [], decisions: [], events: [] };
-  }
-}
-
-function saveStore(data: StoreData) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
+// Legacy compatibility functions that are now no-ops or redirected to Supabase
 export function addReviewFile(input: Omit<ReviewFile, "id" | "uploadedAtISO"> & { dataUrl?: string }): ReviewFile {
-  const file: ReviewFile = {
-    ...input,
-    id: uuidv4(),
-    uploadedAtISO: new Date().toISOString()
+  console.warn('addReviewFile: Files are now managed through Supabase documents table');
+  return {
+    id: crypto.randomUUID(),
+    uploadedAtISO: new Date().toISOString(),
+    ...input
   };
-  
-  const store = getStore();
-  store.files.push(file);
-  saveStore(store);
-  
-  return file;
 }
 
 export function getLatestFile(contractorId: string, docType: string): ReviewFile | undefined {
-  const store = getStore();
-  const files = store.files
-    .filter(f => f.contractorId === contractorId && f.docType === docType)
-    .sort((a, b) => new Date(b.uploadedAtISO).getTime() - new Date(a.uploadedAtISO).getTime());
-  
-  return files[0];
+  console.warn('getLatestFile: Use Supabase documents instead');
+  return undefined;
 }
 
 export function setDecision(input: { 
@@ -101,7 +88,8 @@ export function setDecision(input: {
   reason?: string; 
   actor?: "admin" 
 }): ReviewDecisionState {
-  const decision: ReviewDecisionState = {
+  console.warn('setDecision: Use updateRequirementStatus instead');
+  return {
     contractorId: input.contractorId,
     docType: input.docType,
     decision: input.decision,
@@ -109,102 +97,13 @@ export function setDecision(input: {
     decidedAtISO: new Date().toISOString(),
     decidedBy: input.actor || "admin"
   };
-  
-  const store = getStore();
-  const existingIndex = store.decisions.findIndex(
-    d => d.contractorId === input.contractorId && d.docType === input.docType
-  );
-  
-  if (existingIndex >= 0) {
-    store.decisions[existingIndex] = decision;
-  } else {
-    store.decisions.push(decision);
-  }
-  
-  saveStore(store);
-  return decision;
-}
-
-export function appendEvent(ev: Omit<ReviewEvent, "id" | "tsISO">): ReviewEvent {
-  const event: ReviewEvent = {
-    ...ev,
-    id: uuidv4(),
-    tsISO: new Date().toISOString()
-  };
-  
-  const store = getStore();
-  store.events.unshift(event); // newest first
-  saveStore(store);
-  
-  return event;
-}
-
-export function getDocReview(contractorId: string, docType: string): DocReviewAggregate {
-  const store = getStore();
-  
-  const latestFile = getLatestFile(contractorId, docType);
-  
-  let decision = store.decisions.find(
-    d => d.contractorId === contractorId && d.docType === docType
-  );
-  
-  if (!decision) {
-    decision = {
-      contractorId,
-      docType,
-      decision: "pending"
-    };
-  }
-  
-  const history = store.events.filter(
-    e => e.contractorId === contractorId && e.docType === docType
-  );
-  
-  return {
-    latestFile,
-    decision,
-    history
-  };
 }
 
 export function listDocReviews(contractorId: string): DocReviewAggregate[] {
-  const store = getStore();
-  
-  // Get all unique doc types for this contractor
-  const docTypes = new Set<string>();
-  store.files.forEach(f => {
-    if (f.contractorId === contractorId) {
-      docTypes.add(f.docType);
-    }
-  });
-  store.decisions.forEach(d => {
-    if (d.contractorId === contractorId) {
-      docTypes.add(d.docType);
-    }
-  });
-  store.events.forEach(e => {
-    if (e.contractorId === contractorId) {
-      docTypes.add(e.docType);
-    }
-  });
-  
-  return Array.from(docTypes).map(docType => getDocReview(contractorId, docType));
-}
-
-export function getAllRecentEvents(daysBack: number = 7): ReviewEvent[] {
-  const store = getStore();
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - daysBack);
-  
-  return store.events.filter(e => new Date(e.tsISO) >= cutoff);
+  console.warn('listDocReviews: Use Supabase requirements/documents instead');
+  return [];
 }
 
 export function clearReviewForDoc(contractorId: string, docType: string): void {
-  const store = getStore();
-  
-  store.files = store.files.filter(f => !(f.contractorId === contractorId && f.docType === docType));
-  store.decisions = store.decisions.filter(d => !(d.contractorId === contractorId && d.docType === docType));
-  store.events = store.events.filter(e => !(e.contractorId === contractorId && e.docType === docType));
-  
-  saveStore(store);
+  console.warn('clearReviewForDoc: Use Supabase document deletion instead');
 }

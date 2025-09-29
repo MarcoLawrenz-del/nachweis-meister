@@ -1,23 +1,33 @@
-// ============= Contractors Store =============
-// localStorage-based store for contractors with subscribe mechanism
+// ============= Unified Contractors Service =============
+// This replaces contractors.store.ts with Supabase integration
+// Maintains exact same API for backward compatibility but returns promises
 
-import { ConditionalAnswers, DEFAULT_CONDITIONAL_ANSWERS } from '@/config/conditionalQuestions';
+import { 
+  listSupabaseContractors,
+  getSupabaseContractor,
+  createSupabaseContractor,
+  updateSupabaseContractor,
+  deleteSupabaseContractor,
+  subscribeToSupabaseContractors,
+  subscribeToSupabaseContractorChanges,
+  type SupabaseContractor
+} from './supabaseContractors';
 
+// Legacy Contractor type for backward compatibility
 export type Contractor = {
   id: string;
   company_name: string;
   contact_name?: string;
-  email: string;
+  email: string; // Maps to contact_email in Supabase
   phone?: string;
-  country?: string;
+  country?: string; // Maps to country_code in Supabase
   address?: string;
   notes?: string;
-  created_at: string; // ISO
-  active: boolean;
-  // Neue Konditions-Felder
-  conditionalAnswers?: ConditionalAnswers;
+  created_at: string;
+  active: boolean; // Maps to status === 'active' in Supabase
+  // Conditional fields
+  conditionalAnswers?: any;
   orgFlags?: { hrRegistered?: boolean };
-  // Legacy flags (behalten für Kompatibilität)
   hasEmployees?: boolean;
   providesConstructionServices?: boolean;
   isSokaPflicht?: boolean;
@@ -26,133 +36,114 @@ export type Contractor = {
   selectedPackageId?: string;
 };
 
-const contractorsMap = new Map<string, Contractor>();
-const listeners = new Set<() => void>();
-
-const LS_KEY = "subfix.contractors.v1";
-
-function load(): Contractor[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const s = localStorage.getItem(LS_KEY);
-    return s ? JSON.parse(s) : [];
-  } catch {
-    return [];
-  }
+// Convert Supabase contractor to legacy format
+function convertToLegacy(supabaseContractor: SupabaseContractor): Contractor {
+  return {
+    id: supabaseContractor.id,
+    company_name: supabaseContractor.company_name,
+    contact_name: supabaseContractor.contact_name,
+    email: supabaseContractor.contact_email,
+    phone: supabaseContractor.phone,
+    country: supabaseContractor.country_code,
+    address: supabaseContractor.address,
+    notes: supabaseContractor.notes,
+    created_at: supabaseContractor.created_at,
+    active: supabaseContractor.status === 'active',
+    hasEmployees: supabaseContractor.requires_employees,
+    providesAbroad: supabaseContractor.has_non_eu_workers
+  };
 }
 
-function save(contractors: Contractor[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(contractors));
-  } catch {}
+// Main CRUD operations - now async
+export async function listContractors(): Promise<Contractor[]> {
+  const supabaseContractors = await listSupabaseContractors();
+  return supabaseContractors.map(convertToLegacy);
 }
 
-function loadToMap() {
-  const contractors = load();
-  contractorsMap.clear();
-  contractors.forEach(c => contractorsMap.set(c.id, c));
+export async function getContractor(id: string): Promise<Contractor | undefined> {
+  const supabaseContractor = await getSupabaseContractor(id);
+  return supabaseContractor ? convertToLegacy(supabaseContractor) : undefined;
 }
 
-function saveFromMap() {
-  const contractors = Array.from(contractorsMap.values());
-  save(contractors);
-  listeners.forEach(fn => fn());
-}
-
-// Initialize on first import
-loadToMap();
-
-export function listContractors(): Contractor[] {
-  return Array.from(contractorsMap.values()).sort((a, b) => 
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
-}
-
-export function getContractor(id: string): Contractor | undefined {
-  return contractorsMap.get(id);
-}
-
-export function createContractor(data: Omit<Contractor, "id"|"created_at"|"active"> & { active?: boolean }): Contractor {
-  const id = crypto.randomUUID();
-  const contractor: Contractor = {
-    id,
-    ...data,
-    active: data.active ?? true,
-    created_at: new Date().toISOString(),
-    // Setze Standard-Antworten für neue Nachunternehmer
-    conditionalAnswers: data.conditionalAnswers || { ...DEFAULT_CONDITIONAL_ANSWERS },
-    orgFlags: data.orgFlags || { hrRegistered: false },
+export async function createContractor(data: Omit<Contractor, "id"|"created_at"|"active"> & { active?: boolean }): Promise<Contractor> {
+  const supabaseData = {
+    company_name: data.company_name,
+    contact_name: data.contact_name,
+    contact_email: data.email,
+    phone: data.phone,
+    country_code: data.country || 'DE',
+    address: data.address,
+    notes: data.notes,
+    company_type: 'baubetrieb',
+    tenant_id: 'default-tenant', // TODO: Get from auth context
+    requires_employees: data.hasEmployees,
+    has_non_eu_workers: data.providesAbroad,
+    employees_not_employed_in_germany: data.providesAbroad,
+    active: data.active
   };
   
-  contractorsMap.set(id, contractor);
-  saveFromMap();
-  return contractor;
+  const supabaseContractor = await createSupabaseContractor(supabaseData);
+  return convertToLegacy(supabaseContractor);
 }
 
-export function updateContractor(id: string, patch: Partial<Contractor>): Promise<Contractor> {
-  return new Promise((resolve, reject) => {
-    console.log('=== updateContractor START ===');
-    console.log('ID:', id);
-    console.log('Patch:', patch);
-    
-    const existing = contractorsMap.get(id);
-    console.log('Existing contractor:', existing);
-    
-    if (!existing) {
-      console.error('Contractor not found in contractorsMap for ID:', id);
-      console.log('Available IDs in contractorsMap:', Array.from(contractorsMap.keys()));
-      reject(new Error(`Contractor with id ${id} not found`));
-      return;
-    }
-    
-    // Merge the patch with existing data to preserve all fields
-    const updated = { ...existing, ...patch };
-    console.log('Updated contractor (merged):', updated);
-    
-    contractorsMap.set(id, updated);
-    console.log('Contractor set in contractorsMap');
-    
-    saveFromMap();
-    console.log('saveFromMap() called');
-    
-    // Verify the data was saved correctly
-    const verification = contractorsMap.get(id);
-    console.log('Verification - contractor after save:', verification);
-    
-    console.log('=== updateContractor END ===');
-    
-    resolve(updated);
-  });
-}
-
-export function deleteContractor(id: string): void {
-  if (!contractorsMap.has(id)) {
-    throw new Error(`Contractor with id ${id} not found`);
+export async function updateContractor(id: string, patch: Partial<Contractor>): Promise<Contractor> {
+  const supabasePatch: Partial<SupabaseContractor> = {};
+  
+  if (patch.company_name) supabasePatch.company_name = patch.company_name;
+  if (patch.contact_name) supabasePatch.contact_name = patch.contact_name;
+  if (patch.email) supabasePatch.contact_email = patch.email;
+  if (patch.phone) supabasePatch.phone = patch.phone;
+  if (patch.country) supabasePatch.country_code = patch.country;
+  if (patch.address) supabasePatch.address = patch.address;
+  if (patch.notes) supabasePatch.notes = patch.notes;
+  if (patch.active !== undefined) supabasePatch.status = patch.active ? 'active' : 'inactive';
+  if (patch.hasEmployees !== undefined) supabasePatch.requires_employees = patch.hasEmployees;
+  if (patch.providesAbroad !== undefined) {
+    supabasePatch.has_non_eu_workers = patch.providesAbroad;
+    supabasePatch.employees_not_employed_in_germany = patch.providesAbroad;
   }
   
-  contractorsMap.delete(id);
-  saveFromMap();
+  const supabaseContractor = await updateSupabaseContractor(id, supabasePatch);
+  return convertToLegacy(supabaseContractor);
+}
+
+export async function deleteContractor(id: string): Promise<void> {
+  return deleteSupabaseContractor(id);
 }
 
 export function subscribe(fn: () => void) {
-  listeners.add(fn);
-  return () => { listeners.delete(fn); };
+  return subscribeToSupabaseContractors(fn);
 }
 
-// Export function to get all contractors - alias for compatibility
-export function getContractors(): Contractor[] {
+export async function getContractors(): Promise<Contractor[]> {
   return listContractors();
 }
 
-export function getAllContractors(): Contractor[] {
-  load(); // Ensure data is loaded
-  return Array.from(contractorsMap.values());
-}
-export function updateConditionalAnswers(id: string, answers: ConditionalAnswers): Promise<Contractor> {
-  return updateContractor(id, { conditionalAnswers: answers });
+export async function getAllContractors(): Promise<Contractor[]> {
+  return listContractors();
 }
 
-export function updateOrgFlags(id: string, orgFlags: { hrRegistered?: boolean }): Promise<Contractor> {
-  return updateContractor(id, { orgFlags });
+export async function updateConditionalAnswers(id: string, answers: any): Promise<Contractor> {
+  return updateContractor(id, { 
+    hasEmployees: answers.hasEmployees === 'yes',
+    providesAbroad: answers.sendsAbroad === 'yes'
+  });
 }
+
+export async function updateOrgFlags(id: string, orgFlags: { hrRegistered?: boolean }): Promise<Contractor> {
+  return updateContractor(id, {
+    notes: orgFlags.hrRegistered ? 'HR registered' : undefined
+  });
+}
+
+// Re-export Supabase functions for direct access
+export {
+  listSupabaseContractors,
+  getSupabaseContractor,
+  createSupabaseContractor,
+  updateSupabaseContractor,
+  deleteSupabaseContractor,
+  subscribeToSupabaseContractors,
+  subscribeToSupabaseContractorChanges,
+  type SupabaseContractor
+};

@@ -172,24 +172,47 @@ export function subscribeToSupabaseContractors(fn: () => void) {
   return () => { listeners.delete(fn); };
 }
 
+// Real-time subscription for contractors
+export function subscribeToSupabaseContractorChanges(callback: () => void): () => void {
+  const channel = supabase
+    .channel('contractor-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'subcontractors'
+      },
+      () => {
+        console.log('Contractor change detected');
+        callback();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
 // Legacy compatibility functions that map to Supabase
-export function listContractors(): Promise<SupabaseContractor[]> {
+export async function listContractors(): Promise<SupabaseContractor[]> {
   return listSupabaseContractors();
 }
 
-export function getContractor(id: string): Promise<SupabaseContractor | null> {
+export async function getContractor(id: string): Promise<SupabaseContractor | null> {
   return getSupabaseContractor(id);
 }
 
-export function createContractor(data: any): Promise<SupabaseContractor> {
+export async function createContractor(data: any): Promise<SupabaseContractor> {
   return createSupabaseContractor(data);
 }
 
-export function updateContractor(id: string, patch: any): Promise<SupabaseContractor> {
+export async function updateContractor(id: string, patch: any): Promise<SupabaseContractor> {
   return updateSupabaseContractor(id, patch);
 }
 
-export function deleteContractor(id: string): Promise<void> {
+export async function deleteContractor(id: string): Promise<void> {
   return deleteSupabaseContractor(id);
 }
 
@@ -203,4 +226,20 @@ export function getContractors(): Promise<SupabaseContractor[]> {
 
 export function getAllContractors(): Promise<SupabaseContractor[]> {
   return listSupabaseContractors();
+}
+
+// Conditional answers compatibility
+export async function updateConditionalAnswers(id: string, answers: ConditionalAnswers): Promise<SupabaseContractor> {
+  return updateSupabaseContractor(id, { 
+    requires_employees: answers.hasEmployees === 'yes',
+    has_non_eu_workers: answers.sendsAbroad === 'yes',
+    employees_not_employed_in_germany: answers.sendsAbroad === 'yes'
+  });
+}
+
+export async function updateOrgFlags(id: string, orgFlags: { hrRegistered?: boolean }): Promise<SupabaseContractor> {
+  return updateSupabaseContractor(id, { 
+    // Map orgFlags to appropriate Supabase fields if needed
+    notes: orgFlags.hrRegistered ? 'HR registered' : undefined 
+  });
 }
