@@ -35,7 +35,11 @@ import {
   Eye,
   Circle
 } from 'lucide-react';
-import { listSupabaseContractors } from "@/services/supabaseContractors";
+import { 
+  listSupabaseContractors, 
+  subscribeToSupabaseContractors,
+  deleteSupabaseContractor 
+} from "@/services/supabaseContractors";
 import type { Contractor } from "@/services/contractors.store";
 
 interface Subcontractor extends Contractor {
@@ -75,6 +79,13 @@ export default function Subcontractors() {
     }
     
     fetchSubcontractors();
+    
+    // Subscribe to Supabase changes
+    const unsubscribe = subscribeToSupabaseContractors(() => {
+      fetchSubcontractors();
+    });
+    
+    return unsubscribe;
   }, [isDemo]);
 
   // No more localStorage subscription needed - using Supabase
@@ -102,8 +113,6 @@ export default function Subcontractors() {
     try {
       setLoading(true);
       
-      // Use Supabase instead of localStorage
-      const { listSupabaseContractors } = await import('@/services/supabaseContractors');
       const contractors = await listSupabaseContractors();
       
       const processedSubcontractors = contractors.map(contractor => ({
@@ -148,21 +157,14 @@ export default function Subcontractors() {
     if (!confirm(`Möchten Sie ${subcontractor.company_name} wirklich löschen?`)) return;
 
     try {
-      // Use Supabase delete instead of localStorage
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('subcontractors')
-        .delete()
-        .eq('id', subcontractor.id);
-
-      if (error) throw error;
+      await deleteSupabaseContractor(subcontractor.id);
 
       toast({
         title: "Nachunternehmer gelöscht",
         description: `${subcontractor.company_name} wurde erfolgreich gelöscht.`
       });
 
-      fetchSubcontractors();
+      // Refresh happens automatically via subscription
     } catch (error: any) {
       console.error('Error deleting contractor:', error);
       toast({

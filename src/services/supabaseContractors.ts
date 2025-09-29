@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { ConditionalAnswers, DEFAULT_CONDITIONAL_ANSWERS } from '@/config/conditionalQuestions';
 
 export interface SupabaseContractor {
   id: string;
@@ -9,13 +10,19 @@ export interface SupabaseContractor {
   address?: string;
   country_code: string;
   notes?: string;
-  status: string; // Changed from 'active' | 'inactive' to string for Supabase compatibility
+  status: string;
   compliance_status: string;
   company_type: string;
   tenant_id: string;
   created_at: string;
   updated_at: string;
+  requires_employees?: boolean;
+  has_non_eu_workers?: boolean;
+  employees_not_employed_in_germany?: boolean;
 }
+
+// Create a unified contractor service that replaces localStorage
+let listeners = new Set<() => void>();
 
 export async function getSupabaseContractor(id: string): Promise<SupabaseContractor | null> {
   const { data, error } = await supabase
@@ -30,40 +37,6 @@ export async function getSupabaseContractor(id: string): Promise<SupabaseContrac
   }
 
   return data;
-}
-
-export async function updateSupabaseContractorStatus(
-  id: string, 
-  status: 'active' | 'inactive'
-): Promise<boolean> {
-  try {
-    // First get the current contractor data to preserve all fields
-    const currentData = await getSupabaseContractor(id);
-    if (!currentData) {
-      console.error('Contractor not found for status update:', id);
-      return false;
-    }
-
-    // Only update the status field while preserving all other data
-    const { error } = await supabase
-      .from('subcontractors')
-      .update({ 
-        status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error updating contractor status:', error);
-      return false;
-    }
-
-    console.log('Contractor status updated successfully:', { id, status, preservedData: currentData });
-    return true;
-  } catch (error) {
-    console.error('Error updating contractor status:', error);
-    return false;
-  }
 }
 
 export async function listSupabaseContractors(tenantId?: string): Promise<SupabaseContractor[]> {
@@ -89,4 +62,145 @@ export async function listSupabaseContractors(tenantId?: string): Promise<Supaba
     console.error('Error fetching contractors:', error);
     return [];
   }
+}
+
+export async function createSupabaseContractor(
+  data: Omit<SupabaseContractor, "id" | "created_at" | "updated_at" | "status" | "compliance_status"> & { 
+    active?: boolean;
+    conditionalAnswers?: ConditionalAnswers;
+    orgFlags?: { hrRegistered?: boolean };
+  }
+): Promise<SupabaseContractor> {
+  const { data: contractor, error } = await supabase
+    .from('subcontractors')
+    .insert({
+      company_name: data.company_name,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email,
+      phone: data.phone,
+      address: data.address,
+      country_code: data.country_code || 'DE',
+      notes: data.notes,
+      tenant_id: data.tenant_id,
+      company_type: data.company_type || 'baubetrieb',
+      requires_employees: data.requires_employees,
+      has_non_eu_workers: data.has_non_eu_workers,
+      employees_not_employed_in_germany: data.employees_not_employed_in_germany,
+      status: data.active !== false ? 'active' : 'inactive'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create contractor: ${error.message}`);
+  }
+
+  // Notify listeners
+  listeners.forEach(fn => fn());
+  
+  return contractor;
+}
+
+export async function updateSupabaseContractor(
+  id: string, 
+  patch: Partial<SupabaseContractor>
+): Promise<SupabaseContractor> {
+  const { data: contractor, error } = await supabase
+    .from('subcontractors')
+    .update({
+      ...patch,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update contractor: ${error.message}`);
+  }
+
+  // Notify listeners
+  listeners.forEach(fn => fn());
+  
+  return contractor;
+}
+
+export async function updateSupabaseContractorStatus(
+  id: string, 
+  status: 'active' | 'inactive'
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('subcontractors')
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating contractor status:', error);
+      return false;
+    }
+
+    // Notify listeners
+    listeners.forEach(fn => fn());
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating contractor status:', error);
+    return false;
+  }
+}
+
+export async function deleteSupabaseContractor(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('subcontractors')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(`Failed to delete contractor: ${error.message}`);
+  }
+
+  // Notify listeners
+  listeners.forEach(fn => fn());
+}
+
+export function subscribeToSupabaseContractors(fn: () => void) {
+  listeners.add(fn);
+  return () => { listeners.delete(fn); };
+}
+
+// Legacy compatibility functions that map to Supabase
+export function listContractors(): Promise<SupabaseContractor[]> {
+  return listSupabaseContractors();
+}
+
+export function getContractor(id: string): Promise<SupabaseContractor | null> {
+  return getSupabaseContractor(id);
+}
+
+export function createContractor(data: any): Promise<SupabaseContractor> {
+  return createSupabaseContractor(data);
+}
+
+export function updateContractor(id: string, patch: any): Promise<SupabaseContractor> {
+  return updateSupabaseContractor(id, patch);
+}
+
+export function deleteContractor(id: string): Promise<void> {
+  return deleteSupabaseContractor(id);
+}
+
+export function subscribe(fn: () => void) {
+  return subscribeToSupabaseContractors(fn);
+}
+
+export function getContractors(): Promise<SupabaseContractor[]> {
+  return listSupabaseContractors();
+}
+
+export function getAllContractors(): Promise<SupabaseContractor[]> {
+  return listSupabaseContractors();
 }
