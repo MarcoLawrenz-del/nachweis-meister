@@ -74,10 +74,10 @@ export async function createSupabaseContractor(
   console.log('Creating contractor with data:', data);
   
   // For demo mode, use fixed demo tenant_id
-  let effectiveTenantId = data.tenant_id || '00000000-0000-0000-0000-000000000001';
+  const effectiveTenantId = '00000000-0000-0000-0000-000000000001';
   
   console.log('Using tenant_id:', effectiveTenantId);
-  console.log('auth.uid() check:', await supabase.auth.getUser());
+  console.log('data.tenant_id was:', data.tenant_id);
   
   // Debug: Test RLS policy
   const insertData = {
@@ -88,7 +88,7 @@ export async function createSupabaseContractor(
     address: data.address,
     country_code: data.country_code || 'DE',
     notes: data.notes,
-    tenant_id: effectiveTenantId,
+    tenant_id: effectiveTenantId, // Force demo tenant
     company_type: data.company_type || 'baubetrieb',
     requires_employees: data.requires_employees,
     has_non_eu_workers: data.has_non_eu_workers,
@@ -98,6 +98,7 @@ export async function createSupabaseContractor(
   };
   
   console.log('Insert data with tenant_id:', insertData);
+  console.log('insertData.tenant_id specifically:', insertData.tenant_id);
 
   const { data: contractor, error } = await supabase
     .from('subcontractors')
