@@ -69,26 +69,26 @@ const handler = async (req: Request): Promise<Response> => {
     const uploadUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/public/upload/reminder/${requirementId}`;
     
     const templateData = {
-      subcontractorName: requirement.project_sub.subcontractor.company_name,
-      projectName: requirement.project_sub.project.name,
-      requirementName: requirement.document_type.name_de,
-      documentTypeCode: requirement.document_type.code,
+      subcontractorName: (requirement.project_sub as any).subcontractor.company_name,
+      projectName: (requirement.project_sub as any).project.name,
+      requirementName: (requirement.document_type as any).name_de,
+      documentTypeCode: (requirement.document_type as any).code,
       dueDate: requirement.due_date ? new Date(requirement.due_date).toLocaleDateString('de-DE') : undefined,
       uploadUrl,
-      tenantName: requirement.project_sub.project.tenant.name,
-      tenantLogoUrl: requirement.project_sub.project.tenant.logo_url,
+      tenantName: (requirement.project_sub as any).project.tenant.name,
+      tenantLogoUrl: (requirement.project_sub as any).project.tenant.logo_url,
       attemptNumber: 'Sofort'
     };
 
     // Send immediate reminder email
     const { error: emailError } = await supabaseClient.functions.invoke('send-reminder-email', {
       body: {
-        to: requirement.project_sub.subcontractor.contact_email,
+        to: (requirement.project_sub as any).subcontractor.contact_email,
         templateType: 'reminder_soft',
         templateData,
         requirementId: requirementId,
         subcontractorId: subcontractorId,
-        tenantId: requirement.project_sub.project.tenant.id
+        tenantId: (requirement.project_sub as any).project.tenant.id
       }
     });
 

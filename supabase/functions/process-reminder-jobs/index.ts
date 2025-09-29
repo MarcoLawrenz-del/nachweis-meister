@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
     let escalatedCount = 0;
     let errorCount = 0;
 
-    for (const job of (reminderJobs as ReminderJob[]) || []) {
+    for (const job of (reminderJobs as unknown as ReminderJob[]) || []) {
       try {
         console.log(`Processing job ${job.id} (attempt ${job.attempts + 1}/${job.max_attempts})`);
 

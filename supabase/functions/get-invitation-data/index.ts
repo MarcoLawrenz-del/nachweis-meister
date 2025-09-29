@@ -70,8 +70,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Invitation type:', inviteData.invitation_type);
 
-    let responseData;
-    let enrichedRequirements = [];
+    let responseData: any;
+    let enrichedRequirements: any[] = [];
 
     if (inviteData.invitation_type === 'global') {
       // Handle global invitation
@@ -321,9 +321,9 @@ const handler = async (req: Request): Promise<Response> => {
       };
     }
 
-    console.log('Successfully fetched invitation data for:', responseData.email);
+    console.log('Successfully fetched invitation data for:', responseData?.email);
 
-    console.log('Successfully fetched invitation data for:', responseData.email);
+    console.log('Successfully fetched invitation data for:', responseData?.email);
 
     return new Response(
       JSON.stringify({ 
