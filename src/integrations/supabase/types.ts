@@ -480,6 +480,8 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: string
+          tenant_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -487,6 +489,8 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          role?: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -494,9 +498,19 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string
+          tenant_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_subs: {
         Row: {
