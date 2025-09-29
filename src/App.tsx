@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ROUTES } from "@/lib/ROUTES";
 import Landing from "./pages/Landing";
 import { SupabaseAuthProvider } from "@/contexts/SupabaseAuthContext";
+import { NewAuthProvider } from "@/contexts/NewAuthContext";
 import { SupabaseProtectedRoute } from "@/components/SupabaseProtectedRoute";
 import { featureFlags } from "@/config/flags";
 
@@ -48,6 +49,7 @@ const Settings = lazy(() => import("./pages/settings/Settings"));
 const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Login = lazy(() => import("./pages/Login"));
+const NewAuthPage = lazy(() => import("./pages/NewAuthPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const Register = lazy(() => import("./pages/Register"));
 const Setup = lazy(() => import("./pages/Setup"));
@@ -91,6 +93,7 @@ const App = () => (
       <ErrorBoundary>
         <A11yProvider>
           <TooltipProvider>
+            <NewAuthProvider>
             <SupabaseAuthProvider>
               <Toaster />
               <Sonner />
@@ -129,11 +132,11 @@ const App = () => (
                        } />
 
                       {/* Auth Route */}
-                      <Route path="/auth" element={
-                        <Suspense fallback={<LoadingSpinner />}>
-                          <AuthPage />
-                        </Suspense>
-                      } />
+                       <Route path="/auth" element={
+                         <Suspense fallback={<LoadingSpinner />}>
+                           <NewAuthPage />
+                         </Suspense>
+                       } />
 
                       {/* Legacy Login Route - redirect to auth */}
                       <Route path="/login" element={<Navigate to="/auth" replace />} />
@@ -228,6 +231,7 @@ const App = () => (
                 </div>
               </BrowserRouter>
             </SupabaseAuthProvider>
+            </NewAuthProvider>
           </TooltipProvider>
         </A11yProvider>
       </ErrorBoundary>
