@@ -35,6 +35,28 @@ export function useSupabaseRequirements(subcontractorId: string) {
       setLoading(true);
       setError(null);
 
+      console.log('Loading requirements for subcontractor:', subcontractorId);
+
+      // First get project_subs for this subcontractor
+      const { data: projectSubs, error: projectSubError } = await supabase
+        .from('project_subs')
+        .select('id')
+        .eq('subcontractor_id', subcontractorId);
+
+      if (projectSubError) {
+        throw projectSubError;
+      }
+
+      if (!projectSubs || projectSubs.length === 0) {
+        console.log('No project_subs found for subcontractor:', subcontractorId);
+        setRequirements([]);
+        return;
+      }
+
+      const projectSubIds = projectSubs.map(ps => ps.id);
+      console.log('Found project_sub IDs:', projectSubIds);
+
+      // Then get requirements for these project_subs
       const { data, error: fetchError } = await supabase
         .from('requirements')
         .select(`
@@ -58,12 +80,11 @@ export function useSupabaseRequirements(subcontractorId: string) {
             uploaded_at,
             valid_from,
             valid_to
-          ),
-          project_subs!inner (
-            subcontractor_id
           )
         `)
-        .eq('project_subs.subcontractor_id', subcontractorId);
+        .in('project_sub_id', projectSubIds);
+
+      console.log('Requirements query result:', { data, fetchError });
 
       if (fetchError) {
         throw fetchError;
