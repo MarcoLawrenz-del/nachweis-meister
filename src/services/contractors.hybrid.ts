@@ -60,9 +60,12 @@ function convertToLegacy(supabaseContractor: SupabaseContractor): Contractor {
 // Refresh cache from Supabase
 async function refreshCache() {
   try {
+    console.log('Refreshing contractors cache...');
     const supabaseContractors = await listSupabaseContractors();
     contractorsCache = supabaseContractors.map(convertToLegacy);
     cacheTimestamp = Date.now();
+    
+    console.log('Cache refreshed:', contractorsCache.length, 'contractors');
     
     // Notify listeners
     listeners.forEach(fn => fn());
@@ -82,7 +85,12 @@ subscribeToSupabaseContractors(() => {
 // ============= SYNCHRONOUS API =============
 
 export function listContractors(): Contractor[] {
-  // Return cached data immediately
+  // Trigger async refresh if cache is empty or expired
+  if (contractorsCache.length === 0 || Date.now() - cacheTimestamp > CACHE_DURATION) {
+    console.log('Cache empty or expired, refreshing...');
+    refreshCache();
+  }
+  
   return contractorsCache;
 }
 
@@ -95,6 +103,10 @@ export function getAllContractors(): Contractor[] {
 }
 
 export function getContractor(id: string): Contractor | undefined {
+  // Ensure cache is populated
+  if (contractorsCache.length === 0) {
+    refreshCache();
+  }
   return contractorsCache.find(c => c.id === id);
 }
 

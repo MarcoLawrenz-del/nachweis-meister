@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
-import { getSupabaseContractor } from '@/services/supabaseContractors';
+import { getContractor } from '@/services/contractors.store';
 import { getDocs } from '@/services/contractorDocs.store';
 import { useSubcontractorProfile } from '@/hooks/useSubcontractorProfile';
 import { DocumentReviewDrawer } from '@/components/DocumentReviewDrawer';
