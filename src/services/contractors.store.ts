@@ -7,6 +7,7 @@ export {
   getContractors,
   getAllContractors,
   getContractor,
+  getContractorAsync,
   createContractor,
   updateContractor,
   deleteContractor,
@@ -14,5 +15,6 @@ export {
   updateOrgFlags,
   subscribe,
   forceRefresh,
+  forceRefreshAsync,
   type Contractor
 } from './contractors.hybrid';

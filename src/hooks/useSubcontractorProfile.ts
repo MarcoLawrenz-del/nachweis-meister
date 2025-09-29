@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { RequirementStatus, ComplianceStatus } from '@/types/compliance';
 import { useToast } from '@/hooks/use-toast';
 import { sendReminderMissing } from '@/services/email';
-import { getContractor, updateContractor, subscribe } from '@/services/contractors.store';
+import { getContractor, getContractorAsync, updateContractor, subscribe } from '@/services/contractors.store';
 import { useContractorDocuments } from '@/hooks/useContractorDocuments';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -86,8 +86,8 @@ export const useSubcontractorProfile = (contractorId: string) => {
       setIsLoading(true);
       setError(null);
       
-      // Use hybrid service
-      const contractor = getContractor(contractorId);
+      // Use async hybrid service to ensure cache is fresh
+      const contractor = await getContractorAsync(contractorId);
       
       if (contractor) {
         console.log('Found contractor:', contractor);

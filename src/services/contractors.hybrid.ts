@@ -75,6 +75,11 @@ async function refreshCache() {
   }
 }
 
+// Force refresh and wait for completion
+async function forceRefreshAndWait(): Promise<void> {
+  await refreshCache();
+}
+
 // Initialize cache
 refreshCache();
 
@@ -109,6 +114,18 @@ export function getContractor(id: string): Contractor | undefined {
     refreshCache();
   }
   return contractorsCache.find(c => c.id === id);
+}
+
+// Async version that waits for cache refresh if needed
+export async function getContractorAsync(id: string): Promise<Contractor | undefined> {
+  // If cache is empty or contractor not found, force refresh and wait
+  let contractor = contractorsCache.find(c => c.id === id);
+  if (!contractor || contractorsCache.length === 0) {
+    console.log('Contractor not in cache, forcing refresh...');
+    await forceRefreshAndWait();
+    contractor = contractorsCache.find(c => c.id === id);
+  }
+  return contractor;
 }
 
 // Async operations (background updates)
@@ -199,4 +216,9 @@ export function subscribe(fn: () => void) {
 // Force refresh cache (for manual sync)
 export function forceRefresh() {
   refreshCache();
+}
+
+// Force refresh and wait for completion
+export async function forceRefreshAsync(): Promise<void> {
+  await forceRefreshAndWait();
 }

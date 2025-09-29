@@ -319,13 +319,9 @@ export function NewSubcontractorWizard({
           if (error) throw error;
           contractorId = contractor.id;
           
-          // Refresh the hybrid cache so the new contractor can be found
-          await import('@/services/contractors.hybrid').then(async module => {
-            // Force cache refresh by calling listContractors which triggers refreshCache
-            module.listContractors();
-            // Small delay to ensure cache is updated
-            await new Promise(resolve => setTimeout(resolve, 100));
-          });
+          // Force refresh of contractors cache and wait for completion
+          const { forceRefreshAsync } = await import('@/services/contractors.store');
+          await forceRefreshAsync();
           
           toast({
             title: "Nachunternehmer erstellt",
