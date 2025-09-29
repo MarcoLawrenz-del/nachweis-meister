@@ -35,8 +35,7 @@ import {
   Eye,
   Circle
 } from 'lucide-react';
-import { aggregateContractorStatusById, listContractors, deleteContractor } from "@/services/contractors";
-import { subscribe as subscribeContractors } from "@/services/contractors.store";
+import { listSupabaseContractors } from "@/services/supabaseContractors";
 import type { Contractor } from "@/services/contractors.store";
 
 interface Subcontractor extends Contractor {
@@ -78,16 +77,7 @@ export default function Subcontractors() {
     fetchSubcontractors();
   }, [isDemo]);
 
-  // Subscribe to contractors store changes
-  useEffect(() => {
-    if (isDemo) return;
-    
-    const unsubscribe = subscribeContractors(() => {
-      fetchSubcontractors();
-    });
-    
-    return unsubscribe;
-  }, [isDemo]);
+  // No more localStorage subscription needed - using Supabase
 
   useEffect(() => {
     const filtered = subcontractors
@@ -112,21 +102,20 @@ export default function Subcontractors() {
     try {
       setLoading(true);
       
-      const contractors = listContractors();
-      const processedSubcontractors = contractors.map(contractor => {
-        const aggregation = aggregateContractorStatusById(contractor.id);
-        
-        return {
-          ...contractor,
-          contact_email: contractor.email,
-          country_code: contractor.country || '',
-          status: contractor.active ? 'active' as const : 'inactive' as const,
-          compliance_status: aggregation.status === 'complete' ? 'compliant' as const : 
-                           aggregation.status === 'attention' ? 'expiring_soon' as const : 'non_compliant' as const,
-          project_count: 0,
-          critical_issues: aggregation.status === 'missing' ? 1 : 0
-        } as Subcontractor;
-      });
+      // Use Supabase instead of localStorage
+      const { listSupabaseContractors } = await import('@/services/supabaseContractors');
+      const contractors = await listSupabaseContractors();
+      
+      const processedSubcontractors = contractors.map(contractor => ({
+        ...contractor,
+        email: contractor.contact_email,
+        active: contractor.status === 'active',
+        country: contractor.country_code,
+        status: contractor.status as 'active' | 'inactive',
+        compliance_status: contractor.compliance_status as 'compliant' | 'non_compliant' | 'expiring_soon',
+        project_count: 0,
+        critical_issues: contractor.compliance_status === 'non_compliant' ? 1 : 0
+      })) as Subcontractor[];
 
       setSubcontractors(processedSubcontractors);
     } catch (error: any) {
@@ -159,7 +148,14 @@ export default function Subcontractors() {
     if (!confirm(`Möchten Sie ${subcontractor.company_name} wirklich löschen?`)) return;
 
     try {
-      deleteContractor(subcontractor.id);
+      // Use Supabase delete instead of localStorage
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('subcontractors')
+        .delete()
+        .eq('id', subcontractor.id);
+
+      if (error) throw error;
 
       toast({
         title: "Nachunternehmer gelöscht",
@@ -342,16 +338,15 @@ export default function Subcontractors() {
                             </span>
                           </div>
                         </TableCell>
-                         <TableCell>
+                          <TableCell>
                            {(() => {
-                             const agg = aggregateContractorStatusById(subcontractor.id);
                              const isInactive = subcontractor.status === 'inactive';
                              
                              let chip;
-                             if (agg.status === "complete") {
+                             if (subcontractor.compliance_status === "compliant") {
                                chip = {label: "Vollständig", class: "bg-green-100 text-green-800 border-green-200"};
-                             } else if (agg.status === "attention") {
-                               chip = {label: "Aufmerksamkeit", class: isInactive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-amber-100 text-amber-800 border-amber-200"};
+                             } else if (subcontractor.compliance_status === "expiring_soon") {
+                               chip = {label: "Läuft ab", class: isInactive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-amber-100 text-amber-800 border-amber-200"};
                              } else {
                                chip = {label: "Fehlt", class: isInactive ? "bg-gray-100 text-gray-600 border-gray-200" : "bg-red-100 text-red-800 border-red-200"};
                              }
@@ -360,10 +355,10 @@ export default function Subcontractors() {
                          </TableCell>
                          <TableCell>
                            {(() => {
-                             const agg = aggregateContractorStatusById(subcontractor.id);
                              const isInactive = subcontractor.status === 'inactive';
+                             const isMissing = subcontractor.compliance_status === 'non_compliant';
                              
-                             if (agg.counts.missing === 0) {
+                             if (!isMissing) {
                                return (
                                  <div className="flex items-center gap-2">
                                    <CheckCircle className="h-4 w-4 text-green-500" />
@@ -381,7 +376,7 @@ export default function Subcontractors() {
                                        : "bg-red-100 text-red-800 border-red-200"
                                      }
                                    >
-                                     {agg.counts.missing} fehlt
+                                     Dokumente fehlen
                                    </Badge>
                                  </div>
                                );
