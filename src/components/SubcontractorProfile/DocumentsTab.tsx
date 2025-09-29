@@ -571,9 +571,9 @@ export function DocumentsTab({ requirements, emailLogs, onAction, onReview, onSe
               Dokumente ({filteredDocs.length})
             </div>
             <div className="flex items-center gap-2">
-              {!isLoadingMeta && meta?.lastRequestedAt && (
+              {meta && typeof meta === 'object' && 'lastRequestedAt' in meta && meta.lastRequestedAt && (
                 <Badge variant="secondary" className="text-xs">
-                  Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt), {
+                  Zuletzt angefordert: {formatDistanceToNow(new Date(meta.lastRequestedAt as string), {
                     addSuffix: true, 
                     locale: de 
                   })}

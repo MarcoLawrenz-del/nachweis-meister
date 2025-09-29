@@ -68,7 +68,8 @@ export default function Subcontractors() {
       // Use demo data directly - map to Subcontractor type
       const mappedDemo = demoSubcontractors.map(sub => ({
         ...sub,
-        active: sub.status === 'active'
+        active: sub.status === 'active',
+        company_type: sub.company_type === 'unternehmen' ? 'baubetrieb' : sub.company_type
       })) as Subcontractor[];
       setSubcontractors(mappedDemo);
       setLoading(false);
