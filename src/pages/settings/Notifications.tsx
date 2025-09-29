@@ -11,8 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   getNotificationSettings, 
   saveNotificationSettings,
-  type NotificationSettings 
-} from '@/services/notifications';
+  type NotificationSettings,
+  initializeSettings
+} from '@/services/settings.supabase';
 import { sendEmail, type EmailType } from '@/services/email';
 import { isErr } from '@/utils/result';
 import { createUploadToken } from '@/services/uploadLinks';
@@ -21,17 +22,49 @@ import { Bell, Mail, Settings, TestTube } from 'lucide-react';
 export default function Notifications() {
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [isTestingSending, setIsTestingSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleSettingChange = (key: keyof NotificationSettings, value: boolean | number) => {
+  // Load settings from Supabase on component mount
+  useState(() => {
+    const loadSettings = async () => {
+      try {
+        await initializeSettings();
+        setSettings(getNotificationSettings());
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+        toast({
+          title: "Fehler beim Laden",
+          description: "Einstellungen konnten nicht geladen werden",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
+  });
+
+  const handleSettingChange = async (key: keyof NotificationSettings, value: boolean | number) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    saveNotificationSettings(newSettings);
     
-    toast({
-      title: "Einstellungen gespeichert",
-      description: "Ihre Benachrichtigungseinstellungen wurden aktualisiert.",
-    });
+    const result = await saveNotificationSettings(newSettings);
+    
+    if (result.success) {
+      toast({
+        title: "Einstellungen gespeichert",
+        description: "Ihre Benachrichtigungseinstellungen wurden aktualisiert.",
+      });
+    } else {
+      toast({
+        title: "Fehler beim Speichern",
+        description: result.error || "Einstellungen konnten nicht gespeichert werden",
+        variant: "destructive"
+      });
+      // Revert settings on error
+      setSettings(getNotificationSettings());
+    }
   };
 
   const handleTestEmail = async () => {

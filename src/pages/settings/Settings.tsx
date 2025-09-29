@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
+import { useNewAuth } from '@/contexts/NewAuthContext';
 import { SettingsErrorBoundary } from '@/components/SettingsErrorBoundary';
 import { TeamGuard } from '@/components/TeamGuard';
 import Team from './Team';
@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getRoleDisplayName, canManageTeam } from '@/services/team.store';
 
 export default function Settings() {
-  const { user, profile } = useSupabaseAuthContext();
+  const { user, profile } = useNewAuth();
   const [currentTab, setCurrentTab] = useState('profile');
   const { toast } = useToast();
   

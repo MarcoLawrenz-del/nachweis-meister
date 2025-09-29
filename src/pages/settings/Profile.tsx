@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
+import { useNewAuth } from '@/contexts/NewAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { User, Shield, Key, Eye, EyeOff } from 'lucide-react';
 
 export default function Profile() {
-  const { user, profile } = useSupabaseAuthContext();
+  const { user, profile } = useNewAuth();
   const { toast } = useToast();
   
   // Guard: return loading if no user context yet
