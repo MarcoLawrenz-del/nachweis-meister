@@ -292,6 +292,9 @@ export function NewSubcontractorWizard({
       } else {
         let contractorId: string;
         try {
+          // For demo mode, use fixed demo tenant_id when no profile
+          const effectiveTenantId = profile?.tenant_id || '00000000-0000-0000-0000-000000000001';
+          
           // Create in Supabase instead of localStorage
           const { data: contractor, error } = await supabase
             .from('subcontractors')
@@ -303,7 +306,7 @@ export function NewSubcontractorWizard({
               address: subData.address,
               country_code: subData.country || 'DE',
               notes: subData.notes,
-              tenant_id: profile?.tenant_id,
+              tenant_id: effectiveTenantId,
               company_type: 'baubetrieb',
               requires_employees: conditionalFlags.hasEmployees,
               has_non_eu_workers: conditionalAnswers.sendsAbroad === 'yes',
