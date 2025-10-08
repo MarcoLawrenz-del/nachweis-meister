@@ -4,7 +4,6 @@ import App from "./App.tsx";
 import "./index.css";
 import "@/styles/brand.css";
 import { ThemeProvider } from "@/components/Theme/ThemeProvider";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { demoAuthService } from "@/services/demoAuth";
 
 // Initialize demo mode for immediate Supabase access
@@ -24,8 +23,6 @@ if (import.meta.env.DEV) {
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="system" storageKey="subfix-ui-theme">
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <App />
   </ThemeProvider>
 );
