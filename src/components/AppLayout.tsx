@@ -6,7 +6,7 @@ import { LogOut, User } from 'lucide-react';
 import { Logo } from '@/components/Brand/Logo';
 import { TrialBanner } from '@/components/TrialBanner';
 import { SystemStatusBanner } from '@/components/SystemStatusBanner';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useSupabaseAuthContext } from '@/contexts/SupabaseAuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -19,17 +19,14 @@ import {
 
 export function AppLayout() {
   const navigate = useNavigate();
-  const { signIn, signOut, user } = useAuthContext();
+  const { profile, signOut } = useSupabaseAuthContext();
 
   const handleSignOut = async () => {
     console.log('Attempting to sign out...');
     try {
-      const result = await signOut();
-      console.log('Sign out result:', result);
-      if (!result?.error) {
-        console.log('Navigating to login...');
-        navigate("/login");
-      }
+      await signOut();
+      console.log('Navigating to login...');
+      navigate("/auth");
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -52,15 +49,15 @@ export function AppLayout() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">{user?.name || "User"}</span>
+                  <span className="hidden sm:inline">{profile?.full_name || profile?.email || "User"}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                    <p className="text-sm font-medium leading-none">{profile?.full_name || "User"}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
+                      {profile?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
